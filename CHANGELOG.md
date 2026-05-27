@@ -1,22 +1,48 @@
 # CHANGELOG
 
+## 2026-05-27
+
+### Added
+
+- Added production Supabase setup for the `musnid1` project.
+- Applied the initial Supabase schema migration to the live database.
+- Added GitHub repository deployment flow through `mansorAI/musnid1`.
+- Added Vercel deployment with Next.js framework settings.
+- Added production environment variable setup notes.
+
+### Changed
+
+- Updated project documentation to reflect the live Supabase and Vercel deployment.
+- Clarified that GitHub Pages is not used; Vercel is the deployment target.
+
+### Security
+
+- Documented the need to rotate the Supabase `service_role` key after setup.
+
 ## 2026-05-25
 
 ### Added
-- إنشاء مشروع Next.js في `musnid` بإعدادات TypeScript وTailwind وApp Router.
-- إضافة مكتبات Supabase وReact Hook Form وZod وTanStack Query وZustand وdate-fns وshadcn/ui.
-- إضافة مكونات shadcn/ui: button, input, label, card, dialog, dropdown-menu, form, select, switch, table, tabs, sonner.
-- إضافة `src/components/ui/form.tsx` يدويًا بتكامل React Hook Form.
-- إضافة إعداد RTL وخط عربي وتحديث metadata لمشروع مُسنِد.
-- إضافة مزودات التطبيق في `src/components/providers.tsx`.
-- إضافة عملاء Supabase في `src/lib/supabase`.
-- إضافة منطق حماية جلسة Supabase في `src/lib/supabase/middleware.ts` وربطه عبر `src/proxy.ts` المتوافق مع Next 16.
-- إضافة ملف `.env.local.example`.
-- إضافة ملفات التتبع `PROGRESS.md` و`CHANGELOG.md`.
-- توثيق اكتمال فحص ESLint وبناء Next.js للمرحلة 1.
-- تشغيل خادم التطوير والتحقق من استجابة الصفحة محليًا.
+
+- Created the Next.js project in `musnid` with TypeScript, Tailwind, and App Router.
+- Added Supabase, React Hook Form, Zod, TanStack Query, Zustand, date-fns, and shadcn/ui dependencies.
+- Added shadcn/ui components: button, input, label, card, dialog, dropdown-menu, form, select, switch, table, tabs, and sonner.
+- Added `src/components/ui/form.tsx` manually with React Hook Form integration.
+- Added RTL setup, Arabic font styling, and Musnid metadata.
+- Added app providers in `src/components/providers.tsx`.
+- Added Supabase clients in `src/lib/supabase`.
+- Added Supabase session protection logic through `src/lib/supabase/middleware.ts` and `src/proxy.ts`.
+- Added `.env.local.example`.
+- Added progress and changelog tracking files.
+- Added landing, sign-in, dashboard, customers, knowledge, automations, and settings pages.
+- Added initial Supabase migration and database TypeScript types.
 
 ### Changed
-- استبدال مكوّن `toast` المطلوب في الخطة بـ `sonner` بسبب إهمال `toast` في shadcn الحالي.
-- تحميل خط IBM Plex Sans Arabic عبر CSS مع fallback لتجنب فشل البناء عند انقطاع Google Fonts.
-- نقل Next route guard من convention القديم `middleware.ts` إلى `proxy.ts`.
+
+- Used `sonner` instead of the older shadcn toast component.
+- Loaded IBM Plex Sans Arabic through CSS to avoid build failures when Google Fonts is unavailable.
+- Used the Next 16 `proxy.ts` convention instead of the older middleware route guard pattern.
+
+### Verified
+
+- ESLint passed locally.
+- Next.js production build passed locally.

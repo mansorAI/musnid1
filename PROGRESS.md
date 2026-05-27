@@ -1,43 +1,92 @@
 # PROGRESS
 
+## 2026-05-27
+
+### Completed
+
+- Paused the older Supabase project `masrofati`.
+- Created the new Supabase project `musnid1`.
+- Applied the initial schema migration from `supabase/migrations/202605250001_initial_schema.sql`.
+- Verified the Supabase public schema includes:
+  - `organizations`
+  - `customers`
+  - `conversations`
+  - `messages`
+  - `knowledge_articles`
+  - `automations`
+- Collected the required Supabase values for Vercel:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+- Initialized Git locally for the project.
+- Created the initial commit.
+- Connected the local repository to GitHub:
+  - `https://github.com/mansorAI/musnid1.git`
+- Pushed branch `main` to GitHub.
+- Imported the GitHub repository into Vercel.
+- Configured Vercel environment variables.
+- Fixed Vercel framework settings from `Other` to `Next.js`.
+- Redeployed the project successfully.
+- Verified the production site opens and renders the Musnid landing page.
+
+### Verification
+
+- Local production build succeeded with:
+
+```bash
+npm.cmd run build
+```
+
+- Vercel deployment reached `Ready`.
+- Production page rendered instead of the earlier `404: NOT_FOUND`.
+
+### Important Follow-Up
+
+- Rotate the Supabase `service_role` key because it was shared during setup.
+- Update the new `SUPABASE_SERVICE_ROLE_KEY` value in Vercel after rotation.
+- Add the production Vercel URL to Supabase:
+
+```text
+Authentication > URL Configuration > Site URL
+```
+
+- Confirm login and dashboard flows against the live Supabase project.
+
 ## 2026-05-25
 
-### المنجز
+### Completed
 
-- اكتملت المرحلة 1: تأسيس مشروع مُسنِد.
-- أُنشئ مشروع Next.js باسم `musnid` مع TypeScript وTailwind وApp Router و`src/`.
-- ثُبتت مكتبات المرحلة الأولى: Supabase، React Hook Form، Zod، TanStack Query، Zustand، date-fns، shadcn/ui، وملحقات الواجهة.
-- هُيئت shadcn/ui مع دعم RTL وأضيفت المكونات الأساسية المطلوبة، مع استخدام `sonner`.
-- أضيف مكون `form` يدويًا بنفس نمط shadcn.
-- ضُبط التخطيط العام للغة العربية واتجاه RTL وخط IBM Plex Sans Arabic.
-- عُدل تحميل الخط ليكون عبر CSS مع fallback بدلًا من `next/font/google`.
-- أضيف مزودا Theme وTanStack Query وToaster.
-- أضيف عملاء Supabase للمتصفح، السيرفر، والـ service role.
-- أضيف Proxy متوافق مع Next 16 لتحديث جلسة Supabase وحماية `/dashboard`.
-- أضيفت `.env.local.example` بمتغيرات البيئة المطلوبة.
-- استبدلت صفحة Next الافتراضية بصفحة رئيسية عربية لمُسنِد.
-- أضيفت صفحة `/sign-in` مع server action لتسجيل الدخول عبر Supabase Auth.
-- أضيفت صفحة `/dashboard` كبداية للوحة التشغيلية ببيانات تجريبية.
-- أضيف layout داخلي للوحة التحكم مع تنقل بين الأقسام.
-- أضيفت صفحات `/dashboard/customers` و`/dashboard/knowledge` و`/dashboard/automations` و`/dashboard/settings`.
-- أضيفت server actions لإنشاء النشاط، مقالات المعرفة، وقواعد الأتمتة عند توفر Supabase Auth.
-- أضيفت طبقة `dashboard-data` لاستخدام Supabase عند توفره والرجوع لبيانات تجريبية محليًا.
-- أضيف migration أولي في `supabase/migrations/202605250001_initial_schema.sql` يشمل الجداول الأساسية وRLS.
-- حُدثت `src/types/database.ts` لتعكس المخطط الأولي.
-- حُدث README لشرح التشغيل، البيئة، وقاعدة البيانات.
-- شُغل `npm.cmd run lint` بنجاح.
-- شُغل `npm.cmd run build` بنجاح.
-- شُغل خادم التطوير على `http://127.0.0.1:3000` وتم التحقق من `/` و`/sign-in` و`/dashboard` برمز HTTP 200.
-- أُعيد تشغيل `npm.cmd run lint` و`npm.cmd run build` بعد إضافة صفحات الإدارة ونجحا.
+- Completed phase 1: founded the Musnid app.
+- Created a Next.js project named `musnid` with TypeScript, Tailwind, App Router, and `src/`.
+- Installed the first-phase libraries: Supabase, React Hook Form, Zod, TanStack Query, Zustand, date-fns, shadcn/ui, and UI helpers.
+- Configured shadcn/ui with RTL support and added the required base components with `sonner`.
+- Added a manual `form` component following the local shadcn style.
+- Configured the global Arabic RTL layout and IBM Plex Sans Arabic.
+- Changed font loading to CSS with fallback instead of `next/font/google`.
+- Added Theme, TanStack Query, and Toaster providers.
+- Added Supabase clients for browser, server, and service-role usage.
+- Added a Next 16-compatible proxy for Supabase session refresh and `/dashboard` protection.
+- Added `.env.local.example`.
+- Replaced the default Next page with the Arabic Musnid landing page.
+- Added `/sign-in` with a Supabase Auth server action.
+- Added `/dashboard` as the initial operations dashboard with demo data.
+- Added the dashboard layout and internal navigation.
+- Added `/dashboard/customers`, `/dashboard/knowledge`, `/dashboard/automations`, and `/dashboard/settings`.
+- Added server actions for creating organizations, knowledge articles, and automations when Supabase Auth is available.
+- Added `dashboard-data` to use Supabase when configured and local demo data otherwise.
+- Added the initial database migration with the core tables and RLS.
+- Updated `src/types/database.ts` to reflect the initial schema.
+- Updated project documentation.
+- Ran lint and build successfully during local development.
 
-### المرحلة الحالية
+### Current Phase
 
-- المرحلة 2 بدأت محليًا: نموذج قاعدة البيانات والواجهات الأساسية جاهزة.
+- Phase 2 is active: live Supabase and Vercel deployment are now connected.
 
-### المتبقي
+### Remaining
 
-- إنشاء مشروع Supabase فعلي وتشغيل migration.
-- توليد types الرسمية من Supabase بعد تطبيق المخطط.
-- ربط لوحة التحكم بقراءات Supabase بدل البيانات التجريبية.
-- اختبار تدفق إنشاء منظمة النشاط الأولى على مشروع Supabase فعلي.
-- ربط مزود WhatsApp وطبقة الذكاء الاصطناعي ومزود الدفع.
+- Rotate exposed Supabase service-role credentials.
+- Generate official Supabase types from the live project if the schema changes.
+- Test real sign-up/sign-in and organization creation flows on production.
+- Replace remaining demo dashboard reads with live Supabase data where needed.
+- Integrate WhatsApp provider, AI response layer, and payment provider.
