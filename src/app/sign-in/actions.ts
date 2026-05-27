@@ -27,6 +27,41 @@ export async function signInWithEmail(formData: FormData) {
   redirect(next.startsWith("/") ? next : "/dashboard");
 }
 
+export async function signUpWithEmail(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  if (!email || !password) {
+    redirect("/sign-in?error=missing");
+  }
+
+  if (password.length < 6) {
+    redirect("/sign-in?error=password");
+  }
+
+  if (!hasSupabaseEnv()) {
+    redirect("/dashboard/settings?demo=1");
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: appUrl ? { emailRedirectTo: `${appUrl}/dashboard/settings` } : undefined,
+  });
+
+  if (error) {
+    redirect("/sign-in?error=signup");
+  }
+
+  if (data.session) {
+    redirect("/dashboard/settings?created_user=1");
+  }
+
+  redirect("/sign-in?message=check-email");
+}
+
 export async function signOut() {
   if (!hasSupabaseEnv()) {
     redirect("/");

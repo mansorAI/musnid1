@@ -3,11 +3,12 @@ import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signInWithEmail } from "./actions";
+import { signInWithEmail, signUpWithEmail } from "./actions";
 
 type SignInPageProps = {
   searchParams: Promise<{
     error?: string;
+    message?: string;
     next?: string;
   }>;
 };
@@ -15,11 +16,18 @@ type SignInPageProps = {
 const errorMessages: Record<string, string> = {
   missing: "أدخل البريد الإلكتروني وكلمة المرور.",
   invalid: "تعذر تسجيل الدخول. تحقق من البيانات أو إعدادات Supabase.",
+  password: "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
+  signup: "تعذر إنشاء الحساب. تحقق من إعدادات Supabase Auth.",
+};
+
+const infoMessages: Record<string, string> = {
+  "check-email": "تم إرسال رابط التأكيد إلى بريدك إذا كان تأكيد البريد مفعلا.",
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const error = params.error ? errorMessages[params.error] : null;
+  const message = params.message ? infoMessages[params.message] : null;
 
   return (
     <main className="min-h-screen bg-muted/40 px-4 py-10">
@@ -37,23 +45,27 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
               تابع محادثات WhatsApp والطلبات من مكان واحد.
             </h1>
             <p className="text-lg leading-8 text-muted-foreground">
-              بعد ربط Supabase ومزود WhatsApp ستعمل هذه الصفحة كبوابة دخول حقيقية
-              لأصحاب الأنشطة وفِرق خدمة العملاء.
+              سجل الدخول أو أنشئ حسابا جديدا لبدء إعداد نشاطك وربطه ببيانات Supabase الحقيقية.
             </p>
           </div>
         </section>
 
         <section className="rounded-lg border bg-card p-6 shadow-sm">
           <div className="mb-6 space-y-2">
-            <h2 className="text-2xl font-semibold">تسجيل الدخول</h2>
+            <h2 className="text-2xl font-semibold">الدخول إلى مُسنِد</h2>
             <p className="text-sm text-muted-foreground">
-              استخدم حساب Supabase Auth الخاص بك.
+              استخدم حسابك أو أنشئ حسابا جديدا ثم أكمل بيانات النشاط.
             </p>
           </div>
 
           {error ? (
             <div className="mb-4 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
               {error}
+            </div>
+          ) : null}
+          {message ? (
+            <div className="mb-4 rounded-md border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
+              {message}
             </div>
           ) : null}
 
@@ -69,6 +81,27 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             </div>
             <Button type="submit" className="w-full">
               دخول
+            </Button>
+          </form>
+
+          <div className="my-6 h-px bg-border" />
+
+          <form action={signUpWithEmail} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="signup-email">إنشاء حساب جديد</Label>
+              <Input id="signup-email" name="email" type="email" placeholder="owner@example.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="signup-password">كلمة المرور</Label>
+              <Input
+                id="signup-password"
+                name="password"
+                type="password"
+                placeholder="6 أحرف على الأقل"
+              />
+            </div>
+            <Button type="submit" variant="outline" className="w-full">
+              إنشاء حساب
             </Button>
           </form>
         </section>

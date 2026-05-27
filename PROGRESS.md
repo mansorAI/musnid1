@@ -28,6 +28,7 @@
 - Fixed Vercel framework settings from `Other` to `Next.js`.
 - Redeployed the project successfully.
 - Verified the production site opens and renders the Musnid landing page.
+- Added email sign-up from `/sign-in` so new users can start onboarding without manual Supabase user creation.
 
 ### Verification
 
@@ -51,6 +52,7 @@ Authentication > URL Configuration > Site URL
 ```
 
 - Confirm login and dashboard flows against the live Supabase project.
+- Add `NEXT_PUBLIC_APP_URL` in Vercel after confirming the final production URL, then redeploy so auth email redirects point to production.
 
 ## 2026-05-25
 

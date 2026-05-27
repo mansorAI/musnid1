@@ -9,6 +9,7 @@
 - Added GitHub repository deployment flow through `mansorAI/musnid1`.
 - Added Vercel deployment with Next.js framework settings.
 - Added production environment variable setup notes.
+- Added email sign-up flow to the sign-in page.
 
 ### Changed
 
