@@ -29,6 +29,8 @@
 - Redeployed the project successfully.
 - Verified the production site opens and renders the Musnid landing page.
 - Added email sign-up from `/sign-in` so new users can start onboarding without manual Supabase user creation.
+- Updated `/dashboard` to require first-organization setup in live Supabase environments.
+- Added live conversation reads from Supabase when an organization exists.
 
 ### Verification
 
@@ -53,6 +55,7 @@ Authentication > URL Configuration > Site URL
 
 - Confirm login and dashboard flows against the live Supabase project.
 - Add `NEXT_PUBLIC_APP_URL` in Vercel after confirming the final production URL, then redeploy so auth email redirects point to production.
+- Seed or ingest real customers/conversations through the upcoming WhatsApp integration.
 
 ## 2026-05-25
 

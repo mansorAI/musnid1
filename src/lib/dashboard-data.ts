@@ -122,3 +122,43 @@ export async function getAutomations() {
 export function getDemoConversations() {
   return recentConversations;
 }
+
+export async function getConversations() {
+  const organization = await getCurrentOrganization();
+
+  if (!organization) {
+    return recentConversations;
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("conversations")
+    .select("id,status,summary,last_message_at,customers(name,phone)")
+    .eq("organization_id", organization.id)
+    .order("last_message_at", { ascending: false });
+
+  return (data ?? []).map((conversation) => {
+    const customer = Array.isArray(conversation.customers)
+      ? conversation.customers[0]
+      : conversation.customers;
+
+    return {
+      id: conversation.id,
+      name: customer?.name ?? "عميل غير معروف",
+      phone: customer?.phone ?? "",
+      status:
+        conversation.status === "resolved"
+          ? "محلولة"
+          : conversation.status === "pending"
+            ? "بانتظار مراجعة"
+            : "مفتوحة",
+      summary: conversation.summary ?? "لا يوجد ملخص بعد.",
+      time: conversation.last_message_at
+        ? new Intl.DateTimeFormat("ar-SA", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(new Date(conversation.last_message_at))
+        : "",
+    };
+  });
+}

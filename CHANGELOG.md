@@ -10,11 +10,13 @@
 - Added Vercel deployment with Next.js framework settings.
 - Added production environment variable setup notes.
 - Added email sign-up flow to the sign-in page.
+- Added live Supabase conversation loading for the dashboard.
 
 ### Changed
 
 - Updated project documentation to reflect the live Supabase and Vercel deployment.
 - Clarified that GitHub Pages is not used; Vercel is the deployment target.
+- Redirected live dashboard users without an organization to the settings onboarding page.
 
 ### Security
 

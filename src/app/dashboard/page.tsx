@@ -1,11 +1,18 @@
 import { Bot, CheckCircle2, Clock3, MessageSquareText, Sparkles } from "lucide-react";
+import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { dashboardStats } from "@/lib/demo-data";
-import { getAutomations, getDemoConversations } from "@/lib/dashboard-data";
+import { hasSupabaseEnv } from "@/lib/env";
+import { getAutomations, getConversations, getCurrentOrganization } from "@/lib/dashboard-data";
 
 export default async function DashboardPage() {
+  const organization = await getCurrentOrganization();
+  if (hasSupabaseEnv() && !organization) {
+    redirect("/dashboard/settings?missing_org=1");
+  }
+
   const automations = await getAutomations();
-  const conversations = getDemoConversations();
+  const conversations = await getConversations();
 
   return (
     <div className="grid gap-6">
@@ -44,9 +51,10 @@ export default async function DashboardPage() {
               <MessageSquareText className="size-5 text-primary" />
             </CardHeader>
             <CardContent className="space-y-4">
-              {conversations.map((conversation) => (
+              {conversations.length ? (
+                conversations.map((conversation) => (
                 <article
-                  key={conversation.phone}
+                  key={"id" in conversation ? conversation.id : conversation.phone}
                   className="grid gap-3 rounded-md border p-4 md:grid-cols-[1fr_auto]"
                 >
                   <div className="space-y-1">
@@ -61,7 +69,12 @@ export default async function DashboardPage() {
                   </div>
                   <span className="text-sm text-muted-foreground">{conversation.time}</span>
                 </article>
-              ))}
+                ))
+              ) : (
+                <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                  لا توجد محادثات بعد. ستظهر المحادثات هنا بعد ربط WhatsApp واستقبال أول رسالة.
+                </div>
+              )}
             </CardContent>
           </Card>
 
