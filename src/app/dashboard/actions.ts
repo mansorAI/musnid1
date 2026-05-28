@@ -73,5 +73,5 @@ export async function createBusiness(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
-  redirect("/dashboard");
+  redirect("/dashboard?created_business=1");
 }

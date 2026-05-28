@@ -1,8 +1,109 @@
 # PROGRESS
 
+## 2026-05-29
+
+### Completed
+
+#### Phase 5 — Live Dashboard + Realtime Conversations + Smart Calendar
+
+**Real Dashboard Stats**
+- Replaced static demo stats in `/dashboard/page.tsx` with live counts from Supabase: active conversations, total customers, escalated conversations, total conversations.
+- Fallback to demo data when Supabase is not configured.
+- Added "مباشر" pulse indicator on stat cards when data is live.
+
+**`/dashboard/conversations` — Realtime**
+- New route with server component (`page.tsx`) that fetches initial conversations via SSR.
+- Client component `realtime-conversations.tsx` subscribes to `postgres_changes` on the `conversations` table (filtered by `business_id`) using the browser Supabase client.
+- On any INSERT / UPDATE / DELETE: refetches the full conversation list with customer join (`customers(name,phone)`).
+- Shows a live connection indicator (Wifi icon, green "متصل" / grey "جاري الاتصال").
+- Status badges color-coded: green (نشطة), amber (بانتظار مراجعة), grey (مغلقة).
+
+**`/dashboard/calendar` — Smart Calendar**
+- Reads `businesses.working_hours` JSONB (set during onboarding) and renders a 7-day grid showing open/close times or "مغلق" per day.
+- Fetches upcoming `calendar_overrides` (from today onwards, up to 30 records) and lists them with date, hours or "مغلق", and optional notes.
+- Client component `calendar-override-form.tsx` has a date picker, is_closed checkbox (toggles hour inputs), and notes field — submits via `addCalendarOverride` server action.
+- Delete button per override using `deleteCalendarOverride` server action + `revalidatePath`.
+
+**Data layer (`dashboard-data.ts`)**
+- Added `getDashboardStats()` — parallel Supabase counts for conversations, customers, active, escalated.
+- Added `getCalendarData()` — fetches working_hours from business + upcoming calendar_overrides.
+- Added `getMenuData()` — fetches menu_categories + menu_items.
+- Added `getStaffData()` — fetches staff_members.
+- Added `getServicesData()` — fetches services with staff_members join + active staff list.
+
+---
+
+#### Phase 6 — Menu, Staff, Services
+
+**`/dashboard/menu` — Instant Availability Toggle**
+- Server component fetches `menu_categories` + `menu_items`.
+- Client component `menu-availability.tsx` uses `useOptimistic` (React 19) for instant UI feedback.
+- Toggle switch updates `is_available` directly via browser Supabase client (RLS-protected) — no server round-trip, truly instant.
+- Items grouped by category, uncategorized items shown last.
+- Demo data shown when no real menu items exist.
+- Shown in nav only for `restaurant` and `cafe` business types.
+
+**`/dashboard/staff` — Staff Management**
+- Lists staff members with name, title, specialty, and active/inactive status badge.
+- Toggle active status via `toggleStaffActive` server action.
+- Add form via `addStaffMember` server action.
+- Demo data shown when no staff records exist.
+- Shown in nav only for `clinic` and `salon` business types.
+
+**`/dashboard/services` — Services Catalog**
+- Lists services with name, description, duration, price, and linked staff member.
+- Toggle active status via `toggleServiceActive` server action.
+- Add form with optional staff assignment dropdown (populated from active staff).
+- Shown in nav only for `clinic` and `salon` business types.
+
+**Dashboard layout nav**
+- Added "المحادثات" and "التقويم" to core nav (always visible).
+- Conditionally adds "المنيو" for restaurant/cafe, or "الفريق" + "الخدمات" for clinic/salon.
+
+### Verification
+- `npm run build` passes with all 16 routes building successfully.
+
+### Remaining
+- Enable Supabase Realtime on the `conversations` table in the Supabase dashboard (Database → Replication) for the live subscription to fire.
+- Integrate WhatsApp (Twilio) and AI bot (Claude).
+- `/dashboard/conversations/{id}` — individual chat view.
+
+---
+
 ## 2026-05-28
 
 ### Completed
+
+#### Phase 4 — Onboarding Flow
+- Added `/onboarding` as the first setup experience for authenticated users without a business.
+- Built a 4-step onboarding form:
+  - Step 1: basic business info (`name`, `type`, `city`, `description`).
+  - Step 2: contact info (`contact_phone`, `contact_email`, `whatsapp_number`).
+  - Step 3: weekly working hours saved into `businesses.working_hours` as JSONB.
+  - Step 4: bot settings saved into `businesses.bot_settings` as JSONB.
+- Added `src/app/onboarding/actions.ts` to create the final `businesses` row with a unique `slug` and current user `owner_id`.
+- Added redirect guard: users who already have a business are sent from `/onboarding` to `/dashboard`.
+- Updated login flow so users without a business are sent to `/onboarding`.
+- Updated service-role signup flow to sign the user in after account creation when possible, then redirect to `/onboarding`.
+- Updated `/dashboard/page.tsx` so live Supabase users without a business are redirected to `/onboarding` instead of `/dashboard/settings`.
+- Kept `/dashboard/settings` for post-creation management, with loading feedback on the create form.
+- Added shared pending submit button UI in `src/components/ui/submit-button.tsx`.
+- Added loading/disabled states to submit actions:
+  - Sign in
+  - Sign up
+  - Sign out
+  - Dashboard settings create business
+  - Onboarding final submit
+  - Landing contact form
+- Added success feedback after onboarding/business creation via `/dashboard?created_business=1`.
+- Fixed customer page schema mismatch from `last_seen_at` to `last_message_at`.
+- Fixed a React lint issue in `Navbar.tsx` related to setting mounted state inside an effect.
+
+#### Phase 4 Verification
+- `npm.cmd run lint` passes.
+- `npm.cmd run build` passes.
+- Local `/onboarding` route responds with HTTP 200.
+- Browser plugin preview was attempted twice but failed due to the local browser runtime (`windows sandbox failed: spawn setup refresh`), not an application build error.
 
 #### Auth Fixes
 - Fixed Supabase Auth signup error (`fetch failed`) caused by `NEXT_PUBLIC_SUPABASE_URL` having trailing whitespace/newline in Vercel.

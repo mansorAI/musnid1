@@ -69,6 +69,23 @@ export async function signInWithEmail(formData: FormData) {
     redirect(`/sign-in?error=invalid&detail=${detail}`);
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("owner_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!business) {
+      redirect("/onboarding");
+    }
+  }
+
   redirect(next.startsWith("/") ? next : "/dashboard");
 }
 
@@ -85,7 +102,7 @@ export async function signUpWithEmail(formData: FormData) {
   }
 
   if (!hasSupabaseEnv()) {
-    redirect("/dashboard/settings?demo=1");
+    redirect("/onboarding?demo=1");
   }
 
   const supabase = await createClient();
@@ -111,6 +128,11 @@ export async function signUpWithEmail(formData: FormData) {
       redirectWithAuthError(createError);
     }
 
+    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+    if (!loginError) {
+      redirect("/onboarding?created_user=1");
+    }
+
     redirect("/sign-in?message=account_created");
   }
 
@@ -118,7 +140,7 @@ export async function signUpWithEmail(formData: FormData) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: appUrl ? { emailRedirectTo: `${appUrl}/dashboard/settings` } : undefined,
+    options: appUrl ? { emailRedirectTo: `${appUrl}/onboarding` } : undefined,
   });
 
   if (error) {
@@ -138,7 +160,7 @@ export async function signUpWithEmail(formData: FormData) {
   }
 
   if (data.session) {
-    redirect("/dashboard/settings?created_user=1");
+    redirect("/onboarding?created_user=1");
   }
 
   redirect("/sign-in?message=check-email");

@@ -96,6 +96,105 @@ export function getDemoConversations() {
   return recentConversations;
 }
 
+export async function getDashboardStats() {
+  const business = await getCurrentBusiness();
+  if (!business) return null;
+
+  const supabase = await createClient();
+
+  const [totalConv, totalCust, activeConv, escalatedConv] = await Promise.all([
+    supabase.from("conversations").select("*", { count: "exact", head: true }).eq("business_id", business.id),
+    supabase.from("customers").select("*", { count: "exact", head: true }).eq("business_id", business.id),
+    supabase.from("conversations").select("*", { count: "exact", head: true }).eq("business_id", business.id).eq("status", "active"),
+    supabase.from("conversations").select("*", { count: "exact", head: true }).eq("business_id", business.id).eq("status", "escalated"),
+  ]);
+
+  return {
+    totalConversations: totalConv.count ?? 0,
+    totalCustomers: totalCust.count ?? 0,
+    activeConversations: activeConv.count ?? 0,
+    escalatedConversations: escalatedConv.count ?? 0,
+  };
+}
+
+export async function getCalendarData() {
+  const business = await getCurrentBusiness();
+  if (!business) return { workingHours: null, overrides: [], businessId: null };
+
+  const supabase = await createClient();
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data } = await supabase
+    .from("calendar_overrides")
+    .select("*")
+    .eq("business_id", business.id)
+    .gte("date", today)
+    .order("date", { ascending: true })
+    .limit(30);
+
+  return {
+    workingHours: business.working_hours as Record<string, { open: string; close: string; closed: boolean }> | null,
+    overrides: data ?? [],
+    businessId: business.id,
+  };
+}
+
+export async function getMenuData() {
+  const business = await getCurrentBusiness();
+  if (!business) return { categories: [], items: [], businessId: null };
+
+  const supabase = await createClient();
+  const [catResult, itemsResult] = await Promise.all([
+    supabase.from("menu_categories").select("*").eq("business_id", business.id).order("display_order"),
+    supabase.from("menu_items").select("*").eq("business_id", business.id).order("display_order"),
+  ]);
+
+  return {
+    categories: catResult.data ?? [],
+    items: itemsResult.data ?? [],
+    businessId: business.id,
+  };
+}
+
+export async function getStaffData() {
+  const business = await getCurrentBusiness();
+  if (!business) return { staff: [], businessId: null };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("staff_members")
+    .select("*")
+    .eq("business_id", business.id)
+    .order("display_order");
+
+  return { staff: data ?? [], businessId: business.id };
+}
+
+export async function getServicesData() {
+  const business = await getCurrentBusiness();
+  if (!business) return { services: [], staff: [], businessId: null };
+
+  const supabase = await createClient();
+  const [servResult, staffResult] = await Promise.all([
+    supabase
+      .from("services")
+      .select("id,name,description,price,price_max,duration_minutes,is_active,display_order,staff_id,staff_members(name)")
+      .eq("business_id", business.id)
+      .order("display_order"),
+    supabase
+      .from("staff_members")
+      .select("id,name")
+      .eq("business_id", business.id)
+      .eq("is_active", true),
+  ]);
+
+  return {
+    services: servResult.data ?? [],
+    staff: staffResult.data ?? [],
+    businessId: business.id,
+  };
+}
+
 export async function getConversations() {
   const business = await getCurrentBusiness();
 

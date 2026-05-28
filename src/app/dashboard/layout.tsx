@@ -1,18 +1,39 @@
 import Link from "next/link";
-import { Bot, BookOpenText, LayoutDashboard, MessageCircle, Settings, Users } from "lucide-react";
+import {
+  Bot, BookOpenText, CalendarDays, LayoutDashboard, MessageCircle,
+  MessageSquareText, Settings, UserCheck, UtensilsCrossed, Users, Wrench,
+} from "lucide-react";
 import { signOut } from "@/app/sign-in/actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { getCurrentBusiness } from "@/lib/dashboard-data";
 
-const navItems = [
+const coreNavItems = [
   { href: "/dashboard", label: "الرئيسية", icon: LayoutDashboard },
+  { href: "/dashboard/conversations", label: "المحادثات", icon: MessageSquareText },
   { href: "/dashboard/customers", label: "العملاء", icon: Users },
+  { href: "/dashboard/calendar", label: "التقويم", icon: CalendarDays },
   { href: "/dashboard/knowledge", label: "المعرفة", icon: BookOpenText },
   { href: "/dashboard/automations", label: "الأتمتة", icon: Bot },
   { href: "/dashboard/settings", label: "الإعداد", icon: Settings },
 ];
 
+const menuNavItem = { href: "/dashboard/menu", label: "المنيو", icon: UtensilsCrossed };
+const staffNavItems = [
+  { href: "/dashboard/staff", label: "الفريق", icon: UserCheck },
+  { href: "/dashboard/services", label: "الخدمات", icon: Wrench },
+];
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const business = await getCurrentBusiness();
+
+  const extraNav =
+    business?.type === "restaurant" || business?.type === "cafe"
+      ? [menuNavItem]
+      : business?.type === "clinic" || business?.type === "salon"
+        ? staffNavItems
+        : [];
+
+  const navItems = [...coreNavItems.slice(0, 5), ...extraNav, ...coreNavItems.slice(5)];
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
@@ -35,9 +56,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </p>
             </div>
             <form action={signOut}>
-              <button type="submit" className="px-4 py-2 rounded-xl text-sm font-medium border border-surface-700 text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
+              <SubmitButton pendingText="جاري الخروج..." className="px-4 py-2 rounded-xl text-sm font-medium border border-surface-700 text-surface-300 hover:bg-surface-800 hover:text-white transition-colors">
                 خروج
-              </button>
+              </SubmitButton>
             </form>
           </div>
         </div>

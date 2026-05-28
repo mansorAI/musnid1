@@ -2,34 +2,62 @@ import { Bot, CheckCircle2, Clock3, MessageSquareText, Sparkles } from "lucide-r
 import { redirect } from "next/navigation";
 import { dashboardStats } from "@/lib/demo-data";
 import { hasSupabaseEnv } from "@/lib/env";
-import { getAutomations, getConversations, getCurrentBusiness } from "@/lib/dashboard-data";
+import { getAutomations, getConversations, getCurrentBusiness, getDashboardStats } from "@/lib/dashboard-data";
 
-export default async function DashboardPage() {
+type DashboardPageProps = {
+  searchParams?: Promise<{
+    created_business?: string;
+  }>;
+};
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const business = await getCurrentBusiness();
   if (hasSupabaseEnv() && !business) {
-    redirect("/dashboard/settings?missing_org=1");
+    redirect("/onboarding");
   }
 
-  const automations = await getAutomations();
-  const conversations = await getConversations();
+  const params = await searchParams;
+  const [automations, conversations, liveStats] = await Promise.all([
+    getAutomations(),
+    getConversations(),
+    getDashboardStats(),
+  ]);
+
+  const stats = liveStats
+    ? [
+        { label: "المحادثات النشطة", value: String(liveStats.activeConversations), live: true },
+        { label: "إجمالي العملاء", value: String(liveStats.totalCustomers), live: true },
+        { label: "بانتظار مراجعة", value: String(liveStats.escalatedConversations), live: true },
+        { label: "إجمالي المحادثات", value: String(liveStats.totalConversations), live: true },
+      ]
+    : dashboardStats.map((s) => ({ label: s.label, value: s.value, live: false }));
 
   return (
     <div className="grid gap-6">
+      {params?.created_business ? (
+        <div className="rounded-xl border border-accent-200 bg-accent-50 px-4 py-3 text-sm font-medium text-accent-700 dark:border-accent-800/50 dark:bg-accent-900/20 dark:text-accent-300">
+          تم إنشاء النشاط بنجاح. يمكنك الآن إدارة بياناتك وربط WhatsApp من الإعدادات.
+        </div>
+      ) : null}
+
       <section>
         <p className="text-sm text-surface-500 dark:text-surface-400">لوحة تحكم مسند</p>
         <h1 className="text-2xl font-extrabold text-surface-900 dark:text-white">نظرة تشغيلية مباشرة</h1>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {dashboardStats.map((stat) => (
+        {stats.map((stat) => (
           <div key={stat.label} className="glass-card p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-            <p className="text-sm font-medium text-surface-500 dark:text-surface-400">{stat.label}</p>
-            <div className="flex items-end justify-between mt-3">
-              <span className="text-3xl font-extrabold text-surface-900 dark:text-white">{stat.value}</span>
-              <span className="rounded-lg bg-accent-100 dark:bg-accent-900/30 px-2 py-1 text-sm font-medium text-accent-600 dark:text-accent-400">
-                {stat.delta}
-              </span>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm font-medium text-surface-500 dark:text-surface-400">{stat.label}</p>
+              {stat.live && (
+                <span className="flex items-center gap-1 text-xs text-accent-500 dark:text-accent-400">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse" />
+                  مباشر
+                </span>
+              )}
             </div>
+            <p className="text-3xl font-extrabold text-surface-900 dark:text-white mt-2">{stat.value}</p>
           </div>
         ))}
       </section>

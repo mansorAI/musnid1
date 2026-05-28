@@ -43,7 +43,7 @@ export default async function CustomersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-surface-500 dark:text-surface-400">
-                    {customer.last_seen_at ? "اليوم" : "غير متاح"}
+                    {customer.last_message_at ? "اليوم" : "غير متاح"}
                   </td>
                 </tr>
               ))}

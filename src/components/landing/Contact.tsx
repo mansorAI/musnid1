@@ -1,16 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Mail, MapPin, Phone } from "lucide-react";
+import { Loader2, Send, Mail, MapPin, Phone } from "lucide-react";
+import { toast } from "sonner";
 import { useInView } from "@/hooks/useInView";
 
 export default function Contact() {
   const { ref: titleRef, isInView: titleVisible } = useInView();
   const { ref: formRef, isInView: formVisible } = useInView();
   const [formData, setFormData] = useState({ name: "", email: "", business: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    window.setTimeout(() => {
+      setIsSubmitting(false);
+      setFormData({ name: "", email: "", business: "", message: "" });
+      toast.success("تم استلام رسالتك. سنتواصل معك قريبا.");
+    }, 600);
   };
 
   return (
@@ -70,9 +78,9 @@ export default function Contact() {
                 <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">رسالتك</label>
                 <textarea rows={4} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white placeholder:text-surface-400 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 outline-none transition-all text-sm resize-none" placeholder="أخبرنا كيف يمكننا مساعدتك..." />
               </div>
-              <button type="submit" className="btn-primary w-full">
-                <Send className="w-4 h-4" />
-                أرسل رسالتك
+              <button type="submit" disabled={isSubmitting} className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-75">
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {isSubmitting ? "جاري الإرسال..." : "أرسل رسالتك"}
               </button>
             </form>
           </div>

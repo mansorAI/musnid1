@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessageSquare, Sparkles } from "lucide-react";
 import { signInWithEmail, signUpWithEmail } from "./actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type SignInPageProps = {
   searchParams: Promise<{
@@ -120,7 +121,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
               <label htmlFor="password" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">كلمة المرور</label>
               <input id="password" name="password" type="password" placeholder="••••••••" className={inputClass} />
             </div>
-            <button type="submit" className="btn-primary w-full mt-2">دخول</button>
+            <SubmitButton pendingText="جاري تسجيل الدخول..." className="btn-primary w-full mt-2">
+              دخول
+            </SubmitButton>
           </form>
 
           <div className="my-6 flex items-center gap-4">
@@ -138,7 +141,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
               <label htmlFor="signup-password" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">كلمة المرور</label>
               <input id="signup-password" name="password" type="password" placeholder="6 أحرف على الأقل" className={inputClass} />
             </div>
-            <button type="submit" className="btn-secondary w-full mt-2">إنشاء حساب</button>
+            <SubmitButton pendingText="جاري إنشاء الحساب..." className="btn-secondary w-full mt-2">
+              إنشاء حساب
+            </SubmitButton>
           </form>
         </section>
       </div>

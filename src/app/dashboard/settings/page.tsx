@@ -2,6 +2,7 @@ import { Settings } from "lucide-react";
 import { createBusiness } from "@/app/dashboard/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SubmitButton } from "@/components/ui/submit-button";
 import {
   Select,
   SelectContent,
@@ -18,7 +19,14 @@ const businessTypes = Object.entries(businessTypeLabels) as [BusinessType, strin
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white placeholder:text-surface-400 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 outline-none transition-all text-sm";
 
-export default async function SettingsPage() {
+type SettingsPageProps = {
+  searchParams?: Promise<{
+    error?: string;
+  }>;
+};
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+  const params = await searchParams;
   const business = await getCurrentBusiness();
 
   return (
@@ -57,7 +65,7 @@ export default async function SettingsPage() {
             </div>
           ) : (
             <div className="rounded-xl border border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20 p-4 text-sm leading-7 text-amber-700 dark:text-amber-300">
-              لا يوجد نشاط حقيقي مربوط في هذه البيئة. املأ النموذج بعد إعداد Supabase وتسجيل الدخول لإنشاء أول منظمة.
+              لا يوجد نشاط حقيقي مربوط في هذه البيئة. تجربة الإعداد الأولى أصبحت في صفحة onboarding، ويمكنك استخدام هذا النموذج لإدارة النشاط لاحقا.
             </div>
           )}
         </div>
@@ -68,6 +76,11 @@ export default async function SettingsPage() {
           <h2 className="text-lg font-bold text-surface-900 dark:text-white">إنشاء النشاط</h2>
         </div>
         <div className="p-6">
+          {params?.error ? (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-7 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+              تعذر حفظ النشاط. تأكد من تسجيل الدخول وتطبيق قاعدة البيانات الجديدة.
+            </div>
+          ) : null}
           <form action={createBusiness} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="name" className="text-surface-700 dark:text-surface-300">اسم النشاط</Label>
@@ -94,7 +107,9 @@ export default async function SettingsPage() {
               <Label htmlFor="whatsapp_number" className="text-surface-700 dark:text-surface-300">رقم WhatsApp</Label>
               <Input id="whatsapp_number" name="whatsapp_number" dir="ltr" placeholder="+9665..." className={inputClass} />
             </div>
-            <button type="submit" className="btn-primary w-full mt-2">حفظ النشاط</button>
+            <SubmitButton pendingText="جاري الحفظ..." className="btn-primary w-full mt-2">
+              حفظ النشاط
+            </SubmitButton>
           </form>
         </div>
       </div>
