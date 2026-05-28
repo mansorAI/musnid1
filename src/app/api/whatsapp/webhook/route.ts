@@ -180,6 +180,7 @@ export async function POST(req: NextRequest) {
 1. اسأل عن التخصص واعرض التخصصات المتاحة من قائمة الأطباء أدناه
 2. بعد اختيار التخصص، اعرض الأطباء المتاحين في هذا التخصص
 3. اعرض الأوقات المتاحة: خذ ساعات عمل الطبيب واطرح منها المواعيد المحجوزة المذكورة أدناه (كل موعد يأخذ 30 دقيقة)
+   - كل موعد يأخذ 30 دقيقة كاملة، الأوقات المتاحة تبدأ كل 30 دقيقة فقط: 9:00، 9:30، 10:00...
    - مثال: لو الطبيب يعمل 9:00-14:00 والساعة 9:00 محجوزة، اعرض: 9:30، 10:00، 10:30...
    - لا تعرض أبداً وقتاً مذكوراً في قائمة المحجوزة
 4. بعد موافقة العميل، أكد الحجز وأضف في آخر ردك هذا النص بالضبط:
@@ -246,11 +247,16 @@ ${bookedLines}`;
   if (bookingData) {
     const scheduledAt = new Date(`${bookingData.date}T${bookingData.time}:00`).toISOString();
 
+    const slotStart = new Date(scheduledAt);
+    const windowStart = new Date(slotStart.getTime() - 29 * 60 * 1000).toISOString();
+    const windowEnd   = new Date(slotStart.getTime() + 29 * 60 * 1000).toISOString();
+
     const { data: conflictAppt } = await supabase
       .from("appointments")
       .select("id")
       .eq("staff_id", bookingData.staffId)
-      .eq("scheduled_at", scheduledAt)
+      .gte("scheduled_at", windowStart)
+      .lte("scheduled_at", windowEnd)
       .in("status", ["pending", "confirmed"])
       .maybeSingle();
 
