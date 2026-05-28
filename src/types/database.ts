@@ -9,17 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      organizations: {
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          full_name: string | null;
+          phone: string | null;
+          avatar_url: string | null;
+          preferred_language: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          full_name?: string | null;
+          phone?: string | null;
+          avatar_url?: string | null;
+          preferred_language?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
+        Relationships: [];
+      };
+      businesses: {
         Row: {
           id: string;
           owner_id: string;
           name: string;
-          business_type: Database["public"]["Enums"]["business_type"];
-          whatsapp_number: string | null;
+          slug: string;
+          type: Database["public"]["Enums"]["business_type"];
+          description: string | null;
           city: string | null;
+          address: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          contact_phone: string | null;
+          contact_email: string | null;
+          working_hours: Json;
+          bot_settings: Json;
+          whatsapp_number: string | null;
+          twilio_sender_id: string | null;
+          twilio_subaccount_sid: string | null;
+          whatsapp_status: string | null;
           subscription_tier: Database["public"]["Enums"]["subscription_tier"];
           subscription_status: Database["public"]["Enums"]["subscription_status"];
           trial_ends_at: string | null;
+          subscription_started_at: string | null;
+          subscription_ends_at: string | null;
+          current_period_messages: number;
+          current_period_start: string;
           created_at: string;
           updated_at: string;
         };
@@ -27,44 +67,333 @@ export type Database = {
           id?: string;
           owner_id: string;
           name: string;
-          business_type?: Database["public"]["Enums"]["business_type"];
-          whatsapp_number?: string | null;
+          slug: string;
+          type: Database["public"]["Enums"]["business_type"];
+          description?: string | null;
           city?: string | null;
+          address?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          contact_phone?: string | null;
+          contact_email?: string | null;
+          working_hours?: Json;
+          bot_settings?: Json;
+          whatsapp_number?: string | null;
+          twilio_sender_id?: string | null;
+          twilio_subaccount_sid?: string | null;
+          whatsapp_status?: string | null;
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"];
           subscription_status?: Database["public"]["Enums"]["subscription_status"];
           trial_ends_at?: string | null;
+          subscription_started_at?: string | null;
+          subscription_ends_at?: string | null;
+          current_period_messages?: number;
+          current_period_start?: string;
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["organizations"]["Insert"]>;
-        Relationships: [];
+        Update: Partial<Database["public"]["Tables"]["businesses"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "businesses_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
-      customers: {
+      menu_categories: {
         Row: {
           id: string;
-          organization_id: string;
+          business_id: string;
           name: string;
-          phone: string;
-          tags: string[];
-          last_seen_at: string | null;
+          display_order: number;
           created_at: string;
         };
         Insert: {
           id?: string;
-          organization_id: string;
+          business_id: string;
           name: string;
-          phone: string;
-          tags?: string[];
-          last_seen_at?: string | null;
+          display_order?: number;
           created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["menu_categories"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      menu_items: {
+        Row: {
+          id: string;
+          business_id: string;
+          category_id: string | null;
+          name: string;
+          description: string | null;
+          price: number;
+          image_url: string | null;
+          is_available: boolean;
+          display_order: number;
+          preparation_time_minutes: number | null;
+          calories: number | null;
+          is_spicy: boolean;
+          is_vegetarian: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          category_id?: string | null;
+          name: string;
+          description?: string | null;
+          price: number;
+          image_url?: string | null;
+          is_available?: boolean;
+          display_order?: number;
+          preparation_time_minutes?: number | null;
+          calories?: number | null;
+          is_spicy?: boolean;
+          is_vegetarian?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["menu_items"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "menu_items_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "menu_categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      staff_members: {
+        Row: {
+          id: string;
+          business_id: string;
+          name: string;
+          title: string | null;
+          specialty: string | null;
+          bio: string | null;
+          photo_url: string | null;
+          working_hours: Json | null;
+          is_active: boolean;
+          display_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          name: string;
+          title?: string | null;
+          specialty?: string | null;
+          bio?: string | null;
+          photo_url?: string | null;
+          working_hours?: Json | null;
+          is_active?: boolean;
+          display_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["staff_members"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      services: {
+        Row: {
+          id: string;
+          business_id: string;
+          staff_id: string | null;
+          name: string;
+          description: string | null;
+          price: number | null;
+          price_max: number | null;
+          duration_minutes: number;
+          is_active: boolean;
+          display_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          staff_id?: string | null;
+          name: string;
+          description?: string | null;
+          price?: number | null;
+          price_max?: number | null;
+          duration_minutes?: number;
+          is_active?: boolean;
+          display_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["services"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "services_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "services_staff_id_fkey";
+            columns: ["staff_id"];
+            isOneToOne: false;
+            referencedRelation: "staff_members";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      calendar_overrides: {
+        Row: {
+          id: string;
+          business_id: string;
+          date: string;
+          is_closed: boolean;
+          open_time: string | null;
+          close_time: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          date: string;
+          is_closed?: boolean;
+          open_time?: string | null;
+          close_time?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["calendar_overrides"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "calendar_overrides_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      customers: {
+        Row: {
+          id: string;
+          business_id: string;
+          phone: string;
+          name: string | null;
+          first_seen_at: string;
+          last_message_at: string | null;
+          total_messages: number;
+          preferences: Json;
+          tags: string[];
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          phone: string;
+          name?: string | null;
+          first_seen_at?: string;
+          last_message_at?: string | null;
+          total_messages?: number;
+          preferences?: Json;
+          tags?: string[];
         };
         Update: Partial<Database["public"]["Tables"]["customers"]["Insert"]>;
         Relationships: [
           {
-            foreignKeyName: "customers_organization_id_fkey";
-            columns: ["organization_id"];
+            foreignKeyName: "customers_business_id_fkey";
+            columns: ["business_id"];
             isOneToOne: false;
-            referencedRelation: "organizations";
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      appointments: {
+        Row: {
+          id: string;
+          business_id: string;
+          customer_id: string | null;
+          service_id: string | null;
+          staff_id: string | null;
+          scheduled_at: string;
+          duration_minutes: number;
+          status: string;
+          notes: string | null;
+          customer_name: string | null;
+          customer_phone: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          customer_id?: string | null;
+          service_id?: string | null;
+          staff_id?: string | null;
+          scheduled_at: string;
+          duration_minutes?: number;
+          status?: string;
+          notes?: string | null;
+          customer_name?: string | null;
+          customer_phone?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["appointments"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "appointments_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "appointments_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "appointments_service_id_fkey";
+            columns: ["service_id"];
+            isOneToOne: false;
+            referencedRelation: "services";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "appointments_staff_id_fkey";
+            columns: ["staff_id"];
+            isOneToOne: false;
+            referencedRelation: "staff_members";
             referencedColumns: ["id"];
           },
         ];
@@ -72,38 +401,42 @@ export type Database = {
       conversations: {
         Row: {
           id: string;
-          organization_id: string;
+          business_id: string;
           customer_id: string;
-          channel: Database["public"]["Enums"]["channel"];
-          status: Database["public"]["Enums"]["conversation_status"];
-          summary: string | null;
+          status: string;
+          window_expires_at: string | null;
+          started_at: string;
           last_message_at: string;
-          created_at: string;
+          closed_at: string | null;
+          summary: string | null;
+          metadata: Json;
         };
         Insert: {
           id?: string;
-          organization_id: string;
+          business_id: string;
           customer_id: string;
-          channel?: Database["public"]["Enums"]["channel"];
-          status?: Database["public"]["Enums"]["conversation_status"];
-          summary?: string | null;
+          status?: string;
+          window_expires_at?: string | null;
+          started_at?: string;
           last_message_at?: string;
-          created_at?: string;
+          closed_at?: string | null;
+          summary?: string | null;
+          metadata?: Json;
         };
         Update: Partial<Database["public"]["Tables"]["conversations"]["Insert"]>;
         Relationships: [
+          {
+            foreignKeyName: "conversations_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "conversations_customer_id_fkey";
             columns: ["customer_id"];
             isOneToOne: false;
             referencedRelation: "customers";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "conversations_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
         ];
@@ -112,17 +445,23 @@ export type Database = {
         Row: {
           id: string;
           conversation_id: string;
-          direction: "inbound" | "outbound";
-          body: string;
-          ai_generated: boolean;
+          direction: string;
+          content_type: string;
+          content: Json;
+          twilio_message_sid: string | null;
+          ai_metadata: Json | null;
+          status: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           conversation_id: string;
-          direction: "inbound" | "outbound";
-          body: string;
-          ai_generated?: boolean;
+          direction: string;
+          content_type?: string;
+          content: Json;
+          twilio_message_sid?: string | null;
+          ai_metadata?: Json | null;
+          status?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["messages"]["Insert"]>;
@@ -136,69 +475,101 @@ export type Database = {
           },
         ];
       };
-      knowledge_articles: {
+      consents: {
         Row: {
           id: string;
-          organization_id: string;
-          title: string;
+          business_id: string;
+          customer_phone: string;
+          consent_type: Database["public"]["Enums"]["consent_type"];
+          status: Database["public"]["Enums"]["consent_status"];
+          consent_text: string | null;
+          consent_method: string | null;
+          source_message_id: string | null;
+          opted_in_at: string | null;
+          opted_out_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          customer_phone: string;
+          consent_type: Database["public"]["Enums"]["consent_type"];
+          status?: Database["public"]["Enums"]["consent_status"];
+          consent_text?: string | null;
+          consent_method?: string | null;
+          source_message_id?: string | null;
+          opted_in_at?: string | null;
+          opted_out_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["consents"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "consents_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "consents_source_message_id_fkey";
+            columns: ["source_message_id"];
+            isOneToOne: false;
+            referencedRelation: "messages";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      message_templates: {
+        Row: {
+          id: string;
+          business_id: string;
+          name: string;
+          display_name: string | null;
+          category: Database["public"]["Enums"]["template_category"];
+          language: string | null;
           content: string;
-          enabled: boolean;
+          variables: Json;
+          status: Database["public"]["Enums"]["template_status"];
+          twilio_template_sid: string | null;
+          rejection_reason: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          organization_id: string;
-          title: string;
+          business_id: string;
+          name: string;
+          display_name?: string | null;
+          category: Database["public"]["Enums"]["template_category"];
+          language?: string | null;
           content: string;
-          enabled?: boolean;
+          variables?: Json;
+          status?: Database["public"]["Enums"]["template_status"];
+          twilio_template_sid?: string | null;
+          rejection_reason?: string | null;
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["knowledge_articles"]["Insert"]>;
+        Update: Partial<Database["public"]["Tables"]["message_templates"]["Insert"]>;
         Relationships: [
           {
-            foreignKeyName: "knowledge_articles_organization_id_fkey";
-            columns: ["organization_id"];
+            foreignKeyName: "message_templates_business_id_fkey";
+            columns: ["business_id"];
             isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      automations: {
-        Row: {
-          id: string;
-          organization_id: string;
-          name: string;
-          trigger: string;
-          response: string;
-          enabled: boolean;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          organization_id: string;
-          name: string;
-          trigger: string;
-          response: string;
-          enabled?: boolean;
-          created_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["automations"]["Insert"]>;
-        Relationships: [
-          {
-            foreignKeyName: "automations_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
+            referencedRelation: "businesses";
             referencedColumns: ["id"];
           },
         ];
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      user_owns_business: {
+        Args: { business_uuid: string };
+        Returns: boolean;
+      };
+    };
     Enums: {
       business_type:
         | "restaurant"
@@ -211,8 +582,10 @@ export type Database = {
         | "other";
       subscription_tier: "starter" | "growth" | "business";
       subscription_status: "trial" | "active" | "suspended" | "cancelled";
-      conversation_status: "open" | "pending" | "resolved";
-      channel: "whatsapp" | "web";
+      consent_type: "reminders" | "marketing" | "arar_offers";
+      consent_status: "opted_in" | "opted_out" | "pending";
+      template_category: "utility" | "marketing" | "authentication";
+      template_status: "draft" | "pending" | "approved" | "rejected" | "paused";
     };
     CompositeTypes: Record<string, never>;
   };

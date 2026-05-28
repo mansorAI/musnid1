@@ -4,42 +4,80 @@
 
 ### Completed
 
-- Fixed Supabase Auth signup error (`fetch failed`) caused by missing/incorrect `NEXT_PUBLIC_SUPABASE_URL` value in Vercel (had trailing whitespace/newline).
-- Corrected all Vercel environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_APP_URL`, etc.) to remove whitespace.
+#### Auth Fixes
+- Fixed Supabase Auth signup error (`fetch failed`) caused by `NEXT_PUBLIC_SUPABASE_URL` having trailing whitespace/newline in Vercel.
+- Corrected all Vercel environment variables to remove whitespace (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_APP_URL`, etc.).
 - Configured Supabase Auth URL Configuration:
   - Site URL → `https://musnid1.vercel.app`
   - Redirect URLs → `https://musnid1.vercel.app/**`
 - Improved Supabase Auth error detection in `src/app/sign-in/actions.ts`:
-  - Added Supabase-specific error codes (`user_already_exists`, `signup_disabled`, `email_provider_disabled`, etc.).
-  - Added detection for redirect URL rejection errors.
-- Improved error messages in `src/app/sign-in/page.tsx` to be more actionable.
-- Changed post-signup flow: after admin creates a user, redirect to `/sign-in?message=account_created` with a success message instead of auto-login, so the user gets clear confirmation before signing in.
-- Removed erroneously created `src/middleware.ts` (Next.js 16 uses `src/proxy.ts` for session middleware).
-- Applied new landing page design from bolt.new across the entire site:
-  - Added Tajawal font as primary Arabic font (alongside IBM Plex Sans Arabic).
-  - Added full color scale system to `globals.css`: `primary-*` (blue), `accent-*` (green), `surface-*` (gray).
-  - Added animation utilities: `animate-fade-in`, `animate-fade-in-up`, `animate-float`, delay classes.
-  - Added component utilities: `.glass`, `.glass-card`, `.gradient-text`, `.gradient-bg`, `.btn-primary`, `.btn-secondary`, etc.
-  - Created `src/hooks/useInView.ts` for scroll-triggered animations.
-  - Created 10 landing page components in `src/components/landing/`: Navbar, Hero, Features, HowItWorks, Benefits, Testimonials, FAQ, Pricing, Contact, Footer.
-  - Replaced `src/app/page.tsx` with the new full landing page.
-  - Redesigned `src/app/sign-in/page.tsx` with gradient background, glass card, and new color system.
-  - Redesigned `src/app/dashboard/layout.tsx` with dark header and gradient branding.
-  - Redesigned all dashboard pages (main, customers, knowledge, automations, settings) with `glass-card` style and `surface-*` colors.
-- Redeployed to Vercel successfully after each set of changes.
+  - Added Supabase-specific error codes (`user_already_exists`, `signup_disabled`, `email_provider_disabled`, `over_email_send_rate_limit`).
+  - Added detection for redirect URL rejection errors (`redirect_url` error key).
+- Improved error messages in `src/app/sign-in/page.tsx` to include actionable guidance per error type.
+- Changed post-signup flow: admin creates user then redirects to `/sign-in?message=account_created` instead of auto-login, giving the user clear confirmation.
+- Removed erroneously created `src/middleware.ts` (Next.js 16 uses `src/proxy.ts` for session middleware — `middleware.ts` conflicted with it).
+
+#### New Design System (from bolt.new)
+- Added Tajawal font as primary Arabic font (alongside IBM Plex Sans Arabic) in `globals.css`.
+- Added full color scale system: `primary-*` (blue 50–950), `accent-*` (green 50–950), `surface-*` (gray 50–950).
+- Added animation utilities: `animate-fade-in`, `animate-fade-in-up`, `animate-float`, `delay-100` through `delay-600`.
+- Added component utilities: `.glass`, `.glass-card`, `.gradient-text`, `.gradient-bg`, `.gradient-bg-subtle`, `.btn-primary`, `.btn-secondary`, `.section-padding`, `.container-max`, `.section-title`, `.section-subtitle`.
+- Created `src/hooks/useInView.ts` — IntersectionObserver hook for scroll-triggered animations.
+- Created 10 landing page components in `src/components/landing/`:
+  - `Navbar.tsx` — fixed nav with dark mode toggle (uses `next-themes`), mobile menu.
+  - `Hero.tsx` — hero section with animated dashboard mockup.
+  - `Features.tsx` — 8 feature cards with scroll animations.
+  - `HowItWorks.tsx` — 4-step process with connecting line.
+  - `Benefits.tsx` — stats grid + benefit cards.
+  - `Testimonials.tsx` — 3 testimonial cards.
+  - `FAQ.tsx` — accordion FAQ component.
+  - `Pricing.tsx` — 3 pricing cards with highlighted middle tier.
+  - `Contact.tsx` — contact form + info cards.
+  - `Footer.tsx` — full footer with links and CTA.
+- Replaced `src/app/page.tsx` with new full landing page using all 10 components.
+- Redesigned `src/app/sign-in/page.tsx`: gradient background, glass card form, stats, two-column layout on desktop.
+- Redesigned `src/app/dashboard/layout.tsx`: dark `surface-900` header with gradient logo, updated nav links.
+- Redesigned all dashboard pages with `glass-card` style and `surface-*` colors:
+  - `dashboard/page.tsx` — stats cards, conversations, bot status, automations.
+  - `dashboard/customers/page.tsx` — custom table with tag badges.
+  - `dashboard/knowledge/page.tsx` — articles list + add form.
+  - `dashboard/automations/page.tsx` — rules list + add form.
+  - `dashboard/settings/page.tsx` — org display + create form.
+
+#### Database Schema (Full Rebuild)
+- Created `supabase/migrations/20260528001_musnid_schema.sql` — complete schema replacing old incorrect tables.
+- Migration drops old tables in safe order: `automations → knowledge_articles → messages → conversations → customers → organizations`, plus old enum types and functions.
+- Migration creates the correct مُسنِد schema (Migrations 1–9 from build prompt):
+  - **Migration 1**: `profiles` (linked to `auth.users`), `businesses` (multi-tenant core with slug, WhatsApp, subscription, bot settings).
+  - **Migration 2**: `menu_categories`, `menu_items` (restaurant/café menus with availability toggle).
+  - **Migration 3**: `staff_members`, `services` (clinic/salon staff and service catalog).
+  - **Migration 4**: `calendar_overrides`, `appointments` (smart calendar + appointment booking).
+  - **Migration 5**: `customers`, `conversations`, `messages` (WhatsApp conversation engine with 24h window tracking).
+  - **Migration 6**: `consents` (PDPL-compliant opt-in/opt-out per consent type).
+  - **Migration 7**: `message_templates` (Twilio-approved template management).
+  - **Migration 8**: Full RLS on all 13 tables via `user_owns_business()` helper function.
+  - **Migration 9**: `update_updated_at` trigger on all mutable tables + `handle_new_user` trigger to auto-create `profiles` on signup.
+- Fixed FK ordering issue from build prompt: `customers` created before `appointments` (which references it).
+- Updated `src/types/database.ts` to reflect new schema — all 13 tables with full `Row`, `Insert`, `Update`, `Relationships` types + 7 enums.
 
 ### Verification
 
-- Account creation confirmed working on `https://musnid1.vercel.app/sign-in`.
+- Account creation flow confirmed working on `https://musnid1.vercel.app/sign-in`.
 - Success message "تم إنشاء حسابك بنجاح!" displayed after signup.
-- New design live on Vercel across all pages.
+- New design deployed to Vercel across all pages (landing, sign-in, dashboard).
+- Migration file ready — pending manual execution in Supabase SQL Editor.
 
 ### Remaining
 
-- Test sign-in flow end-to-end on production after latest deployment.
-- Verify dashboard loads correctly with a logged-in Supabase session.
-- Seed or create first organization via `/dashboard/settings`.
-- Integrate WhatsApp provider, AI response layer, and payment provider.
+- Execute `20260528001_musnid_schema.sql` in Supabase SQL Editor.
+- Regenerate `src/types/database.ts` from live Supabase schema after migration:
+  ```bash
+  npx supabase gen types typescript --project-id zkhkfxtuycixymesrkzt > src/types/database.ts
+  ```
+- Update `src/lib/dashboard-data.ts` and `src/app/dashboard/` to query `businesses` instead of `organizations`.
+- Update `src/app/sign-in/actions.ts` signup flow to create a `businesses` record (new schema) instead of `organizations`.
+- Test full sign-up → onboarding → dashboard flow on production.
+- Integrate WhatsApp (Twilio), AI bot (Claude), and payments (Moyasar).
 
 ---
 
