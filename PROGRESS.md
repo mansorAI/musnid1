@@ -70,10 +70,43 @@
   - `/dashboard/conversations` shows green "متصل" Realtime indicator — live subscription confirmed active.
   - Nav dynamically shows/hides المنيو / الفريق / الخدمات based on business type.
 
+---
+
+#### Phase 7 — WhatsApp + AI Bot (Claude)
+
+**Twilio WhatsApp Sandbox**
+- Created Twilio account and activated WhatsApp Sandbox (`+14155238886`).
+- Connected personal WhatsApp number to sandbox via `join team-swing`.
+- Added Twilio env vars to Vercel: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`.
+- Added `ANTHROPIC_API_KEY` to Vercel for Claude AI integration.
+- Configured Sandbox webhook URL: `https://musnid1.vercel.app/api/whatsapp/webhook` (POST).
+
+**Webhook `POST /api/whatsapp/webhook`**
+- Installed `twilio` and `@anthropic-ai/sdk` packages.
+- Built `src/app/api/whatsapp/webhook/route.ts` — full end-to-end pipeline:
+  1. Parses Twilio URL-encoded form body (From, To, Body, MessageSid, ProfileName).
+  2. Finds business by `whatsapp_number` in `businesses` table via service-role Supabase client.
+  3. Finds or creates `customers` row (by phone), updates `last_message_at` and `total_messages`.
+  4. Finds active `conversations` row or creates new one, extends 24h window.
+  5. Saves inbound message to `messages` table.
+  6. Generates AI reply using `claude-haiku-4-5-20251001` with business-specific system prompt (name, type, city, description, personality, dialect from `bot_settings`).
+  7. Sends reply via Twilio WhatsApp API.
+  8. Saves outbound message with `ai_metadata` to `messages` table.
+  9. Updates `conversations.summary` and `last_message_at`.
+- Updated `businesses.whatsapp_number` in Supabase to match sandbox number `+14155238886`.
+
+### Verification
+- End-to-end test confirmed on production:
+  - Sent "الو" from personal WhatsApp to `+14155238886`.
+  - Bot replied in Arabic with correct personality: "الوا! 👋😊 كيفك أنت! فضل، شنو أخبارك؟ كيف نساعدك في لتجميل؟ ✨💄"
+  - Conversation and messages saved in Supabase.
+  - `/dashboard/conversations` updates in real-time via Realtime subscription.
+
 ### Remaining
-- Integrate WhatsApp (Twilio) and AI bot (Claude).
-- `/dashboard/conversations/{id}` — individual chat view.
-- Add menu items / staff / services via Supabase for restaurants, clinics, salons.
+- `/dashboard/conversations/{id}` — individual chat view with message history.
+- Knowledge base management UI — feed business FAQs into bot context.
+- Switch from Twilio Sandbox to production WhatsApp Business number.
+- Moyasar payment integration.
 
 ---
 
