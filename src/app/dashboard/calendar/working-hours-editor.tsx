@@ -46,7 +46,7 @@ export function WorkingHoursEditor({ workingHours }: { workingHours: WorkingHour
       result[day.key] = {
         closed: raw?.closed ?? false,
         open: raw?.open ?? "09:00",
-        close: raw?.close ?? "17:00",
+        close: raw?.close ?? "22:00",
         has_evening: raw?.has_evening ?? false,
         evening_open: raw?.evening_open ?? "17:00",
         evening_close: raw?.evening_close ?? "22:00",
@@ -59,9 +59,28 @@ export function WorkingHoursEditor({ workingHours }: { workingHours: WorkingHour
     setState((prev) => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
   }
 
+  function addEvening(day: DayKey) {
+    setState((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        has_evening: true,
+        close: prev[day].close === "22:00" ? "14:00" : prev[day].close,
+        evening_open: "17:00",
+        evening_close: "22:00",
+      },
+    }));
+  }
+
+  function removeEvening(day: DayKey) {
+    setState((prev) => ({
+      ...prev,
+      [day]: { ...prev[day], has_evening: false, close: "22:00" },
+    }));
+  }
+
   return (
     <form action={updateWorkingHours} className="space-y-2">
-      {/* hidden inputs for has_evening so unchecked days still submit false */}
       {days.map(({ key }) => (
         <input key={key} type="hidden" name={`${key}_has_evening`} value={state[key].has_evening ? "on" : "off"} />
       ))}
@@ -73,7 +92,7 @@ export function WorkingHoursEditor({ workingHours }: { workingHours: WorkingHour
 
             {/* رأس اليوم */}
             <div className="flex items-center justify-between gap-3">
-              <span className="font-medium text-surface-900 dark:text-white w-20 shrink-0">{label}</span>
+              <span className="font-semibold text-surface-900 dark:text-white w-20 shrink-0">{label}</span>
               <label className="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300 cursor-pointer select-none">
                 <input
                   name={`${key}_closed`}
@@ -88,39 +107,48 @@ export function WorkingHoursEditor({ workingHours }: { workingHours: WorkingHour
 
             {!day.closed && (
               <>
-                {/* الفترة الصباحية */}
-                <div className="grid grid-cols-[36px_1fr_12px_1fr] items-center gap-2">
-                  <span className="text-xs text-surface-500 dark:text-surface-400 text-center">ص</span>
-                  <input name={`${key}_open`} type="time" value={day.open} onChange={(e) => update(key, "open", e.target.value)} className={inputClass} />
-                  <span className="text-xs text-center text-surface-400">—</span>
-                  <input name={`${key}_close`} type="time" value={day.close} onChange={(e) => update(key, "close", e.target.value)} className={inputClass} />
-                </div>
-
-                {/* الفترة المسائية */}
                 {day.has_evening ? (
-                  <div className="grid grid-cols-[36px_1fr_12px_1fr_36px] items-center gap-2">
-                    <span className="text-xs text-surface-500 dark:text-surface-400 text-center">م</span>
-                    <input name={`${key}_evening_open`} type="time" value={day.evening_open} onChange={(e) => update(key, "evening_open", e.target.value)} className={inputClass} />
-                    <span className="text-xs text-center text-surface-400">—</span>
-                    <input name={`${key}_evening_close`} type="time" value={day.evening_close} onChange={(e) => update(key, "evening_close", e.target.value)} className={inputClass} />
-                    <button
-                      type="button"
-                      onClick={() => update(key, "has_evening", false)}
-                      title="حذف الفترة المسائية"
-                      className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  /* فترتان */
+                  <div className="space-y-2">
+                    {/* فترة صباحية */}
+                    <div className="grid grid-cols-[52px_1fr_12px_1fr] items-center gap-2">
+                      <span className="text-xs font-medium text-primary-600 dark:text-primary-400">صباحي</span>
+                      <input name={`${key}_open`} type="time" value={day.open} onChange={(e) => update(key, "open", e.target.value)} className={inputClass} />
+                      <span className="text-xs text-center text-surface-400">—</span>
+                      <input name={`${key}_close`} type="time" value={day.close} onChange={(e) => update(key, "close", e.target.value)} className={inputClass} />
+                    </div>
+                    {/* فترة مسائية */}
+                    <div className="grid grid-cols-[52px_1fr_12px_1fr_32px] items-center gap-2">
+                      <span className="text-xs font-medium text-accent-600 dark:text-accent-400">مسائي</span>
+                      <input name={`${key}_evening_open`} type="time" value={day.evening_open} onChange={(e) => update(key, "evening_open", e.target.value)} className={inputClass} />
+                      <span className="text-xs text-center text-surface-400">—</span>
+                      <input name={`${key}_evening_close`} type="time" value={day.evening_close} onChange={(e) => update(key, "evening_close", e.target.value)} className={inputClass} />
+                      <button
+                        type="button"
+                        onClick={() => removeEvening(key)}
+                        title="حذف الفترة المسائية"
+                        className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => update(key, "has_evening", true)}
-                    className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    إضافة فترة مسائية
-                  </button>
+                  /* فترة واحدة */
+                  <div className="grid grid-cols-[1fr_12px_1fr_auto] items-center gap-2">
+                    <input name={`${key}_open`} type="time" value={day.open} onChange={(e) => update(key, "open", e.target.value)} className={inputClass} />
+                    <span className="text-xs text-center text-surface-400">—</span>
+                    <input name={`${key}_close`} type="time" value={day.close} onChange={(e) => update(key, "close", e.target.value)} className={inputClass} />
+                    <button
+                      type="button"
+                      onClick={() => addEvening(key)}
+                      title="إضافة فترة مسائية"
+                      className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors whitespace-nowrap"
+                    >
+                      <Plus className="w-3 h-3" />
+                      فترتان
+                    </button>
+                  </div>
                 )}
               </>
             )}
