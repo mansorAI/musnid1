@@ -186,7 +186,9 @@ export async function POST(req: NextRequest) {
 4. بعد موافقة العميل، أكد الحجز وأضف في آخر ردك هذا النص بالضبط:
    [BOOKING:STAFF_ID:YYYY-MM-DD:HH:MM:30]
    مثال: [BOOKING:abc-123:2026-06-15:10:00:30]
-   استخدم ID الطبيب الفعلي من القائمة أدناه
+   - استخدم ID الطبيب الفعلي من القائمة أدناه
+   - احسب التاريخ الفعلي بناءً على تاريخ اليوم المذكور أعلاه (مثال: "الأحد القادم" = أقرب أحد بعد اليوم)
+   - الأوقات المتاحة فقط كل 30 دقيقة: 9:00، 9:30، 10:00... ولا تقترح وقتاً بين هذه الفواصل
 
 الأطباء المتاحون:
 ${staffLines}
@@ -196,8 +198,13 @@ ${bookedLines}`;
     }
   }
 
+  const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+  const todayLabel = now.toLocaleDateString("ar-SA", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+
   const systemPrompt = [
     `أنت مساعد ذكي لنشاط تجاري اسمه "${business.name}"${business.city ? ` في ${business.city}` : ""}.`,
+    `تاريخ اليوم: ${todayLabel} (${todayStr}).`,
     business.description ? `وصف النشاط: ${business.description}` : "",
     `شخصيتك: ${personalityLabel}. اللهجة: ${dialectLabel}.`,
     "رد دائماً بالعربية. ردودك قصيرة ومفيدة.",
