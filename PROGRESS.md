@@ -62,11 +62,18 @@
 
 ### Verification
 - `npm run build` passes with all 16 routes building successfully.
+- Pushed to GitHub (`mansorAI/musnid1`) — Vercel auto-deployed.
+- Enabled Supabase Realtime on `conversations` table via **Database → Publications → supabase_realtime**.
+- Created a second test account and completed the 4-step onboarding flow on production.
+- Confirmed on `https://musnid1.vercel.app/dashboard`:
+  - All 4 stat cards show real Supabase counts (0) with green "مباشر" pulse indicator.
+  - `/dashboard/conversations` shows green "متصل" Realtime indicator — live subscription confirmed active.
+  - Nav dynamically shows/hides المنيو / الفريق / الخدمات based on business type.
 
 ### Remaining
-- Enable Supabase Realtime on the `conversations` table in the Supabase dashboard (Database → Replication) for the live subscription to fire.
 - Integrate WhatsApp (Twilio) and AI bot (Claude).
 - `/dashboard/conversations/{id}` — individual chat view.
+- Add menu items / staff / services via Supabase for restaurants, clinics, salons.
 
 ---
 
