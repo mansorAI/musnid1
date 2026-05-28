@@ -8,6 +8,7 @@ import { signInWithEmail, signUpWithEmail } from "./actions";
 type SignInPageProps = {
   searchParams: Promise<{
     error?: string;
+    detail?: string;
     message?: string;
     next?: string;
   }>;
@@ -15,9 +16,13 @@ type SignInPageProps = {
 
 const errorMessages: Record<string, string> = {
   missing: "أدخل البريد الإلكتروني وكلمة المرور.",
-  invalid: "تعذر تسجيل الدخول. تحقق من البيانات أو إعدادات Supabase.",
+  invalid: "بيانات الدخول غير صحيحة. تحقق من البريد الإلكتروني وكلمة المرور.",
   password: "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
-  signup: "تعذر إنشاء الحساب. تحقق من إعدادات Supabase Auth.",
+  signup: "تعذر إنشاء الحساب. تأكد من صحة بيانات Supabase في Vercel وأن مشروع Supabase نشط.",
+  signup_disabled: "إنشاء الحسابات غير مفعّل في Supabase Auth. فعّله من Dashboard → Authentication → Providers.",
+  email_auth: "تعذر إرسال بريد التأكيد. تحقق من إعداد Email Provider في Supabase Auth.",
+  redirect_url: "رابط إعادة التوجيه غير مسموح به. أضف https://musnid1.vercel.app/** في Supabase → Auth → URL Configuration.",
+  account_exists: "هذا البريد مسجل مسبقًا. سجل الدخول بدل إنشاء حساب جديد.",
 };
 
 const infoMessages: Record<string, string> = {
@@ -27,6 +32,7 @@ const infoMessages: Record<string, string> = {
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const error = params.error ? errorMessages[params.error] : null;
+  const detail = params.detail ? decodeURIComponent(params.detail) : null;
   const message = params.message ? infoMessages[params.message] : null;
 
   return (
@@ -61,6 +67,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           {error ? (
             <div className="mb-4 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
               {error}
+              {detail && detail !== "unknown" ? (
+                <p className="mt-2 text-xs font-mono opacity-80" dir="ltr">{detail}</p>
+              ) : null}
             </div>
           ) : null}
           {message ? (

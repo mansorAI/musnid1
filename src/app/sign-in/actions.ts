@@ -1,11 +1,55 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { hasSupabaseEnv } from "@/lib/env";
+import { hasServiceRoleEnv, hasSupabaseEnv } from "@/lib/env";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
+function isExistingUserError(error: { message?: string; code?: string }) {
+  const errorText = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
+
+  return (
+    error.code === "user_already_exists" ||
+    error.code === "email_exists" ||
+    errorText.includes("already") ||
+    errorText.includes("registered") ||
+    errorText.includes("exists") ||
+    errorText.includes("duplicate")
+  );
+}
+
+function redirectWithAuthError(error: { message?: string; code?: string }) {
+  const detail = encodeURIComponent(error.message ?? error.code ?? "unknown");
+  const code = error.code?.toLowerCase() ?? "";
+  const message = error.message?.toLowerCase() ?? "";
+
+  if (
+    code === "signup_disabled" ||
+    code === "signups_not_allowed" ||
+    message.includes("signup") ||
+    message.includes("signups not allowed")
+  ) {
+    redirect(`/sign-in?error=signup_disabled&detail=${detail}`);
+  }
+
+  if (
+    code === "email_provider_disabled" ||
+    code === "over_email_send_rate_limit" ||
+    code === "email_not_confirmed" ||
+    message.includes("email")
+  ) {
+    redirect(`/sign-in?error=email_auth&detail=${detail}`);
+  }
+
+  if (message.includes("redirect") || message.includes("url not allowed")) {
+    redirect(`/sign-in?error=redirect_url&detail=${detail}`);
+  }
+
+  redirect(`/sign-in?error=signup&detail=${detail}`);
+}
+
 export async function signInWithEmail(formData: FormData) {
-  const email = String(formData.get("email") ?? "");
+  const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/dashboard");
 
@@ -21,7 +65,8 @@ export async function signInWithEmail(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    redirect("/sign-in?error=invalid");
+    const detail = encodeURIComponent(error.message ?? error.code ?? "unknown");
+    redirect(`/sign-in?error=invalid&detail=${detail}`);
   }
 
   redirect(next.startsWith("/") ? next : "/dashboard");
@@ -43,8 +88,45 @@ export async function signUpWithEmail(formData: FormData) {
     redirect("/dashboard/settings?demo=1");
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const supabase = await createClient();
+
+  if (hasServiceRoleEnv()) {
+    const admin = createAdminClient();
+    const { error: createError } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+
+    if (createError && isExistingUserError(createError)) {
+      redirect("/sign-in?error=account_exists");
+    }
+
+    if (createError) {
+      console.error("Supabase admin signup failed:", {
+        code: createError.code,
+        message: createError.message,
+        status: createError.status,
+      });
+      redirectWithAuthError(createError);
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (signInError) {
+      console.error("Supabase post-signup signin failed:", {
+        code: signInError.code,
+        message: signInError.message,
+        status: signInError.status,
+      });
+      const detail = encodeURIComponent(signInError.message ?? signInError.code ?? "unknown");
+      redirect(`/sign-in?error=invalid&detail=${detail}`);
+    }
+
+    redirect("/dashboard/settings?created_user=1");
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -52,7 +134,19 @@ export async function signUpWithEmail(formData: FormData) {
   });
 
   if (error) {
-    redirect("/sign-in?error=signup");
+    console.error("Supabase signup failed:", {
+      code: error.code,
+      message: error.message,
+      status: error.status,
+    });
+    if (isExistingUserError(error)) {
+      redirect("/sign-in?error=account_exists");
+    }
+    redirectWithAuthError(error);
+  }
+
+  if (data.user && data.user.identities?.length === 0) {
+    redirect("/sign-in?error=account_exists");
   }
 
   if (data.session) {
