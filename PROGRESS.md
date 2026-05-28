@@ -67,16 +67,32 @@
 - New design deployed to Vercel across all pages (landing, sign-in, dashboard).
 - Migration file ready — pending manual execution in Supabase SQL Editor.
 
+#### Dashboard Migration to New Schema
+- Executed `20260528001_musnid_schema.sql` in Supabase SQL Editor — ran successfully ("Success. No rows returned").
+- Updated `src/lib/dashboard-data.ts`:
+  - Renamed `getCurrentOrganization` → `getCurrentBusiness`, now queries `businesses` table.
+  - `getCustomers` now uses `business_id` against `businesses`.
+  - `getKnowledgeArticles` and `getAutomations` return demo data only (no table in new schema — will be driven by `bot_settings` JSONB in future release).
+  - `getConversations` updated to match new `conversations` schema (status: `active | escalated | closed`).
+- Updated `src/app/dashboard/actions.ts`:
+  - Replaced `createOrganization` with `createBusiness` — generates a unique `slug` automatically, upserts `profiles` row for pre-trigger users, inserts into `businesses`.
+  - Removed `createKnowledgeArticle` and `createAutomation` (tables no longer exist).
+- Updated all dashboard pages to use `getCurrentBusiness` and `createBusiness`:
+  - `dashboard/layout.tsx` — shows `business.name` in header.
+  - `dashboard/page.tsx` — redirects to settings if no business found.
+  - `dashboard/settings/page.tsx` — displays `business` fields; form calls `createBusiness`.
+  - `dashboard/knowledge/page.tsx` — removed add form, shows "coming soon" notice.
+  - `dashboard/automations/page.tsx` — removed add form, shows "coming soon" notice.
+  - `dashboard/customers/page.tsx` — no change needed (already compatible).
+
 ### Remaining
 
-- Execute `20260528001_musnid_schema.sql` in Supabase SQL Editor.
-- Regenerate `src/types/database.ts` from live Supabase schema after migration:
+- Test full sign-up → business creation → dashboard flow on production.
+- Regenerate `src/types/database.ts` from live Supabase if schema changes further:
   ```bash
   npx supabase gen types typescript --project-id zkhkfxtuycixymesrkzt > src/types/database.ts
   ```
-- Update `src/lib/dashboard-data.ts` and `src/app/dashboard/` to query `businesses` instead of `organizations`.
-- Update `src/app/sign-in/actions.ts` signup flow to create a `businesses` record (new schema) instead of `organizations`.
-- Test full sign-up → onboarding → dashboard flow on production.
+- Build onboarding flow (4 steps from build prompt § Phase 4).
 - Integrate WhatsApp (Twilio), AI bot (Claude), and payments (Moyasar).
 
 ---
