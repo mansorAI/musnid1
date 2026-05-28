@@ -1,5 +1,48 @@
 # PROGRESS
 
+## 2026-05-28
+
+### Completed
+
+- Fixed Supabase Auth signup error (`fetch failed`) caused by missing/incorrect `NEXT_PUBLIC_SUPABASE_URL` value in Vercel (had trailing whitespace/newline).
+- Corrected all Vercel environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_APP_URL`, etc.) to remove whitespace.
+- Configured Supabase Auth URL Configuration:
+  - Site URL → `https://musnid1.vercel.app`
+  - Redirect URLs → `https://musnid1.vercel.app/**`
+- Improved Supabase Auth error detection in `src/app/sign-in/actions.ts`:
+  - Added Supabase-specific error codes (`user_already_exists`, `signup_disabled`, `email_provider_disabled`, etc.).
+  - Added detection for redirect URL rejection errors.
+- Improved error messages in `src/app/sign-in/page.tsx` to be more actionable.
+- Changed post-signup flow: after admin creates a user, redirect to `/sign-in?message=account_created` with a success message instead of auto-login, so the user gets clear confirmation before signing in.
+- Removed erroneously created `src/middleware.ts` (Next.js 16 uses `src/proxy.ts` for session middleware).
+- Applied new landing page design from bolt.new across the entire site:
+  - Added Tajawal font as primary Arabic font (alongside IBM Plex Sans Arabic).
+  - Added full color scale system to `globals.css`: `primary-*` (blue), `accent-*` (green), `surface-*` (gray).
+  - Added animation utilities: `animate-fade-in`, `animate-fade-in-up`, `animate-float`, delay classes.
+  - Added component utilities: `.glass`, `.glass-card`, `.gradient-text`, `.gradient-bg`, `.btn-primary`, `.btn-secondary`, etc.
+  - Created `src/hooks/useInView.ts` for scroll-triggered animations.
+  - Created 10 landing page components in `src/components/landing/`: Navbar, Hero, Features, HowItWorks, Benefits, Testimonials, FAQ, Pricing, Contact, Footer.
+  - Replaced `src/app/page.tsx` with the new full landing page.
+  - Redesigned `src/app/sign-in/page.tsx` with gradient background, glass card, and new color system.
+  - Redesigned `src/app/dashboard/layout.tsx` with dark header and gradient branding.
+  - Redesigned all dashboard pages (main, customers, knowledge, automations, settings) with `glass-card` style and `surface-*` colors.
+- Redeployed to Vercel successfully after each set of changes.
+
+### Verification
+
+- Account creation confirmed working on `https://musnid1.vercel.app/sign-in`.
+- Success message "تم إنشاء حسابك بنجاح!" displayed after signup.
+- New design live on Vercel across all pages.
+
+### Remaining
+
+- Test sign-in flow end-to-end on production after latest deployment.
+- Verify dashboard loads correctly with a logged-in Supabase session.
+- Seed or create first organization via `/dashboard/settings`.
+- Integrate WhatsApp provider, AI response layer, and payment provider.
+
+---
+
 ## 2026-05-27
 
 ### Completed
