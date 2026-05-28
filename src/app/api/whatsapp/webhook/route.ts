@@ -151,6 +151,24 @@ export async function POST(req: NextRequest) {
           knowledge.map((k) => `- ${k.title}: ${k.content}`).join("\n")
         : "";
 
+      const dayLabels: Record<string, string> = {
+        saturday: "السبت", sunday: "الأحد", monday: "الإثنين",
+        tuesday: "الثلاثاء", wednesday: "الأربعاء", thursday: "الخميس", friday: "الجمعة",
+      };
+      const wh = business.working_hours as Record<string, {
+        closed?: boolean; open?: string; close?: string;
+        has_evening?: boolean; evening_open?: string; evening_close?: string;
+      }> | null;
+
+      const workingHoursBlock = wh && Object.keys(wh).length > 0
+        ? "\n\nساعات العمل:\n" + Object.entries(wh).map(([day, h]) => {
+            if (h?.closed) return `${dayLabels[day] ?? day}: مغلق`;
+            const morning = `${h?.open ?? "09:00"} - ${h?.close ?? "17:00"}`;
+            const evening = h?.has_evening ? ` | ${h.evening_open ?? "17:00"} - ${h.evening_close ?? "22:00"}` : "";
+            return `${dayLabels[day] ?? day}: ${morning}${evening}`;
+          }).join("\n")
+        : "";
+
       const systemPrompt = [
         `أنت مساعد ذكي لنشاط تجاري اسمه "${business.name}"${business.city ? ` في ${business.city}` : ""}.`,
         business.description ? `وصف النشاط: ${business.description}` : "",
@@ -158,6 +176,7 @@ export async function POST(req: NextRequest) {
         "رد دائماً بالعربية. ردودك قصيرة ومفيدة (جملة أو جملتان كحد أقصى).",
         "لا تذكر أنك ذكاء اصطناعي ولا تذكر اسم Claude أو Anthropic.",
         knowledgeBlock,
+        workingHoursBlock,
       ].filter(Boolean).join("\n");
 
       const response = await anthropic.messages.create({
