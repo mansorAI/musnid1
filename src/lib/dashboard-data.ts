@@ -167,6 +167,22 @@ export async function getStaffData() {
   return { staff: data ?? [], businessId: business.id };
 }
 
+export async function getUpcomingAppointments() {
+  const business = await getCurrentBusiness();
+  if (!business) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("appointments")
+    .select("id,scheduled_at,duration_minutes,status,customer_name,customer_phone,staff_members(name),customers(name,phone)")
+    .eq("business_id", business.id)
+    .gte("scheduled_at", new Date().toISOString())
+    .order("scheduled_at", { ascending: true })
+    .limit(20);
+
+  return data ?? [];
+}
+
 export async function getServicesData() {
   const business = await getCurrentBusiness();
   if (!business) return { services: [], staff: [], businessId: null };
