@@ -62,24 +62,21 @@ export async function getCustomers() {
   return data ?? [];
 }
 
-// Knowledge articles and automations are not yet stored in the database.
-// They are driven by businesses.bot_settings JSONB and will be editable
-// in a future release. Return demo data for now.
 export async function getKnowledgeArticles() {
-  return [
-    {
-      id: "demo-knowledge-1",
-      title: "سياسة الإلغاء",
-      content: "يمكن إلغاء الموعد قبل 6 ساعات من وقت الحجز بدون رسوم.",
-      enabled: true,
-    },
-    {
-      id: "demo-knowledge-2",
-      title: "طرق الدفع",
-      content: "ندعم الدفع نقدًا، مدى، Apple Pay، وروابط الدفع الإلكترونية.",
-      enabled: true,
-    },
-  ];
+  const business = await getCurrentBusiness();
+  if (!business) {
+    return [
+      { id: "demo-k1", title: "سياسة الإلغاء", content: "يمكن إلغاء الموعد قبل 6 ساعات من وقت الحجز بدون رسوم.", enabled: true },
+      { id: "demo-k2", title: "طرق الدفع", content: "ندعم الدفع نقدًا، مدى، Apple Pay، وروابط الدفع الإلكترونية.", enabled: true },
+    ];
+  }
+
+  const botSettings = (business.bot_settings as Record<string, unknown>) ?? {};
+  const knowledge = Array.isArray(botSettings.knowledge)
+    ? (botSettings.knowledge as { id: string; title: string; content: string; enabled: boolean }[])
+    : [];
+
+  return knowledge;
 }
 
 export async function getAutomations() {

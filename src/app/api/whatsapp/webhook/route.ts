@@ -141,12 +141,23 @@ export async function POST(req: NextRequest) {
         dialect === "formal_arabic" ? "عربية فصحى مبسطة" :
         "سعودية عامية خفيفة";
 
+      const knowledge = Array.isArray((botSettings as Record<string, unknown>).knowledge)
+        ? ((botSettings as Record<string, unknown>).knowledge as { title: string; content: string; enabled: boolean }[])
+            .filter((k) => k.enabled)
+        : [];
+
+      const knowledgeBlock = knowledge.length > 0
+        ? "\n\nمعلومات النشاط التي يجب الاعتماد عليها عند الإجابة:\n" +
+          knowledge.map((k) => `- ${k.title}: ${k.content}`).join("\n")
+        : "";
+
       const systemPrompt = [
         `أنت مساعد ذكي لنشاط تجاري اسمه "${business.name}"${business.city ? ` في ${business.city}` : ""}.`,
         business.description ? `وصف النشاط: ${business.description}` : "",
         `شخصيتك: ${personalityLabel}. اللهجة: ${dialectLabel}.`,
         "رد دائماً بالعربية. ردودك قصيرة ومفيدة (جملة أو جملتان كحد أقصى).",
         "لا تذكر أنك ذكاء اصطناعي ولا تذكر اسم Claude أو Anthropic.",
+        knowledgeBlock,
       ].filter(Boolean).join("\n");
 
       const response = await anthropic.messages.create({
