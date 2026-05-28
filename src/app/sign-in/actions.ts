@@ -111,19 +111,7 @@ export async function signUpWithEmail(formData: FormData) {
       redirectWithAuthError(createError);
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (signInError) {
-      console.error("Supabase post-signup signin failed:", {
-        code: signInError.code,
-        message: signInError.message,
-        status: signInError.status,
-      });
-      const detail = encodeURIComponent(signInError.message ?? signInError.code ?? "unknown");
-      redirect(`/sign-in?error=invalid&detail=${detail}`);
-    }
-
-    redirect("/dashboard/settings?created_user=1");
+    redirect("/sign-in?message=account_created");
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;

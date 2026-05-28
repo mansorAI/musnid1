@@ -27,6 +27,7 @@ const errorMessages: Record<string, string> = {
 
 const infoMessages: Record<string, string> = {
   "check-email": "تم إرسال رابط التأكيد إلى بريدك إذا كان تأكيد البريد مفعلا.",
+  "account_created": "تم إنشاء حسابك بنجاح! سجّل دخولك الآن.",
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
