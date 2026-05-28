@@ -176,18 +176,21 @@ export async function POST(req: NextRequest) {
 
       bookingBlock = `
 
-عند طلب الحجز اتبع هذه الخطوات:
-1. اسأل عن التخصص المطلوب واعرض التخصصات المتاحة من قائمة الأطباء
-2. بعد اختيار التخصص، اعرض الأطباء المتاحين في هذا التخصص مع أوقاتهم
-3. احسب الأوقات الحرة بناءً على ساعات الطبيب مطروحاً منها المواعيد المحجوزة أدناه (كل موعد 30 دقيقة افتراضياً)
-4. بعد موافقة العميل على الوقت، أكد الحجز وأضف في نهاية ردك بالضبط هذا النص (بدون أي تعديل):
+عند طلب الحجز اتبع هذه الخطوات بدقة:
+1. اسأل عن التخصص واعرض التخصصات المتاحة من قائمة الأطباء أدناه
+2. بعد اختيار التخصص، اعرض الأطباء المتاحين في هذا التخصص
+3. اعرض الأوقات المتاحة: خذ ساعات عمل الطبيب واطرح منها المواعيد المحجوزة المذكورة أدناه (كل موعد يأخذ 30 دقيقة)
+   - مثال: لو الطبيب يعمل 9:00-14:00 والساعة 9:00 محجوزة، اعرض: 9:30، 10:00، 10:30...
+   - لا تعرض أبداً وقتاً مذكوراً في قائمة المحجوزة
+4. بعد موافقة العميل، أكد الحجز وأضف في آخر ردك هذا النص بالضبط:
    [BOOKING:STAFF_ID:YYYY-MM-DD:HH:MM:30]
    مثال: [BOOKING:abc-123:2026-06-15:10:00:30]
+   استخدم ID الطبيب الفعلي من القائمة أدناه
 
 الأطباء المتاحون:
 ${staffLines}
 
-المواعيد المحجوزة (الأسبوعان القادمان):
+المواعيد المحجوزة — لا تقترح هذه الأوقات:
 ${bookedLines}`;
     }
   }
@@ -239,20 +242,34 @@ ${bookedLines}`;
     }
   }
 
-  // 8. Save appointment if booking confirmed
+  // 8. Save appointment if booking confirmed (with duplicate check)
   if (bookingData) {
     const scheduledAt = new Date(`${bookingData.date}T${bookingData.time}:00`).toISOString();
-    await supabase.from("appointments").insert({
-      business_id: business.id,
-      customer_id: customerId,
-      staff_id: bookingData.staffId,
-      scheduled_at: scheduledAt,
-      duration_minutes: bookingData.duration,
-      status: "confirmed",
-      customer_name: customerName,
-      customer_phone: from,
-    });
-    console.log(`[webhook] Appointment saved: ${bookingData.date} ${bookingData.time}`);
+
+    const { data: conflictAppt } = await supabase
+      .from("appointments")
+      .select("id")
+      .eq("staff_id", bookingData.staffId)
+      .eq("scheduled_at", scheduledAt)
+      .in("status", ["pending", "confirmed"])
+      .maybeSingle();
+
+    if (conflictAppt) {
+      aiReply = "عذراً، هذا الوقت محجوز بالفعل. يرجى اختيار وقت آخر.";
+      console.log(`[webhook] Slot conflict: ${bookingData.date} ${bookingData.time}`);
+    } else {
+      await supabase.from("appointments").insert({
+        business_id: business.id,
+        customer_id: customerId,
+        staff_id: bookingData.staffId,
+        scheduled_at: scheduledAt,
+        duration_minutes: bookingData.duration,
+        status: "confirmed",
+        customer_name: customerName,
+        customer_phone: from,
+      });
+      console.log(`[webhook] Appointment saved: ${bookingData.date} ${bookingData.time}`);
+    }
   }
 
   // 9. Send reply via Twilio
