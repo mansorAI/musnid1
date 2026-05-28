@@ -1,9 +1,6 @@
 import { BookOpenText } from "lucide-react";
-import { createKnowledgeArticle } from "@/app/dashboard/actions";
 import { getKnowledgeArticles } from "@/lib/dashboard-data";
 
-const inputClass =
-  "w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white placeholder:text-surface-400 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 outline-none transition-all text-sm";
 
 export default async function KnowledgePage() {
   const articles = await getKnowledgeArticles();
@@ -42,23 +39,9 @@ export default async function KnowledgePage() {
           <h2 className="text-lg font-bold text-surface-900 dark:text-white">إضافة معرفة</h2>
         </div>
         <div className="p-6">
-          <form action={createKnowledgeArticle} className="space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="title" className="block text-sm font-medium text-surface-700 dark:text-surface-300">العنوان</label>
-              <input id="title" name="title" placeholder="مثال: ساعات العمل" className={inputClass} />
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor="content" className="block text-sm font-medium text-surface-700 dark:text-surface-300">المحتوى</label>
-              <textarea
-                id="content"
-                name="content"
-                rows={5}
-                className={`${inputClass} resize-none`}
-                placeholder="اكتب إجابة واضحة ليستخدمها المساعد في الردود."
-              />
-            </div>
-            <button type="submit" className="btn-primary w-full">حفظ</button>
-          </form>
+          <div className="rounded-xl border border-primary-200/50 dark:border-primary-800/30 bg-primary-50/50 dark:bg-primary-900/10 p-4 text-sm text-primary-700 dark:text-primary-300 leading-7">
+            إدارة قاعدة المعرفة ستكون متاحة في المرحلة القادمة بعد ربط WhatsApp والمساعد الذكي.
+          </div>
         </div>
       </div>
     </div>

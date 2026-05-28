@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Bot, BookOpenText, LayoutDashboard, MessageCircle, Settings, Users } from "lucide-react";
 import { signOut } from "@/app/sign-in/actions";
-import { getCurrentOrganization } from "@/lib/dashboard-data";
+import { getCurrentBusiness } from "@/lib/dashboard-data";
 
 const navItems = [
   { href: "/dashboard", label: "الرئيسية", icon: LayoutDashboard },
@@ -12,7 +12,7 @@ const navItems = [
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const organization = await getCurrentOrganization();
+  const business = await getCurrentBusiness();
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
@@ -28,10 +28,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold text-white">
-                {organization?.name ?? "وضع العرض التجريبي"}
+                {business?.name ?? "وضع العرض التجريبي"}
               </p>
               <p className="text-xs text-surface-400">
-                {organization ? "متصل ببيانات Supabase" : "اربط Supabase لإنشاء بيانات حقيقية"}
+                {business ? "متصل ببيانات Supabase" : "اربط Supabase لإنشاء بيانات حقيقية"}
               </p>
             </div>
             <form action={signOut}>

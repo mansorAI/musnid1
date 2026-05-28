@@ -1,5 +1,5 @@
 import { Settings } from "lucide-react";
-import { createOrganization } from "@/app/dashboard/actions";
+import { createBusiness } from "@/app/dashboard/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { businessTypeLabels } from "@/lib/demo-data";
-import { getCurrentOrganization } from "@/lib/dashboard-data";
+import { getCurrentBusiness } from "@/lib/dashboard-data";
 import type { BusinessType } from "@/types";
 
 const businessTypes = Object.entries(businessTypeLabels) as [BusinessType, string][];
@@ -19,7 +19,7 @@ const inputClass =
   "w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white placeholder:text-surface-400 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 outline-none transition-all text-sm";
 
 export default async function SettingsPage() {
-  const organization = await getCurrentOrganization();
+  const business = await getCurrentBusiness();
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
@@ -36,21 +36,21 @@ export default async function SettingsPage() {
           </div>
         </div>
         <div className="p-6">
-          {organization ? (
+          {business ? (
             <div className="space-y-4">
               <div className="rounded-xl border border-surface-200/50 dark:border-surface-700/30 bg-surface-50/50 dark:bg-surface-800/30 p-4">
                 <p className="text-sm text-surface-500 dark:text-surface-400">اسم النشاط</p>
-                <p className="mt-1 text-xl font-bold text-surface-900 dark:text-white">{organization.name}</p>
+                <p className="mt-1 text-xl font-bold text-surface-900 dark:text-white">{business.name}</p>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-xl border border-surface-200/50 dark:border-surface-700/30 bg-surface-50/50 dark:bg-surface-800/30 p-4">
                   <p className="text-sm text-surface-500 dark:text-surface-400">المدينة</p>
-                  <p className="mt-1 font-medium text-surface-900 dark:text-white">{organization.city ?? "غير محددة"}</p>
+                  <p className="mt-1 font-medium text-surface-900 dark:text-white">{business.city ?? "غير محددة"}</p>
                 </div>
                 <div className="rounded-xl border border-surface-200/50 dark:border-surface-700/30 bg-surface-50/50 dark:bg-surface-800/30 p-4">
                   <p className="text-sm text-surface-500 dark:text-surface-400">رقم WhatsApp</p>
                   <p className="mt-1 font-medium text-surface-900 dark:text-white" dir="ltr">
-                    {organization.whatsapp_number ?? "غير مربوط"}
+                    {business.whatsapp_number ?? "غير مربوط"}
                   </p>
                 </div>
               </div>
@@ -68,7 +68,7 @@ export default async function SettingsPage() {
           <h2 className="text-lg font-bold text-surface-900 dark:text-white">إنشاء النشاط</h2>
         </div>
         <div className="p-6">
-          <form action={createOrganization} className="space-y-4">
+          <form action={createBusiness} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="name" className="text-surface-700 dark:text-surface-300">اسم النشاط</Label>
               <Input id="name" name="name" placeholder="مثال: عيادة النخبة" className={inputClass} />

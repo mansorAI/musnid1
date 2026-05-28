@@ -2,11 +2,11 @@ import { Bot, CheckCircle2, Clock3, MessageSquareText, Sparkles } from "lucide-r
 import { redirect } from "next/navigation";
 import { dashboardStats } from "@/lib/demo-data";
 import { hasSupabaseEnv } from "@/lib/env";
-import { getAutomations, getConversations, getCurrentOrganization } from "@/lib/dashboard-data";
+import { getAutomations, getConversations, getCurrentBusiness } from "@/lib/dashboard-data";
 
 export default async function DashboardPage() {
-  const organization = await getCurrentOrganization();
-  if (hasSupabaseEnv() && !organization) {
+  const business = await getCurrentBusiness();
+  if (hasSupabaseEnv() && !business) {
     redirect("/dashboard/settings?missing_org=1");
   }
 

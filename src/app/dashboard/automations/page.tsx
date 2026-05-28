@@ -1,9 +1,5 @@
 import { Bot } from "lucide-react";
-import { createAutomation } from "@/app/dashboard/actions";
 import { getAutomations } from "@/lib/dashboard-data";
-
-const inputClass =
-  "w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white placeholder:text-surface-400 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 outline-none transition-all text-sm";
 
 export default async function AutomationsPage() {
   const automations = await getAutomations();
@@ -43,21 +39,9 @@ export default async function AutomationsPage() {
           <h2 className="text-lg font-bold text-surface-900 dark:text-white">إضافة قاعدة</h2>
         </div>
         <div className="p-6">
-          <form action={createAutomation} className="space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="name" className="block text-sm font-medium text-surface-700 dark:text-surface-300">اسم القاعدة</label>
-              <input id="name" name="name" placeholder="مثال: تأكيد الحجز" className={inputClass} />
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor="trigger" className="block text-sm font-medium text-surface-700 dark:text-surface-300">المحفز</label>
-              <input id="trigger" name="trigger" placeholder="مثال: عند اختيار موعد" className={inputClass} />
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor="response" className="block text-sm font-medium text-surface-700 dark:text-surface-300">الرد</label>
-              <textarea id="response" name="response" rows={4} className={`${inputClass} resize-none`} placeholder="اكتب نص الرد أو تعليمات المساعد." />
-            </div>
-            <button type="submit" className="btn-primary w-full">حفظ القاعدة</button>
-          </form>
+          <div className="rounded-xl border border-primary-200/50 dark:border-primary-800/30 bg-primary-50/50 dark:bg-primary-900/10 p-4 text-sm text-primary-700 dark:text-primary-300 leading-7">
+            إدارة قواعد الأتمتة ستكون متاحة في المرحلة القادمة بعد ربط WhatsApp والمساعد الذكي.
+          </div>
         </div>
       </div>
     </div>
