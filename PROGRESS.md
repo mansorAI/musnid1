@@ -102,11 +102,59 @@
   - Conversation and messages saved in Supabase.
   - `/dashboard/conversations` updates in real-time via Realtime subscription.
 
+---
+
+#### Phase 8 — Knowledge Base + Calendar Editor + Smart Booking
+
+**`/dashboard/knowledge` — Live Knowledge Base**
+- Replaced "coming soon" placeholder with a fully functional knowledge base.
+- Articles stored in `businesses.bot_settings.knowledge` as JSONB array (no migration needed).
+- Server actions: `addKnowledgeArticle`, `toggleKnowledgeArticle`, `deleteKnowledgeArticle`.
+- Toggle button per article (مفعّلة / متوقفة) + trash icon to delete.
+- Webhook reads enabled articles and injects them into Claude's system prompt automatically.
+
+**`/dashboard/calendar` — Working Hours Editor with Dual Shifts**
+- Replaced static read-only display with a full editor component (`working-hours-editor.tsx`).
+- Each day: single period by default with open/close times.
+- Button "+ فترتان" splits any day into morning + evening shifts.
+- Evening shift has a dedicated 🗑️ delete button to collapse back to single period.
+- `updateWorkingHours` server action saves to `businesses.working_hours` JSONB.
+- Webhook reads `working_hours` automatically and includes it in Claude's system prompt.
+
+**`/dashboard/calendar` — Upcoming Appointments**
+- Added `getUpcomingAppointments()` to `dashboard-data.ts`.
+- Calendar page now shows upcoming appointments with customer name, phone, doctor, time, and date.
+- Shows "لا توجد مواعيد قادمة بعد" when empty.
+
+**Smart Booking Bot (Clinics & Salons)**
+- Webhook detects business type (`clinic` / `salon`) and fetches active staff with specialties and working hours.
+- Fetches booked appointments for the next 14 days.
+- Claude guides the conversation: specialty → doctor → available time slot → confirmation.
+- Booking confirmation detected via `[BOOKING:staff_id:YYYY-MM-DD:HH:MM:duration]` marker in Claude's reply.
+- Marker stripped from reply before sending to customer.
+- Appointment saved to `appointments` table with customer info.
+- Duplicate/overlap prevention: checks ±29 min window before saving — rejects if conflict exists.
+- Claude receives today's date so it calculates correct YYYY-MM-DD for days like "الأحد القادم".
+- Conversation history (last 10 messages) passed to Claude for multi-turn booking context.
+
+**Webhook Improvements**
+- Added today's date + day name to system prompt so Claude uses correct booking dates.
+- Clarified slot interval: every 30 minutes only (9:00, 9:30, 10:00...).
+- Bot never suggests times already in the booked appointments list.
+
+### Architecture Decision — WhatsApp Provider
+- Twilio Sandbox used for development/testing (shared number `+14155238886`).
+- Twilio Trial account hit daily message limit during testing — decided to upgrade to Pay as you go.
+- Discussed multi-tenant WhatsApp strategy:
+  - **Short term:** Musnid buys Twilio numbers for customers (Twilio-assigned numbers).
+  - **Long term (correct path):** Meta WhatsApp Cloud API with Embedded Signup — customer connects their OWN phone number via one-click Meta OAuth flow. 1000 free conversations/month.
+- **Decision:** Migrate to Meta Cloud API next — it's the only way customers can use their own Saudi numbers.
+
 ### Remaining
+- **Phase 9:** Meta WhatsApp Cloud API integration with Embedded Signup — replace Twilio entirely.
 - `/dashboard/conversations/{id}` — individual chat view with message history.
-- Knowledge base management UI — feed business FAQs into bot context.
-- Switch from Twilio Sandbox to production WhatsApp Business number.
 - Moyasar payment integration.
+- Admin panel for assigning resources to customers.
 
 ---
 
