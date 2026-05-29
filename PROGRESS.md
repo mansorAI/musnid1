@@ -1,5 +1,20 @@
 # PROGRESS
 
+## 2026-05-30
+
+### Completed
+
+#### Domain Migration — musnid1.vercel.app → www.musnid.com
+- Purchased domain `musnid.com` and connected it to Vercel.
+- Updated `NEXT_PUBLIC_APP_URL` in Vercel Environment Variables to `https://www.musnid.com`.
+- Updated Supabase Auth → URL Configuration:
+  - Site URL: `https://www.musnid.com`
+  - Redirect URLs: `https://www.musnid.com/**`
+- Updated hardcoded URL in `src/app/sign-in/page.tsx` (redirect_url error message).
+- Updated all references in `PROGRESS.md`.
+
+---
+
 ## 2026-05-29
 
 ### Completed
@@ -65,7 +80,7 @@
 - Pushed to GitHub (`mansorAI/musnid1`) — Vercel auto-deployed.
 - Enabled Supabase Realtime on `conversations` table via **Database → Publications → supabase_realtime**.
 - Created a second test account and completed the 4-step onboarding flow on production.
-- Confirmed on `https://musnid1.vercel.app/dashboard`:
+- Confirmed on `https://www.musnid.com/dashboard`:
   - All 4 stat cards show real Supabase counts (0) with green "مباشر" pulse indicator.
   - `/dashboard/conversations` shows green "متصل" Realtime indicator — live subscription confirmed active.
   - Nav dynamically shows/hides المنيو / الفريق / الخدمات based on business type.
@@ -79,7 +94,7 @@
 - Connected personal WhatsApp number to sandbox via `join team-swing`.
 - Added Twilio env vars to Vercel: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`.
 - Added `ANTHROPIC_API_KEY` to Vercel for Claude AI integration.
-- Configured Sandbox webhook URL: `https://musnid1.vercel.app/api/whatsapp/webhook` (POST).
+- Configured Sandbox webhook URL: `https://www.musnid.com/api/whatsapp/webhook` (POST).
 
 **Webhook `POST /api/whatsapp/webhook`**
 - Installed `twilio` and `@anthropic-ai/sdk` packages.
@@ -197,8 +212,8 @@
 - Fixed Supabase Auth signup error (`fetch failed`) caused by `NEXT_PUBLIC_SUPABASE_URL` having trailing whitespace/newline in Vercel.
 - Corrected all Vercel environment variables to remove whitespace (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_APP_URL`, etc.).
 - Configured Supabase Auth URL Configuration:
-  - Site URL → `https://musnid1.vercel.app`
-  - Redirect URLs → `https://musnid1.vercel.app/**`
+  - Site URL → `https://www.musnid.com`
+  - Redirect URLs → `https://www.musnid.com/**`
 - Improved Supabase Auth error detection in `src/app/sign-in/actions.ts`:
   - Added Supabase-specific error codes (`user_already_exists`, `signup_disabled`, `email_provider_disabled`, `over_email_send_rate_limit`).
   - Added detection for redirect URL rejection errors (`redirect_url` error key).
@@ -251,7 +266,7 @@
 
 ### Verification
 
-- Account creation flow confirmed working on `https://musnid1.vercel.app/sign-in`.
+- Account creation flow confirmed working on `https://www.musnid.com/sign-in`.
 - Success message "تم إنشاء حسابك بنجاح!" displayed after signup.
 - New design deployed to Vercel across all pages (landing, sign-in, dashboard).
 - Migration file ready — pending manual execution in Supabase SQL Editor.

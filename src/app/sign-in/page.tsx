@@ -19,7 +19,7 @@ const errorMessages: Record<string, string> = {
   signup: "تعذر إنشاء الحساب. تأكد من صحة بيانات Supabase في Vercel وأن مشروع Supabase نشط.",
   signup_disabled: "إنشاء الحسابات غير مفعّل في Supabase Auth. فعّله من Dashboard → Authentication → Providers.",
   email_auth: "تعذر إرسال بريد التأكيد. تحقق من إعداد Email Provider في Supabase Auth.",
-  redirect_url: "رابط إعادة التوجيه غير مسموح به. أضف https://musnid1.vercel.app/** في Supabase → Auth → URL Configuration.",
+  redirect_url: "رابط إعادة التوجيه غير مسموح به. أضف https://www.musnid.com/** في Supabase → Auth → URL Configuration.",
   account_exists: "هذا البريد مسجل مسبقًا. سجل الدخول بدل إنشاء حساب جديد.",
 };
 
