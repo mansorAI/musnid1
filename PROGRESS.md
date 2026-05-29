@@ -9,9 +9,32 @@
 - Updated `NEXT_PUBLIC_APP_URL` in Vercel Environment Variables to `https://www.musnid.com`.
 - Updated Supabase Auth → URL Configuration:
   - Site URL: `https://www.musnid.com`
-  - Redirect URLs: `https://www.musnid.com/**`
+  - Redirect URLs: `https://www.musnid.com/**` (removed old `musnid1.vercel.app/**`)
 - Updated hardcoded URL in `src/app/sign-in/page.tsx` (redirect_url error message).
 - Updated all references in `PROGRESS.md`.
+- Redeployed on Vercel — status: Ready.
+- Production site confirmed live on `https://www.musnid.com`.
+
+#### Bot Testing (curl-based)
+- Tested webhook end-to-end without WhatsApp using curl POST to `/api/whatsapp/webhook`.
+- Confirmed: messages saved to Supabase, Claude generates reply, conversation appears in `/dashboard/conversations` with Realtime update.
+- Test command: `curl -X POST https://www.musnid.com/api/whatsapp/webhook -d "From=whatsapp:+966500000001&To=whatsapp:+14155238886&Body=أبي أحجز موعد&MessageSid=test-1"`
+
+#### Architecture Decision — WhatsApp Multi-Tenant Strategy
+- Discussed how customers connect WhatsApp to Musnid.
+- Current state: single Twilio account (owner's), webhook hardcoded to it.
+- Options evaluated:
+  - Twilio per-customer: customer enters their own Twilio credentials (complex for customer).
+  - Musnid buys numbers for customers: simpler but only Twilio international numbers, not Saudi.
+  - **Meta WhatsApp Cloud API with Embedded Signup**: customer connects their own Saudi number via one-click Meta OAuth. 1000 free conversations/month. Only option that gives customers their own number.
+- **Decision: Migrate to Meta Cloud API (Phase 9)** — it's the correct long-term architecture.
+- Twilio Sandbox continues for development/testing until Meta integration is ready.
+
+### Remaining
+- **Phase 9:** Meta WhatsApp Cloud API — Embedded Signup flow so customers connect their own number.
+- `/dashboard/conversations/{id}` — individual chat view with message history.
+- Moyasar payment integration.
+- Twilio → upgrade to Pay as you go to remove daily message limit during testing.
 
 ---
 
