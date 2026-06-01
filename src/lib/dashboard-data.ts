@@ -440,6 +440,39 @@ export async function getSalesOverviewData() {
   };
 }
 
+export async function getAllSalesInvoices() {
+  const business = await getCurrentBusiness();
+  if (!business) {
+    return {
+      invoices: [
+        {
+          id: "demo-inv-1",
+          invoice_number: "INV-2026-000001",
+          buyer_name: "عميل نقدي" as string | null,
+          total_amount: 184 as number | string,
+          vat_amount: 24 as number | string,
+          issued_at: new Date().toISOString(),
+          status: "issued",
+        },
+      ],
+      schemaMissing: false,
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("invoices")
+    .select("id,invoice_number,buyer_name,total_amount,vat_amount,issued_at,status")
+    .eq("business_id", business.id)
+    .order("issued_at", { ascending: false });
+
+  if (error) {
+    return { invoices: [], schemaMissing: true };
+  }
+
+  return { invoices: data ?? [], schemaMissing: false };
+}
+
 export async function getSalesProductsData() {
   const business = await getCurrentBusiness();
   if (!business) {

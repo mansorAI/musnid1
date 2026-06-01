@@ -1,5 +1,74 @@
 # PROGRESS
 
+## 2026-06-01 — Sales & Dashboard Redesign: Mobile Parity
+
+### Completed
+
+#### Dashboard Page — Mobile-Style Redesign (`src/app/dashboard/page.tsx`)
+- Replaced generic stat cards with mobile-matched design:
+  - Colored top border (`borderTopColor`) per card color.
+  - Icon in rounded colored circle (`color + "1a"` background).
+  - Green "مباشر" pulse dot on each live card.
+  - Large bold number (text-3xl font-extrabold).
+- Added welcome hero section matching mobile:
+  - Business name + system title in header row.
+  - Green live dot with "مباشر" label.
+  - "مرحباً {business.name}" heading.
+  - "ملخص الفواتير والمبيعات اليوم" subtitle.
+  - Gradient glow orbs (primary + teal, low opacity).
+- Added "واتساب ذكي" stat section (4 cards) when Supabase is connected.
+- Added "الإحصائيات" sales section (4 cards) when invoice schema exists:
+  - مبيعات اليوم (net = total − VAT, matching mobile fix).
+  - الكاشير — special pressable card with "فتح الكاشير" button linking to products.
+  - فواتير اليوم.
+  - إجمالي الفواتير.
+- Added "إجراءات سريعة" section matching mobile quick-actions layout:
+  - Chevron on far left, icon circle + title/subtitle on far right.
+  - 4 actions: إصدار فاتورة، قائمة الفواتير، المحادثات، إعدادات الفوترة.
+- Removed old bot status / automations / conversations widgets from dashboard (moved to sub-pages).
+
+#### Sales Page — Mobile Parity (`src/app/dashboard/sales/page.tsx` + new `sales-list.tsx`)
+- Created `src/app/dashboard/sales/sales-list.tsx` — interactive client component:
+  - Period filter tabs matching mobile: **اليوم** (default) / **الشهر** / **السنة**.
+  - 3 stat cards update automatically when filter changes:
+    - مبيعات (net sales = total − VAT) — matches mobile fix.
+    - ضريبة.
+    - عدد الفواتير.
+  - Export button downloads CSV (UTF-8 BOM) with invoice number, date, time, net, VAT, total, status, and summary row — equivalent to mobile's Excel export.
+  - Invoice card list with: chevron far-left, invoice number + date + buyer right-aligned, amount + status badge far-right — matches mobile card layout.
+- Rewrote `src/app/dashboard/sales/page.tsx` as thin server wrapper:
+  - Fetches all invoices via `getAllSalesInvoices()` (no limit) and passes to `SalesList`.
+  - Header with "كاشير المنتجات", "إعدادات الفوترة", "فاتورة جديدة" buttons.
+
+#### Data Layer (`src/lib/dashboard-data.ts`)
+- Added `getAllSalesInvoices()` — fetches all invoices without limit (previously capped at 30) for full period filtering.
+
+#### Mobile Updates Applied to Web
+- **مبيعات card shows net revenue** (total − VAT), not gross — matches mobile fix.
+- **Cashier card** on dashboard opens products page directly — matches mobile direct cashier access.
+- **Period filters** (اليوم / الشهر / السنة) on sales page — matches mobile filter implementation.
+- **Export** (CSV on web, XLSX on mobile) — equivalent functionality.
+
+#### Files Added
+- `src/app/dashboard/sales/sales-list.tsx`
+
+#### Main Files Updated
+- `src/app/dashboard/page.tsx` — complete redesign.
+- `src/app/dashboard/sales/page.tsx` — redesign using new client component.
+- `src/lib/dashboard-data.ts` — added `getAllSalesInvoices`.
+
+### Verification
+- `npx.cmd tsc --noEmit` passes.
+- `npm.cmd run build` passes (21 routes, all ƒ dynamic).
+
+### Remaining
+- Apply `20260601090000_personal_tasks_engine_web.sql` migration in Supabase SQL Editor.
+- End-to-end browser test on `https://www.musnid.com`.
+- `/dashboard/sales/new` — manual invoice page (mobile equivalent).
+- Smart tasks live testing after migration.
+
+---
+
 ## 2026-06-01 — Mobile Progress Parity: Theme + Smart Tasks
 
 ### Completed
@@ -130,12 +199,19 @@
 - `npm.cmd run lint` passes.
 - `npm.cmd run build` passes.
 - Next build includes `/dashboard/tasks`, `/dashboard/sales`, `/dashboard/sales/products`, `/dashboard/sales/settings`, and `/dashboard/sales/[id]` as dynamic routes.
+- Applied `supabase/migrations/20260531061600_zatca_fatoora_schema.sql` in Supabase SQL Editor successfully (`Success. No rows returned`).
+- Confirmed the web and mobile apps now target the same shared Supabase invoice/ZATCA tables.
+- Confirmed GitHub remote is connected to `https://github.com/mansorAI/musnid1.git`.
+- Committed and pushed today's web changes to `main`:
+  - `f82ed81 Add sales billing and smart tasks dashboard`
+- Vercel production deployment was triggered from the GitHub push for commit `f82ed81`.
 
 ### Remaining
 - Apply `20260601090000_personal_tasks_engine_web.sql` in Supabase SQL Editor before using real task data in production.
-- Apply `20260531061600_zatca_fatoora_schema.sql` in the same Supabase project used by mobile and web before issuing real invoices.
 - Add end-to-end browser testing for `/dashboard/tasks` after migration is applied.
-- Add end-to-end cashier testing for `/dashboard/sales/products` after the ZATCA migration is applied.
+- Confirm the Vercel deployment for `f82ed81` reaches `Ready`.
+- Test `/dashboard/sales`, `/dashboard/sales/settings`, and `/dashboard/sales/products` on `https://www.musnid.com` after Vercel is ready.
+- Add end-to-end cashier testing for `/dashboard/sales/products` on production.
 - Decide whether smart tasks should remain user-personal or become business/team shared in a later phase.
 
 ## 2026-05-29 — Mobile Expo + Restaurant Order Webhook
