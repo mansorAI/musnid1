@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import twilio from "twilio";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  processRestaurantOrderTurn,
+  type PaidAddon,
+  type RestaurantOrderDraft,
+} from "@/lib/bot/restaurant-order";
+
+type ConversationMetadata = {
+  restaurant_order_draft?: RestaurantOrderDraft;
+  [key: string]: unknown;
+};
 
 async function parseFormBody(req: NextRequest): Promise<Record<string, string>> {
   const text = await req.text();
@@ -66,14 +76,16 @@ export async function POST(req: NextRequest) {
 
   // 3. Find or create conversation
   const { data: activeConv } = await supabase
-    .from("conversations").select("id")
+    .from("conversations").select("id,metadata")
     .eq("business_id", business.id).eq("customer_id", customerId).eq("status", "active")
     .order("started_at", { ascending: false }).limit(1).maybeSingle();
 
   let conversationId: string;
+  let conversationMetadata: ConversationMetadata = {};
 
   if (activeConv) {
     conversationId = activeConv.id;
+    conversationMetadata = (activeConv.metadata ?? {}) as ConversationMetadata;
     await supabase.from("conversations").update({
       last_message_at: new Date().toISOString(),
       window_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -85,12 +97,13 @@ export async function POST(req: NextRequest) {
         business_id: business.id, customer_id: customerId, status: "active",
         last_message_at: new Date().toISOString(),
         window_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      }).select("id").single();
+      }).select("id,metadata").single();
     if (error || !newConv) {
       console.error("[webhook] Failed to create conversation:", error);
       return new NextResponse("OK", { status: 200 });
     }
     conversationId = newConv.id;
+    conversationMetadata = (newConv.metadata ?? {}) as ConversationMetadata;
   }
 
   // 4. Save inbound message
@@ -99,6 +112,85 @@ export async function POST(req: NextRequest) {
     content_type: "text", content: { text: messageText },
     twilio_message_sid: messageSid, status: "delivered",
   });
+
+  const botSettingsForOrder = (business.bot_settings as Record<string, unknown>) ?? {};
+  const isMenuBusiness = ["restaurant", "cafe", "retail"].includes(business.type);
+
+  if (isMenuBusiness) {
+    const { data: menuItems } = await supabase
+      .from("menu_items")
+      .select("id,name,price,is_available")
+      .eq("business_id", business.id)
+      .eq("is_available", true)
+      .order("display_order");
+
+    const paidAddons = Array.isArray(botSettingsForOrder.paid_addons)
+      ? (botSettingsForOrder.paid_addons as PaidAddon[])
+      : [
+          { name: "زيادة مايونيز", price: 2, aliases: ["مايونيز", "زود مايونيز"] },
+          { name: "زيادة جبن", price: 3, aliases: ["جبن", "زيادة جبنة", "زود جبن"] },
+        ];
+
+    const orderTurn = processRestaurantOrderTurn({
+      text: messageText,
+      menu: menuItems ?? [],
+      customerPhone: from,
+      draft: conversationMetadata.restaurant_order_draft ?? null,
+      paidAddons,
+    });
+
+    if (orderTurn.handled) {
+      const nextMetadata: ConversationMetadata = {
+        ...conversationMetadata,
+        restaurant_order_draft: orderTurn.draft ?? undefined,
+      };
+      if (!orderTurn.draft) delete nextMetadata.restaurant_order_draft;
+
+      await supabase
+        .from("conversations")
+        .update({
+          metadata: nextMetadata as never,
+          summary: orderTurn.orderSummary ? "طلب جديد من واتساب" : orderTurn.reply.slice(0, 80),
+          last_message_at: new Date().toISOString(),
+        })
+        .eq("id", conversationId);
+
+      const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
+      let outboundSid: string | null = null;
+      try {
+        const sent = await twilioClient.messages.create({
+          from: `whatsapp:${to}`,
+          to: `whatsapp:${from}`,
+          body: orderTurn.reply,
+        });
+        outboundSid = sent.sid;
+      } catch (err) {
+        console.error("[webhook] Twilio order reply error:", err);
+      }
+
+      await supabase.from("messages").insert({
+        conversation_id: conversationId,
+        direction: "outbound",
+        content_type: "text",
+        content: { text: orderTurn.reply },
+        twilio_message_sid: outboundSid,
+        ai_metadata: { type: "restaurant_order_bot" },
+        status: "sent",
+      });
+
+      if (orderTurn.orderSummary) {
+        await supabase.from("messages").insert({
+          conversation_id: conversationId,
+          direction: "inbound",
+          content_type: "order_summary",
+          content: { text: orderTurn.orderSummary },
+          status: "delivered",
+        });
+      }
+
+      return new NextResponse("OK", { status: 200 });
+    }
+  }
 
   // 5. Fetch conversation history (last 10 messages for context)
   const { data: history } = await supabase

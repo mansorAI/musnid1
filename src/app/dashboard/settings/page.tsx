@@ -1,8 +1,10 @@
-import { Settings } from "lucide-react";
+import Link from "next/link";
+import { ReceiptText, Settings } from "lucide-react";
 import { createBusiness } from "@/app/dashboard/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { ThemeSelector } from "@/components/theme-selector";
 import {
   Select,
   SelectContent,
@@ -68,6 +70,33 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               لا يوجد نشاط حقيقي مربوط في هذه البيئة. تجربة الإعداد الأولى أصبحت في صفحة onboarding، ويمكنك استخدام هذا النموذج لإدارة النشاط لاحقا.
             </div>
           )}
+        </div>
+      </div>
+
+      <Link
+        href="/dashboard/sales"
+        className="glass-card flex items-center justify-between gap-4 p-6 transition-colors hover:bg-surface-50 dark:hover:bg-surface-800/30"
+      >
+        <div>
+          <h2 className="text-lg font-bold text-surface-900 dark:text-white">المبيعات والفوترة</h2>
+          <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+            كاشير المنتجات، الفواتير، إعدادات VAT وZATCA Phase 1.
+          </p>
+        </div>
+        <div className="flex size-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
+          <ReceiptText className="size-5" />
+        </div>
+      </Link>
+
+      <div className="glass-card overflow-hidden">
+        <div className="p-6 border-b border-surface-200/50 dark:border-surface-700/30">
+          <h2 className="text-lg font-bold text-surface-900 dark:text-white">المظهر</h2>
+          <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+            اختر الوضع الذي يناسب شاشة العمل الحالية.
+          </p>
+        </div>
+        <div className="p-6">
+          <ThemeSelector />
         </div>
       </div>
 

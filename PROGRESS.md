@@ -1,5 +1,201 @@
 # PROGRESS
 
+## 2026-06-01 — Mobile Progress Parity: Theme + Smart Tasks
+
+### Completed
+
+#### Web Theme System
+- Reviewed the latest mobile `PROGRESS.md` from `C:\pro\musnid1\musnid-mobile\PROGRESS.md`.
+- Reviewed the existing web `PROGRESS.md` before making changes so the new work only fills the missing parity items.
+- Mirrored the relevant mobile theme work in the web app.
+- Kept the existing `next-themes` setup and changed the default theme to dark to match the mobile default.
+- Added `src/components/theme-selector.tsx` with two card-style options:
+  - `داكن`
+  - `فاتح`
+- Added a new "المظهر" section to `/dashboard/settings` so web users can switch themes from the dashboard.
+
+#### Smart Personal Tasks Engine — Web Phase 1
+- Added `supabase/migrations/20260601090000_personal_tasks_engine_web.sql`.
+- New tables:
+  - `personal_tasks`
+  - `task_time_windows`
+  - `user_energy_map`
+  - `task_surface_log`
+  - `task_suppression_factors`
+- Added `task_context_tag` enum for:
+  - `general`
+  - `calls`
+  - `shopping`
+  - `mail`
+  - `errands`
+- Added full RLS so each authenticated user can only manage their own task data.
+- Added `increment_task_delays()` for future scheduled delay increments.
+
+#### Algorithm Layer
+- Added `src/lib/task-engine.ts` with pure functions matching the mobile phase-1 logic:
+  - `computeDebt`
+  - `computeMomentum`
+  - `calculateSurfaceScore`
+  - `scoreTasks`
+  - `computeAdaptiveThreshold`
+  - `computeSuppressionDelta`
+  - `updateEnergyLevel`
+  - `extractContextTag`
+  - `TAG_META`
+
+#### Dashboard Tasks UI
+- Added `/dashboard/tasks`.
+- Added dashboard nav item "المهام".
+- The page includes:
+  - Add task form with Arabic auto context detection.
+  - Context chips for calls, shopping, mail, errands, and general.
+  - Timeline-style task cards with a fixed 62px row height.
+  - Time column, task card column, and energy score column.
+  - Context banner when non-general tasks are present.
+  - Hidden tasks section labeled "تنتظر لحظتها".
+  - Actions for "تم", "لاحقاً", and ignore.
+- Added `src/app/dashboard/tasks/actions.ts`:
+  - `addPersonalTask`
+  - `completePersonalTask`
+  - `snoozePersonalTask`
+  - `ignorePersonalTask`
+- Actions log outcomes, update suppression factors, and update the user's hourly energy map.
+
+#### Types and Data Layer
+- Updated `src/types/database.ts` with the 5 new task tables and exported row helper types.
+- Added `TaskContextTag` to `src/types/index.ts`.
+- Added `getTasksData()` to `src/lib/dashboard-data.ts`.
+- The tasks page falls back to demo smart tasks when Supabase is not configured.
+
+#### Sales and ZATCA Billing Visibility
+- Reviewed the mobile progress section for "أساس نظام المبيعات والفوترة ZATCA" and "إصلاحات الفوترة وSupabase".
+- Confirmed the web app had no visible sales/billing routes even though mobile expects the same platform database.
+- Copied the mobile ZATCA migration into the web project so both apps use the same database schema:
+  - `supabase/migrations/20260531061600_zatca_fatoora_schema.sql`
+- The shared schema includes:
+  - `invoice_settings`
+  - `sales_products`
+  - `invoices`
+  - `invoice_items`
+  - `zatca_devices`
+  - `zatca_submissions`
+- Added `src/lib/zatca.ts`:
+  - VAT calculation for `none`, `inclusive`, and `exclusive`.
+  - Stable invoice number generation.
+  - ZATCA Phase 1 TLV Base64 QR payload generation.
+- Added web sales routes:
+  - `/dashboard/sales` — invoices list and daily summary.
+  - `/dashboard/sales/products` — product cashier using the existing shared `menu_items` table.
+  - `/dashboard/sales/settings` — VAT and seller settings.
+  - `/dashboard/sales/[id]` — invoice detail and QR payload display.
+- Added `src/app/dashboard/sales/actions.ts`:
+  - `saveInvoiceSettings`
+  - `addSalesProduct`
+  - `issueProductInvoice`
+- Added sales/billing visibility:
+  - Dashboard navigation item "المبيعات".
+  - Settings card linking to "المبيعات والفوترة".
+- Kept the same fallback behavior documented in mobile:
+  - Try `invoice_settings` first.
+  - If the table is missing, save/read temporary settings from `businesses.bot_settings.invoice_settings`.
+  - Actual invoice issuing still requires `invoices` and `invoice_items` from the shared migration.
+- Updated `src/types/database.ts` with shared invoice/ZATCA tables and enums.
+- Added sales data loaders to `src/lib/dashboard-data.ts`.
+
+#### Files Added
+- `src/lib/task-engine.ts`
+- `src/lib/zatca.ts`
+- `src/app/dashboard/tasks/page.tsx`
+- `src/app/dashboard/tasks/actions.ts`
+- `src/app/dashboard/sales/page.tsx`
+- `src/app/dashboard/sales/products/page.tsx`
+- `src/app/dashboard/sales/settings/page.tsx`
+- `src/app/dashboard/sales/[id]/page.tsx`
+- `src/app/dashboard/sales/actions.ts`
+- `src/components/theme-selector.tsx`
+- `supabase/migrations/20260531061600_zatca_fatoora_schema.sql`
+- `supabase/migrations/20260601090000_personal_tasks_engine_web.sql`
+
+#### Main Files Updated
+- `src/components/providers.tsx` — default theme changed to dark.
+- `src/app/dashboard/layout.tsx` — added "المهام" and "المبيعات" navigation items.
+- `src/app/dashboard/settings/page.tsx` — added the "المظهر" section and sales/billing entry.
+- `src/lib/dashboard-data.ts` — added smart tasks data loading/scoring and sales/billing loaders.
+- `src/types/database.ts` — added task tables, invoice/ZATCA tables, enums, and helper row types.
+- `src/types/index.ts` — added `TaskContextTag`.
+- `PROGRESS.md` — documented today's web parity work.
+
+### Verification
+- `npx.cmd tsc --noEmit` passes.
+- `npm.cmd run lint` passes.
+- `npm.cmd run build` passes.
+- Next build includes `/dashboard/tasks`, `/dashboard/sales`, `/dashboard/sales/products`, `/dashboard/sales/settings`, and `/dashboard/sales/[id]` as dynamic routes.
+
+### Remaining
+- Apply `20260601090000_personal_tasks_engine_web.sql` in Supabase SQL Editor before using real task data in production.
+- Apply `20260531061600_zatca_fatoora_schema.sql` in the same Supabase project used by mobile and web before issuing real invoices.
+- Add end-to-end browser testing for `/dashboard/tasks` after migration is applied.
+- Add end-to-end cashier testing for `/dashboard/sales/products` after the ZATCA migration is applied.
+- Decide whether smart tasks should remain user-personal or become business/team shared in a later phase.
+
+## 2026-05-29 — Mobile Expo + Restaurant Order Webhook
+
+### Completed
+
+#### Mobile Expo Compatibility
+- Diagnosed Expo Go incompatibility with the mobile project on iOS.
+- Downgraded the mobile app to Expo SDK 54 so it can run with the current Expo Go version available on the App Store.
+- Confirmed SDK-compatible dependencies with `npx.cmd expo install --check`.
+- Installed local tunnel support with `@expo/ngrok` and ran the mobile app through `expo start --clear --tunnel`.
+- Connected the mobile app to the same Supabase project used by the web app.
+
+#### Mobile App UX Updates
+- Added a skip button to onboarding working-hours step so owners can complete setup and edit working hours later.
+- Made service duration optional in the mobile service creation screen.
+- Added clear menu item availability labels in the mobile menu list:
+  - `متوفر`
+  - `نفذ`
+- Added a structured order-summary card renderer in the mobile conversation detail screen for messages starting with `طلب جديد:`.
+
+#### Restaurant Order Collection in Webhook
+- Added `src/lib/bot/restaurant-order.ts`.
+- Integrated restaurant/cafe/retail order collection into `src/app/api/whatsapp/webhook/route.ts`.
+- The webhook now handles lightweight restaurant ordering before falling back to Claude:
+  - Matches customer text against available `menu_items`.
+  - Asks for pickup or delivery.
+  - Requests address for delivery.
+  - Collects customer notes.
+  - Handles paid add-ons from `businesses.bot_settings.paid_addons` when configured.
+  - Falls back to default add-ons for common cases like extra mayo/cheese.
+  - Asks for final confirmation.
+- Stores in-progress order state in:
+  - `conversations.metadata.restaurant_order_draft`
+- On confirmation, inserts a structured owner-facing message into the conversation:
+
+```text
+طلب جديد:
+العميل: 05xxxxxxxx
+طريقة الطلب: استلام
+الأصناف:
+- برجر دجاج
+- بيبسي
+الإضافات:
+- زيادة مايونيز +2 ر.س
+الملاحظات:
+- بدون كاتشب
+الإجمالي: 31 ر.س
+```
+
+### Verification
+- `npx.cmd tsc --noEmit` passes in the web project.
+- Mobile TypeScript check now starts after adjusting `ignoreDeprecations` to `5.0`; remaining errors are pre-existing typed-route/Supabase relationship issues outside the order work.
+
+### Remaining
+- Test the restaurant order flow end-to-end through Twilio WhatsApp after deploying the webhook.
+- Add an admin UI later for configuring paid add-ons instead of relying on JSON in `bot_settings.paid_addons`.
+
+---
+
 ## 2026-05-30
 
 ### Completed

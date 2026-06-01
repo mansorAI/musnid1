@@ -1,0 +1,199 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { getCurrentBusiness } from "@/lib/dashboard-data";
+import { hasSupabaseEnv } from "@/lib/env";
+import { createClient } from "@/lib/supabase/server";
+import {
+  calculateInvoiceTotals,
+  generateInvoiceNumber,
+  generateZatcaQrPayload,
+  parseInvoiceSettings,
+  splitLineTax,
+  type TaxMode,
+} from "@/lib/zatca";
+
+function toNumber(value: FormDataEntryValue | null, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+async function requireBusiness(next = "/dashboard/sales") {
+  if (!hasSupabaseEnv()) redirect(`${next}?demo=1`);
+
+  const business = await getCurrentBusiness();
+  if (!business) redirect("/sign-in?next=/dashboard/sales");
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/sign-in?next=/dashboard/sales");
+  return { business, supabase, userId: user.id };
+}
+
+export async function saveInvoiceSettings(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/settings");
+  const sellerName = String(formData.get("seller_name") ?? business.name).trim() || business.name;
+  const vatNumber = String(formData.get("vat_number") ?? "").trim() || null;
+  const sellerAddress = String(formData.get("seller_address") ?? "").trim() || null;
+  const vatMode = String(formData.get("vat_mode") ?? "exclusive") as TaxMode;
+  const vatRegistered = formData.get("vat_registered") === "on";
+
+  const payload = {
+    business_id: business.id,
+    seller_name: sellerName,
+    vat_number: vatNumber,
+    seller_address: sellerAddress,
+    vat_registered: vatRegistered,
+    vat_mode: vatMode,
+    vat_rate: 0.15,
+  };
+
+  const { error } = await supabase.from("invoice_settings").upsert(payload, { onConflict: "business_id" });
+
+  if (error) {
+    const botSettings = (business.bot_settings as Record<string, unknown>) ?? {};
+    await supabase.from("businesses").update({
+      bot_settings: {
+        ...botSettings,
+        invoice_settings: {
+          sellerName,
+          vatNumber: vatNumber ?? "",
+          sellerAddress: sellerAddress ?? "",
+          taxMode: vatMode,
+          vatRate: 0.15,
+          vatRegistered,
+        },
+      },
+    }).eq("id", business.id);
+  }
+
+  revalidatePath("/dashboard/sales/settings");
+  revalidatePath("/dashboard/sales");
+  redirect("/dashboard/sales/settings?saved=1");
+}
+
+export async function addSalesProduct(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/products");
+  const name = String(formData.get("name") ?? "").trim();
+  const price = toNumber(formData.get("price"));
+
+  if (!name || price <= 0) redirect("/dashboard/sales/products?error=product");
+
+  const { error } = await supabase.from("menu_items").insert({
+    business_id: business.id,
+    name,
+    price,
+    is_available: true,
+    display_order: 0,
+  });
+
+  if (error) redirect("/dashboard/sales/products?error=product");
+
+  revalidatePath("/dashboard/sales/products");
+  redirect("/dashboard/sales/products");
+}
+
+export async function issueProductInvoice(formData: FormData) {
+  const { business, supabase, userId } = await requireBusiness("/dashboard/sales/products");
+
+  const { data: menuItems } = await supabase
+    .from("menu_items")
+    .select("id,name,price")
+    .eq("business_id", business.id)
+    .eq("is_available", true);
+
+  const selected = (menuItems ?? [])
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      quantity: toNumber(formData.get(`qty_${item.id}`)),
+      unitPrice: Number(item.price),
+    }))
+    .filter((item) => item.quantity > 0);
+
+  if (!selected.length) redirect("/dashboard/sales/products?error=empty");
+
+  const { data: dbSettings } = await supabase
+    .from("invoice_settings")
+    .select("*")
+    .eq("business_id", business.id)
+    .maybeSingle();
+
+  const botSettings = (business.bot_settings as Record<string, unknown>) ?? {};
+  const settings = dbSettings
+    ? {
+        sellerName: dbSettings.seller_name || business.name,
+        vatNumber: dbSettings.vat_number ?? "",
+        taxMode: dbSettings.vat_mode,
+        vatRate: Number(dbSettings.vat_rate),
+      }
+    : parseInvoiceSettings(botSettings.invoice_settings, business.name);
+
+  const totals = calculateInvoiceTotals(selected, settings);
+  const invoiceNumber = generateInvoiceNumber(dbSettings?.next_invoice_number ?? Date.now() % 1_000_000);
+  const issuedAt = new Date().toISOString();
+  const qrPayload = generateZatcaQrPayload({
+    sellerName: settings.sellerName,
+    vatNumber: settings.vatNumber,
+    timestamp: issuedAt,
+    total: totals.total,
+    taxTotal: totals.taxTotal,
+  });
+
+  const { data: invoice, error: invoiceError } = await supabase
+    .from("invoices")
+    .insert({
+      business_id: business.id,
+      created_by: userId,
+      invoice_number: invoiceNumber,
+      seller_name: settings.sellerName,
+      seller_vat_number: settings.vatNumber || null,
+      buyer_name: String(formData.get("buyer_name") ?? "").trim() || "عميل نقدي",
+      buyer_phone: String(formData.get("buyer_phone") ?? "").trim() || null,
+      vat_mode: settings.taxMode,
+      vat_rate: settings.vatRate,
+      subtotal_amount: totals.subtotal,
+      taxable_amount: totals.subtotal,
+      vat_amount: totals.taxTotal,
+      total_amount: totals.total,
+      qr_tlv: qrPayload,
+      payment_method: String(formData.get("payment_method") ?? "card") as "cash" | "card" | "bank_transfer" | "other",
+      issued_at: issuedAt,
+    })
+    .select("id")
+    .single();
+
+  if (invoiceError || !invoice) redirect("/dashboard/sales/products?error=schema");
+
+  const invoiceItems = selected.map((item) => {
+    const lineTotals = splitLineTax({ name: item.name, quantity: item.quantity, unitPrice: item.unitPrice }, settings);
+    return {
+      invoice_id: invoice.id,
+      business_id: business.id,
+      name: item.name,
+      qty: item.quantity,
+      unit_price: item.unitPrice,
+      taxable_amount: lineTotals.subtotal,
+      vat_amount: lineTotals.taxTotal,
+      total_amount: lineTotals.total,
+    };
+  });
+
+  const { error: itemError } = await supabase.from("invoice_items").insert(invoiceItems);
+  if (itemError) redirect("/dashboard/sales/products?error=schema");
+
+  if (dbSettings) {
+    await supabase
+      .from("invoice_settings")
+      .update({ next_invoice_number: dbSettings.next_invoice_number + 1 })
+      .eq("business_id", business.id);
+  }
+
+  revalidatePath("/dashboard/sales");
+  revalidatePath(`/dashboard/sales/${invoice.id}`);
+  redirect(`/dashboard/sales/${invoice.id}`);
+}

@@ -1,6 +1,9 @@
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { automationRules, recentConversations } from "@/lib/demo-data";
+import { scoreTasks, type PersonalTaskLike } from "@/lib/task-engine";
+import { getDefaultInvoiceSettings, parseInvoiceSettings } from "@/lib/zatca";
+import type { TaskContextTag } from "@/types";
 
 export async function getCurrentBusiness() {
   if (!hasSupabaseEnv()) return null;
@@ -244,4 +247,227 @@ export async function getConversations() {
         : "",
     };
   });
+}
+
+export async function getTasksData() {
+  if (!hasSupabaseEnv()) {
+    const demoTasks: PersonalTaskLike[] = [
+      {
+        id: "demo-task-1",
+        title: "اتصل على مورد القهوة لتأكيد الطلب",
+        context_tag: "calls",
+        base_weight: 1.1,
+        energy_required: 0.55,
+        days_delayed: 2,
+        suppression_factor: 1,
+        time_windows: [{ start_time: "09:00:00", end_time: "13:00:00" }],
+      },
+      {
+        id: "demo-task-2",
+        title: "راجع رسائل العملاء التي تحتاج تصعيد",
+        context_tag: "mail",
+        base_weight: 0.9,
+        energy_required: 0.45,
+        days_delayed: 0,
+        suppression_factor: 1,
+      },
+      {
+        id: "demo-task-3",
+        title: "مر على البنك لتحديث بيانات الحساب",
+        context_tag: "errands",
+        base_weight: 1.2,
+        energy_required: 0.7,
+        days_delayed: 3,
+        suppression_factor: 0.9,
+        time_windows: [{ start_time: "10:00:00", end_time: "15:00:00" }],
+      },
+    ];
+
+    const scored = scoreTasks(demoTasks, {
+      currentHour: new Date().getHours(),
+      currentEnergy: 0.55,
+    });
+
+    return { ...scored, currentEnergy: 0.55, businessId: null, userId: null, demo: true };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { surfacing: [], hidden: [], currentEnergy: 0.5, businessId: null, userId: null, demo: false };
+
+  const currentHour = new Date().getHours();
+  const [tasksResult, energyResult, lastResult] = await Promise.all([
+    supabase
+      .from("personal_tasks")
+      .select("*, task_time_windows(start_time,end_time), task_suppression_factors(factor)")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("user_energy_map")
+      .select("energy_level,sample_count")
+      .eq("user_id", user.id)
+      .eq("hour", currentHour)
+      .maybeSingle(),
+    supabase
+      .from("task_surface_log")
+      .select("context_tag,created_at")
+      .eq("user_id", user.id)
+      .eq("outcome", "done")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const currentEnergy =
+    energyResult.data && energyResult.data.sample_count >= 5
+      ? Number(energyResult.data.energy_level)
+      : 0.5;
+
+  type TaskJoinRow = {
+    id: string;
+    title: string;
+    context_tag: TaskContextTag;
+    base_weight: number;
+    energy_required: number;
+    days_delayed: number;
+    task_time_windows?: { start_time: string; end_time: string }[] | null;
+    task_suppression_factors?: { factor: number }[] | null;
+  };
+
+  const rows = (tasksResult.data ?? []) as TaskJoinRow[];
+  const tasks: PersonalTaskLike[] = rows.map((task) => ({
+    id: task.id,
+    title: task.title,
+    context_tag: task.context_tag,
+    base_weight: Number(task.base_weight),
+    energy_required: Number(task.energy_required),
+    days_delayed: task.days_delayed,
+    suppression_factor: task.task_suppression_factors?.[0]?.factor ?? 1,
+    time_windows: task.task_time_windows ?? [],
+  }));
+
+  const scored = scoreTasks(tasks, {
+    currentHour,
+    currentEnergy,
+    lastCompletedTag: lastResult.data?.context_tag as TaskContextTag | undefined,
+    lastCompletedAt: lastResult.data?.created_at ? new Date(lastResult.data.created_at) : null,
+  });
+
+  return { ...scored, currentEnergy, businessId: null, userId: user.id, demo: false };
+}
+
+export async function getInvoiceSettingsData() {
+  const business = await getCurrentBusiness();
+  if (!business) return { settings: getDefaultInvoiceSettings("مسند"), businessId: null, fromFallback: true };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("invoice_settings")
+    .select("*")
+    .eq("business_id", business.id)
+    .maybeSingle();
+
+  if (!error && data) {
+    return {
+      settings: {
+        sellerName: data.seller_name || business.name,
+        vatNumber: data.vat_number ?? "",
+        taxMode: data.vat_mode,
+        vatRate: Number(data.vat_rate),
+      },
+      businessId: business.id,
+      fromFallback: false,
+    };
+  }
+
+  const botSettings = (business.bot_settings as Record<string, unknown>) ?? {};
+  return {
+    settings: parseInvoiceSettings(botSettings.invoice_settings, business.name),
+    businessId: business.id,
+    fromFallback: true,
+  };
+}
+
+export async function getSalesOverviewData() {
+  const business = await getCurrentBusiness();
+  if (!business) {
+    return {
+      businessId: null,
+      invoices: [
+        {
+          id: "demo-inv-1",
+          invoice_number: "INV-2026-000001",
+          buyer_name: "عميل نقدي",
+          total_amount: 184,
+          vat_amount: 24,
+          issued_at: new Date().toISOString(),
+          status: "issued",
+        },
+      ],
+      todayTotal: 184,
+      todayVat: 24,
+      invoiceCount: 1,
+      schemaMissing: false,
+    };
+  }
+
+  const supabase = await createClient();
+  const today = new Date().toISOString().split("T")[0];
+  const { data, error } = await supabase
+    .from("invoices")
+    .select("id,invoice_number,buyer_name,total_amount,vat_amount,issued_at,status")
+    .eq("business_id", business.id)
+    .order("issued_at", { ascending: false })
+    .limit(30);
+
+  if (error) {
+    return { businessId: business.id, invoices: [], todayTotal: 0, todayVat: 0, invoiceCount: 0, schemaMissing: true };
+  }
+
+  const invoices = data ?? [];
+  const todayInvoices = invoices.filter((invoice) => invoice.issued_at.startsWith(today));
+  return {
+    businessId: business.id,
+    invoices,
+    todayTotal: todayInvoices.reduce((sum, invoice) => sum + Number(invoice.total_amount), 0),
+    todayVat: todayInvoices.reduce((sum, invoice) => sum + Number(invoice.vat_amount), 0),
+    invoiceCount: invoices.length,
+    schemaMissing: false,
+  };
+}
+
+export async function getSalesProductsData() {
+  const business = await getCurrentBusiness();
+  if (!business) {
+    return {
+      businessId: null,
+      products: [
+        { id: "demo-p1", name: "قهوة اليوم", price: 18, is_available: true },
+        { id: "demo-p2", name: "كيكة تمر", price: 26, is_available: true },
+        { id: "demo-p3", name: "ساندويتش دجاج", price: 32, is_available: true },
+      ],
+      settings: getDefaultInvoiceSettings("مسند"),
+      settingsFallback: true,
+    };
+  }
+
+  const [menuData, settingsData] = await Promise.all([getMenuData(), getInvoiceSettingsData()]);
+
+  return {
+    businessId: business.id,
+    products: menuData.items
+      .filter((item) => item.is_available)
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price),
+        is_available: item.is_available,
+      })),
+    settings: settingsData.settings,
+    settingsFallback: settingsData.fromFallback,
+  };
 }

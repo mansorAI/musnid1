@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
-  Bot, BookOpenText, CalendarDays, LayoutDashboard, MessageCircle,
-  MessageSquareText, Settings, UserCheck, UtensilsCrossed, Users, Wrench,
+  Bot, BookOpenText, CalendarDays, CheckSquare, LayoutDashboard, MessageCircle,
+  MessageSquareText, ReceiptText, Settings, UserCheck, UtensilsCrossed, Users, Wrench,
 } from "lucide-react";
 import { signOut } from "@/app/sign-in/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -12,6 +12,8 @@ const coreNavItems = [
   { href: "/dashboard/conversations", label: "المحادثات", icon: MessageSquareText },
   { href: "/dashboard/customers", label: "العملاء", icon: Users },
   { href: "/dashboard/calendar", label: "التقويم", icon: CalendarDays },
+  { href: "/dashboard/sales", label: "المبيعات", icon: ReceiptText },
+  { href: "/dashboard/tasks", label: "المهام", icon: CheckSquare },
   { href: "/dashboard/knowledge", label: "المعرفة", icon: BookOpenText },
   { href: "/dashboard/automations", label: "الأتمتة", icon: Bot },
   { href: "/dashboard/settings", label: "الإعداد", icon: Settings },

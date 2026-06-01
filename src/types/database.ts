@@ -562,6 +562,456 @@ export type Database = {
           },
         ];
       };
+      personal_tasks: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          context_tag: Database["public"]["Enums"]["task_context_tag"];
+          base_weight: number;
+          energy_required: number;
+          days_delayed: number;
+          status: "active" | "done" | "archived";
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          context_tag?: Database["public"]["Enums"]["task_context_tag"];
+          base_weight?: number;
+          energy_required?: number;
+          days_delayed?: number;
+          status?: "active" | "done" | "archived";
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["personal_tasks"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "personal_tasks_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      task_time_windows: {
+        Row: {
+          id: string;
+          task_id: string;
+          start_time: string;
+          end_time: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          start_time: string;
+          end_time: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["task_time_windows"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "task_time_windows_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "personal_tasks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_energy_map: {
+        Row: {
+          id: string;
+          user_id: string;
+          hour: number;
+          energy_level: number;
+          sample_count: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          hour: number;
+          energy_level?: number;
+          sample_count?: number;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["user_energy_map"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "user_energy_map_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      task_surface_log: {
+        Row: {
+          id: string;
+          task_id: string;
+          user_id: string;
+          context_tag: Database["public"]["Enums"]["task_context_tag"];
+          surface_score: number | null;
+          outcome: "done" | "snoozed" | "ignored";
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          user_id: string;
+          context_tag: Database["public"]["Enums"]["task_context_tag"];
+          surface_score?: number | null;
+          outcome: "done" | "snoozed" | "ignored";
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["task_surface_log"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "task_surface_log_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "personal_tasks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_surface_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      task_suppression_factors: {
+        Row: {
+          id: string;
+          task_id: string;
+          user_id: string;
+          context_tag: Database["public"]["Enums"]["task_context_tag"];
+          factor: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          task_id: string;
+          user_id: string;
+          context_tag: Database["public"]["Enums"]["task_context_tag"];
+          factor?: number;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["task_suppression_factors"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "task_suppression_factors_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "personal_tasks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "task_suppression_factors_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      invoice_settings: {
+        Row: {
+          business_id: string;
+          seller_name: string;
+          vat_number: string | null;
+          seller_address: string | null;
+          vat_registered: boolean;
+          vat_mode: Database["public"]["Enums"]["invoice_vat_mode"];
+          vat_rate: number;
+          invoice_prefix: string;
+          next_invoice_number: number;
+          zatca_environment: Database["public"]["Enums"]["zatca_environment"];
+          phase2_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          business_id: string;
+          seller_name?: string;
+          vat_number?: string | null;
+          seller_address?: string | null;
+          vat_registered?: boolean;
+          vat_mode?: Database["public"]["Enums"]["invoice_vat_mode"];
+          vat_rate?: number;
+          invoice_prefix?: string;
+          next_invoice_number?: number;
+          zatca_environment?: Database["public"]["Enums"]["zatca_environment"];
+          phase2_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["invoice_settings"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "invoice_settings_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: true;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      invoices: {
+        Row: {
+          id: string;
+          business_id: string;
+          customer_id: string | null;
+          created_by: string | null;
+          invoice_number: string;
+          invoice_kind: Database["public"]["Enums"]["invoice_kind"];
+          status: Database["public"]["Enums"]["invoice_status"];
+          payment_method: Database["public"]["Enums"]["invoice_payment_method"];
+          seller_name: string;
+          seller_vat_number: string | null;
+          seller_address: string | null;
+          buyer_name: string | null;
+          buyer_vat_number: string | null;
+          buyer_phone: string | null;
+          currency: string;
+          vat_mode: Database["public"]["Enums"]["invoice_vat_mode"];
+          vat_rate: number;
+          subtotal_amount: number;
+          discount_amount: number;
+          taxable_amount: number;
+          vat_amount: number;
+          total_amount: number;
+          qr_tlv: string | null;
+          xml_hash: string | null;
+          xml_uuid: string | null;
+          icv: number | null;
+          previous_invoice_hash: string | null;
+          zatca_payload: Json;
+          zatca_response: Json;
+          issued_at: string;
+          reported_at: string | null;
+          cleared_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          customer_id?: string | null;
+          created_by?: string | null;
+          invoice_number: string;
+          invoice_kind?: Database["public"]["Enums"]["invoice_kind"];
+          status?: Database["public"]["Enums"]["invoice_status"];
+          payment_method?: Database["public"]["Enums"]["invoice_payment_method"];
+          seller_name: string;
+          seller_vat_number?: string | null;
+          seller_address?: string | null;
+          buyer_name?: string | null;
+          buyer_vat_number?: string | null;
+          buyer_phone?: string | null;
+          currency?: string;
+          vat_mode?: Database["public"]["Enums"]["invoice_vat_mode"];
+          vat_rate?: number;
+          subtotal_amount?: number;
+          discount_amount?: number;
+          taxable_amount?: number;
+          vat_amount?: number;
+          total_amount?: number;
+          qr_tlv?: string | null;
+          xml_hash?: string | null;
+          xml_uuid?: string | null;
+          icv?: number | null;
+          previous_invoice_hash?: string | null;
+          zatca_payload?: Json;
+          zatca_response?: Json;
+          issued_at?: string;
+          reported_at?: string | null;
+          cleared_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["invoices"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "invoices_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "invoices_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "invoices_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      invoice_items: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          business_id: string;
+          name: string;
+          description: string | null;
+          qty: number;
+          unit_price: number;
+          discount_amount: number;
+          taxable_amount: number;
+          vat_amount: number;
+          total_amount: number;
+          vat_category: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          business_id: string;
+          name: string;
+          description?: string | null;
+          qty?: number;
+          unit_price?: number;
+          discount_amount?: number;
+          taxable_amount?: number;
+          vat_amount?: number;
+          total_amount?: number;
+          vat_category?: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["invoice_items"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey";
+            columns: ["invoice_id"];
+            isOneToOne: false;
+            referencedRelation: "invoices";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "invoice_items_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sales_products: {
+        Row: {
+          id: string;
+          business_id: string;
+          name: string;
+          price: number;
+          vat_inclusive: boolean;
+          image_url: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          business_id: string;
+          name: string;
+          price: number;
+          vat_inclusive?: boolean;
+          image_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["sales_products"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "sales_products_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      zatca_devices: {
+        Row: {
+          id: string;
+          business_id: string;
+          device_name: string;
+          environment: Database["public"]["Enums"]["zatca_environment"];
+          compliance_csid: string | null;
+          production_csid: string | null;
+          private_key_ref: string | null;
+          certificate_info: Json;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["zatca_devices"]["Row"]> & {
+          business_id: string;
+          device_name: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["zatca_devices"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "zatca_devices_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      zatca_submissions: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          business_id: string;
+          environment: Database["public"]["Enums"]["zatca_environment"];
+          request_payload: Json;
+          response_payload: Json;
+          status: string;
+          error_message: string | null;
+          submitted_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["zatca_submissions"]["Row"]> & {
+          invoice_id: string;
+          business_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["zatca_submissions"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "zatca_submissions_invoice_id_fkey";
+            columns: ["invoice_id"];
+            isOneToOne: false;
+            referencedRelation: "invoices";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "zatca_submissions_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -586,7 +1036,23 @@ export type Database = {
       consent_status: "opted_in" | "opted_out" | "pending";
       template_category: "utility" | "marketing" | "authentication";
       template_status: "draft" | "pending" | "approved" | "rejected" | "paused";
+      task_context_tag: "general" | "calls" | "shopping" | "mail" | "errands";
+      invoice_vat_mode: "none" | "inclusive" | "exclusive";
+      invoice_kind: "simplified_tax_invoice" | "tax_invoice" | "credit_note" | "debit_note";
+      invoice_status: "draft" | "issued" | "reported" | "cleared" | "rejected" | "cancelled";
+      invoice_payment_method: "cash" | "card" | "bank_transfer" | "other";
+      zatca_environment: "sandbox" | "simulation" | "production";
     };
     CompositeTypes: Record<string, never>;
   };
 };
+
+export type PersonalTaskRow = Database["public"]["Tables"]["personal_tasks"]["Row"];
+export type TaskTimeWindowRow = Database["public"]["Tables"]["task_time_windows"]["Row"];
+export type UserEnergyMapRow = Database["public"]["Tables"]["user_energy_map"]["Row"];
+export type TaskSurfaceLogRow = Database["public"]["Tables"]["task_surface_log"]["Row"];
+export type TaskSuppressionFactorRow = Database["public"]["Tables"]["task_suppression_factors"]["Row"];
+export type TaskContextTag = Database["public"]["Enums"]["task_context_tag"];
+export type InvoiceSettingsRow = Database["public"]["Tables"]["invoice_settings"]["Row"];
+export type InvoiceRow = Database["public"]["Tables"]["invoices"]["Row"];
+export type InvoiceItemRow = Database["public"]["Tables"]["invoice_items"]["Row"];
