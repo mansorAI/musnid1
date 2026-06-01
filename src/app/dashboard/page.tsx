@@ -215,13 +215,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <Link
               key={action.href}
               href={action.href}
-              className="flex items-center rounded-2xl px-4 py-3.5 transition-colors"
+              className="flex items-center rounded-2xl px-4 py-3.5 transition-colors hover:bg-[#16161f]"
               style={{
                 background: CARD_BG2,
                 border: `1px solid ${CARD_BORDER}`,
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = CARD_BG; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = CARD_BG2; }}
             >
               {/* Chevron far left */}
               <svg
