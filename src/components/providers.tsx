@@ -23,7 +23,7 @@ export function Providers({ children }: ProvidersProps) {
   );
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       <Toaster richColors position="top-center" />
     </ThemeProvider>

@@ -7,11 +7,6 @@ import { redirect } from "next/navigation";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getCurrentBusiness, getDashboardStats, getSalesOverviewData } from "@/lib/dashboard-data";
 
-/* ── shared card bg matching mobile C.card = #16161f ── */
-const CARD_BG    = "#16161f";
-const CARD_BG2   = "#13131e";
-const CARD_BORDER = "#ffffff12";
-
 type DashboardPageProps = {
   searchParams?: Promise<{ created_business?: string }>;
 };
@@ -66,25 +61,24 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       ) : null}
 
       {/* ── Welcome hero ── */}
-      <section
-        className="relative overflow-hidden rounded-2xl px-6 py-5"
-        style={{ background: CARD_BG2, border: `1px solid ${CARD_BORDER}` }}
-      >
+      <section className="relative overflow-hidden rounded-2xl px-6 py-5 border transition-colors
+        bg-surface-100 border-surface-200
+        dark:bg-[#13131e] dark:border-white/[0.07]">
         <div className="pointer-events-none absolute -right-10 -top-20 h-56 w-56 rounded-full bg-primary-500 opacity-[0.08]" />
         <div className="pointer-events-none absolute -bottom-16 -left-5 h-40 w-40 rounded-full opacity-[0.05]" style={{ background: "#14b8a6" }} />
         <div className="relative flex items-center justify-between">
-          <span className="text-sm" style={{ color: "#6b7280" }}>
+          <span className="text-sm text-surface-500 dark:text-surface-400">
             {business?.name ? `${business.name} · المبيعات والفوترة` : "مسند"}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-            <span className="text-xs text-green-400">مباشر</span>
+            <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+            <span className="text-xs text-green-600 dark:text-green-400">مباشر</span>
           </span>
         </div>
-        <h1 className="relative mt-3 text-right text-2xl font-extrabold text-white">
+        <h1 className="relative mt-3 text-right text-2xl font-extrabold text-surface-900 dark:text-white">
           مرحباً {business?.name ?? "بك"}
         </h1>
-        <p className="relative mt-2 text-right text-sm" style={{ color: "#6b7280" }}>
+        <p className="relative mt-2 text-right text-sm text-surface-500 dark:text-surface-400">
           ملخص الفواتير والمبيعات اليوم
         </p>
       </section>
@@ -92,23 +86,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       {/* ── WhatsApp stats ── */}
       {waCards ? (
         <section>
-          <p className="mb-3 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
+          <p className="mb-3 text-right text-xs font-semibold uppercase tracking-wider text-surface-400 dark:text-surface-500">
             واتساب ذكي
           </p>
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             {waCards.map((card) => (
               <div
                 key={card.label}
-                className="rounded-2xl p-4"
-                style={{
-                  background: CARD_BG,
-                  border: `1px solid ${CARD_BORDER}`,
-                  borderTop: `2px solid ${card.color}`,
-                }}
+                className="rounded-2xl p-4 border transition-colors bg-white dark:bg-[#16161f] border-surface-200 dark:border-white/[0.07]"
+                style={{ borderTop: `2px solid ${card.color}` }}
               >
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-[10px]" style={{ color: "#6b7280" }}>
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                  <span className="flex items-center gap-1 text-[10px] text-surface-400 dark:text-surface-500">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                     مباشر
                   </span>
                   <div
@@ -118,8 +108,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     <card.Icon className="size-[18px]" style={{ color: card.color }} />
                   </div>
                 </div>
-                <p className="text-right text-3xl font-extrabold text-white">{card.value}</p>
-                <p className="mt-1.5 text-right text-xs" style={{ color: "#9ca3af" }}>{card.label}</p>
+                <p className="text-right text-3xl font-extrabold text-surface-900 dark:text-white">{card.value}</p>
+                <p className="mt-1.5 text-right text-xs text-surface-500 dark:text-surface-400">{card.label}</p>
               </div>
             ))}
           </div>
@@ -129,7 +119,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       {/* ── Sales stats ── */}
       {!salesData.schemaMissing ? (
         <section>
-          <p className="mb-3 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
+          <p className="mb-3 text-right text-xs font-semibold uppercase tracking-wider text-surface-400 dark:text-surface-500">
             الإحصائيات
           </p>
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -139,10 +129,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 <Link
                   key={card.label}
                   href={card.href}
-                  className="block rounded-2xl p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                  className="block rounded-2xl p-4 border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl
+                    bg-white border-surface-200
+                    dark:bg-[#16161f] dark:border-white/[0.07]"
                   style={{
-                    background: CARD_BG,
-                    border: `1px solid ${CARD_BORDER}`,
                     borderTop: `2px solid ${card.color}`,
                     boxShadow: `0 4px 12px ${card.color}22`,
                   }}
@@ -170,23 +160,21 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                       فتح الكاشير
                     </span>
                   </div>
-                  <p className="mt-3 text-right text-xs" style={{ color: "#9ca3af" }}>{card.label}</p>
+                  <p className="mt-3 text-right text-xs text-surface-500 dark:text-surface-400">{card.label}</p>
                 </Link>
               ) : (
                 /* ── Regular stat card ── */
                 <div
                   key={card.label}
-                  className="rounded-2xl p-4"
+                  className="rounded-2xl p-4 border transition-colors bg-white dark:bg-[#16161f] border-surface-200 dark:border-white/[0.07]"
                   style={{
-                    background: CARD_BG,
-                    border: `1px solid ${CARD_BORDER}`,
                     borderTop: `2px solid ${card.color}`,
                     boxShadow: `0 4px 12px ${card.color}22`,
                   }}
                 >
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="flex items-center gap-1 text-[10px]" style={{ color: "#6b7280" }}>
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                    <span className="flex items-center gap-1 text-[10px] text-surface-400 dark:text-surface-500">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                       مباشر
                     </span>
                     <div
@@ -196,8 +184,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                       <card.Icon className="size-[18px]" style={{ color: card.color }} />
                     </div>
                   </div>
-                  <p className="text-right text-3xl font-extrabold text-white">{card.value}</p>
-                  <p className="mt-1.5 text-right text-xs" style={{ color: "#9ca3af" }}>{card.label}</p>
+                  <p className="text-right text-3xl font-extrabold text-surface-900 dark:text-white">{card.value}</p>
+                  <p className="mt-1.5 text-right text-xs text-surface-500 dark:text-surface-400">{card.label}</p>
                 </div>
               ),
             )}
@@ -207,7 +195,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
       {/* ── Quick actions ── */}
       <section>
-        <p className="mb-3 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
+        <p className="mb-3 text-right text-xs font-semibold uppercase tracking-wider text-surface-400 dark:text-surface-500">
           إجراءات سريعة
         </p>
         <div className="space-y-2.5">
@@ -215,17 +203,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <Link
               key={action.href}
               href={action.href}
-              className="flex items-center rounded-2xl px-4 py-3.5 transition-colors hover:bg-[#16161f]"
-              style={{
-                background: CARD_BG2,
-                border: `1px solid ${CARD_BORDER}`,
-              }}
+              className="flex items-center rounded-2xl px-4 py-3.5 border transition-colors
+                bg-white border-surface-200 hover:bg-surface-50
+                dark:bg-[#13131e] dark:border-white/[0.07] dark:hover:bg-[#16161f]"
             >
               {/* Chevron far left */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 shrink-0"
-                style={{ color: "#6b7280" }}
+                className="h-4 w-4 shrink-0 text-surface-400 dark:text-surface-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -236,8 +221,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               {/* Text + icon far right */}
               <div className="flex flex-1 items-center justify-end gap-3">
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-white">{action.label}</p>
-                  <p className="mt-0.5 text-xs" style={{ color: "#9ca3af" }}>{action.sub}</p>
+                  <p className="text-sm font-semibold text-surface-900 dark:text-white">{action.label}</p>
+                  <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-400">{action.sub}</p>
                 </div>
                 <div
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
