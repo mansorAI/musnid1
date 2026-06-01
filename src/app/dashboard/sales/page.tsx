@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PackagePlus, Plus, Settings2 } from "lucide-react";
+import { PackagePlus, Settings2 } from "lucide-react";
 import { getAllSalesInvoices } from "@/lib/dashboard-data";
 import SalesList from "./sales-list";
 
@@ -30,13 +30,6 @@ export default async function SalesPage() {
           >
             <Settings2 className="size-4" />
             إعدادات الفوترة
-          </Link>
-          <Link
-            href="/dashboard/sales/new"
-            className="btn-secondary flex items-center gap-2 px-4 py-2 text-sm"
-          >
-            <Plus className="size-4" />
-            فاتورة جديدة
           </Link>
         </div>
       </section>
