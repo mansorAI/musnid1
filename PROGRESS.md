@@ -6,65 +6,77 @@
 
 #### Dashboard Page — Mobile-Style Redesign (`src/app/dashboard/page.tsx`)
 - Replaced generic stat cards with mobile-matched design:
-  - Colored top border (`borderTopColor`) per card color.
-  - Icon in rounded colored circle (`color + "1a"` background).
+  - **Hardcoded dark backgrounds** (`#16161f` / `#13131e`) so cards always look like mobile regardless of light/dark web theme.
+  - Colored top border (`borderTop: 2px solid color`) per card.
+  - Icon in rounded colored circle (26% opacity — visible on all backgrounds).
   - Green "مباشر" pulse dot on each live card.
-  - Large bold number (text-3xl font-extrabold).
-- Added welcome hero section matching mobile:
-  - Business name + system title in header row.
-  - Green live dot with "مباشر" label.
+  - Large bold white number (text-3xl font-extrabold).
+- Welcome hero section matching mobile:
+  - Business name + "المبيعات والفوترة" in header row.
+  - Green animate-pulse dot with "مباشر" label.
   - "مرحباً {business.name}" heading.
   - "ملخص الفواتير والمبيعات اليوم" subtitle.
-  - Gradient glow orbs (primary + teal, low opacity).
-- Added "واتساب ذكي" stat section (4 cards) when Supabase is connected.
-- Added "الإحصائيات" sales section (4 cards) when invoice schema exists:
-  - مبيعات اليوم (net = total − VAT, matching mobile fix).
-  - الكاشير — special pressable card with "فتح الكاشير" button linking to products.
-  - فواتير اليوم.
-  - إجمالي الفواتير.
-- Added "إجراءات سريعة" section matching mobile quick-actions layout:
-  - Chevron on far left, icon circle + title/subtitle on far right.
-  - 4 actions: إصدار فاتورة، قائمة الفواتير، المحادثات، إعدادات الفوترة.
-- Removed old bot status / automations / conversations widgets from dashboard (moved to sub-pages).
+  - Glow orbs (primary + teal, low opacity).
+- "واتساب ذكي" section — 4 stat cards (active, escalated, customers, total) when Supabase connected.
+- "الإحصائيات" section — 4 sales cards when invoice schema exists:
+  - **مبيعات اليوم** — shows `total_amount` gross (matching mobile dashboard behavior).
+  - **الكاشير** — special card with "فتح الكاشير" button (33% opacity, prominent) linking to `/dashboard/sales/products`.
+  - **فواتير اليوم** — today's invoice count.
+  - **إجمالي الفواتير** — all-time invoice count.
+- "إجراءات سريعة" section — 4 action rows matching mobile layout (chevron left, icon + title/subtitle right).
+- Removed old bot status / automations / conversations widgets.
 
-#### Sales Page — Mobile Parity (`src/app/dashboard/sales/page.tsx` + new `sales-list.tsx`)
-- Created `src/app/dashboard/sales/sales-list.tsx` — interactive client component:
-  - Period filter tabs matching mobile: **اليوم** (default) / **الشهر** / **السنة**.
-  - 3 stat cards update automatically when filter changes:
-    - مبيعات (net sales = total − VAT) — matches mobile fix.
-    - ضريبة.
-    - عدد الفواتير.
-  - Export button downloads CSV (UTF-8 BOM) with invoice number, date, time, net, VAT, total, status, and summary row — equivalent to mobile's Excel export.
-  - Invoice card list with: chevron far-left, invoice number + date + buyer right-aligned, amount + status badge far-right — matches mobile card layout.
-- Rewrote `src/app/dashboard/sales/page.tsx` as thin server wrapper:
-  - Fetches all invoices via `getAllSalesInvoices()` (no limit) and passes to `SalesList`.
-  - Header with "كاشير المنتجات", "إعدادات الفوترة", "فاتورة جديدة" buttons.
+#### Sales Page — Mobile Parity
+- **`src/app/dashboard/sales/sales-list.tsx`** (new client component):
+  - Period filter tabs: **اليوم** (default) / **الشهر** / **السنة** — matching mobile.
+  - 3 stat cards update per filter: مبيعات (net = total − VAT) / ضريبة / عدد الفواتير.
+  - Export button — downloads UTF-8 BOM CSV with invoice number, date, time, net, VAT, total, status, and summary row (web equivalent of mobile's Excel export).
+  - Invoice card list: chevron left, invoice number + date + buyer right-aligned, amount (teal) + status badge far right.
+- **`src/app/dashboard/sales/page.tsx`** — rewrote as thin server wrapper:
+  - Fetches all invoices via `getAllSalesInvoices()` (no row limit) and passes to `SalesList`.
+  - Header buttons: "كاشير المنتجات" + "إعدادات الفوترة".
 
 #### Data Layer (`src/lib/dashboard-data.ts`)
-- Added `getAllSalesInvoices()` — fetches all invoices without limit (previously capped at 30) for full period filtering.
+- Added `getAllSalesInvoices()` — fetches complete invoice list for the business without `.limit(30)` cap, enabling accurate period filtering on the sales page.
+
+#### Bug Fixes Applied During Session
+- **Broken `/dashboard/sales/new` link** — removed button pointing to non-existent route.
+- **Card colors invisible in light mode** — fixed by hardcoding dark backgrounds instead of relying on `dark:` Tailwind variants.
+- **Icon circles too transparent** — changed from `color + "1a"` (10% opacity) to `color + "26"` (15% opacity hex = visible).
+- **Cashier button too faint** — changed from `color + "20"` (12% opacity) to `color + "33"` (20% opacity hex = prominent).
+- **Sales number mismatch web vs mobile** — web now shows `total_amount` gross (matching mobile `todayRevenue`); the net-revenue fix from mobile PROGRESS.md was applied to the sales *list* page only, not the dashboard card.
 
 #### Mobile Updates Applied to Web
-- **مبيعات card shows net revenue** (total − VAT), not gross — matches mobile fix.
-- **Cashier card** on dashboard opens products page directly — matches mobile direct cashier access.
-- **Period filters** (اليوم / الشهر / السنة) on sales page — matches mobile filter implementation.
-- **Export** (CSV on web, XLSX on mobile) — equivalent functionality.
+| Mobile feature | Web equivalent |
+|---|---|
+| Cashier card on dashboard | `/dashboard/sales/products` direct link card |
+| Period filters اليوم/الشهر/السنة | `SalesList` client filter tabs |
+| Net-revenue in sales list cards | `netSales = total − VAT` in `SalesList` stats |
+| Excel export | CSV download (UTF-8 BOM, same columns + summary row) |
+| Dark card design C.card `#16161f` | Hardcoded inline style, theme-independent |
+
+#### Commits
+- `eebe39b` — initial redesign (dashboard + sales + data layer)
+- `35d29a6` — fix broken sales/new link
+- `caa4704` — fix dark card backgrounds + match mobile gross sales total
 
 #### Files Added
 - `src/app/dashboard/sales/sales-list.tsx`
 
 #### Main Files Updated
-- `src/app/dashboard/page.tsx` — complete redesign.
-- `src/app/dashboard/sales/page.tsx` — redesign using new client component.
-- `src/lib/dashboard-data.ts` — added `getAllSalesInvoices`.
+- `src/app/dashboard/page.tsx`
+- `src/app/dashboard/sales/page.tsx`
+- `src/lib/dashboard-data.ts`
 
 ### Verification
 - `npx.cmd tsc --noEmit` passes.
 - `npm.cmd run build` passes (21 routes, all ƒ dynamic).
+- Pushed to `main` → Vercel auto-deployed to `https://www.musnid.com`.
 
 ### Remaining
-- Apply `20260601090000_personal_tasks_engine_web.sql` migration in Supabase SQL Editor.
-- End-to-end browser test on `https://www.musnid.com`.
-- `/dashboard/sales/new` — manual invoice page (mobile equivalent).
+- Apply `20260601090000_personal_tasks_engine_web.sql` in Supabase SQL Editor (tasks feature).
+- `/dashboard/sales/new` — manual invoice creation page (mobile `sales/new.tsx` equivalent).
+- End-to-end test: cashier flow, invoice list filters, CSV export on production.
 - Smart tasks live testing after migration.
 
 ---
