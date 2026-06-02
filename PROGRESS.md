@@ -1,5 +1,86 @@
 # PROGRESS
 
+---
+
+## 2026-06-02 — نظام الموظفين المرتبط بحسابات التطبيق
+
+### تم إنجازه
+
+#### 1. `src/types/database.ts`
+- إضافة `EmployeeActionType`
+- إضافة 4 أنواع جديدة: `BusinessEmployee`, `EmployeePermissions`, `EmployeeSession`, `EmployeeAuditLog`
+
+#### 2. `src/app/dashboard/staff/actions.ts`
+6 Server Actions جديدة:
+- `searchProfileByEmail` — بحث عن مستخدم بالإيميل
+- `linkEmployee` — ربط موظف (staff أو cashier) مع إنشاء السجلات المناسبة
+- `updateEmployeePermissions` — تحديث صلاحيات الكاشير
+- `removeEmployee` — إزالة موظف
+- `getLinkedEmployees` — جلب الموظفين المرتبطين مع بياناتهم وصلاحياتهم
+- `getEmployeeSessions` — جلب جلسات دخول/خروج موظف
+- `getEmployeeAuditLog` — جلب سجل إجراءات موظف
+
+#### 3. `src/components/dashboard/LinkedEmployeesPanel.tsx` — جديد
+Client Component كامل يحتوي:
+- `AddEmployeeDialog` — dialog بـ 3 خطوات (إيميل → نوع → تفاصيل)
+- `PermissionsDialog` — تعديل صلاحيات الكاشير
+- `LogDialog` — عرض جلسات الدخول/الخروج والإجراءات
+- `EmployeeCard` — بطاقة كل موظف مع أزرار: صلاحيات، سجلات، إزالة
+- `LinkedEmployeesPanel` — المكوّن الرئيسي
+
+#### 4. `src/app/dashboard/staff/page.tsx`
+أعيد تصميمه بقسمين:
+- **الموظفون**: المرتبطون بالتطبيق (كاشير + طاقم عمل)
+- **دليل الفريق**: `staff_members` للبوت وزون + نموذج الإضافة اليدوية
+
+### ملاحظة
+قاعدة البيانات مشتركة مع الموبايل — Migration واحد يخدم المشروعين:
+`musnid-mobile/supabase/migrations/20260602000000_employee_work_system.sql`
+
+**آخر تحديث:** 2026-06-02
+**الحالة:** نظام الموظفين مكتمل في الويب ✅ | ينتظر تطبيق migration على Supabase ⏳
+
+---
+
+## 2026-06-01 — Light/Dark Theme Toggle & Design Consistency Fix
+
+### Completed
+
+#### Theme System Overhaul
+- **Problem:** Dashboard was hardcoded dark (inline `#16161f` / `#13131e` styles) — mixed with light page background causing visual inconsistency.
+- **Default theme changed to light** — updated `src/components/providers.tsx`: `defaultTheme="dark"` → `defaultTheme="light"`, disabled `enableSystem` to prevent OS preference overriding the explicit default.
+- **New `ThemeToggle` button** (`src/components/theme-toggle.tsx`):
+  - Renders Sun icon in dark mode, Moon icon in light mode.
+  - Uses `useTheme()` from next-themes with `mounted` guard to prevent hydration mismatch.
+  - Placed in dashboard header next to the sign-out button.
+- **Dashboard layout** (`src/app/dashboard/layout.tsx`) — fully adaptive header:
+  - Light: `bg-white border-surface-200` with dark text/nav.
+  - Dark: `bg-surface-900 border-surface-800` with light text/nav.
+  - Logo text, business name, nav links, and sign-out button all use `dark:` variants.
+- **Dashboard page** (`src/app/dashboard/page.tsx`) — replaced all hardcoded dark hex colors with Tailwind adaptive classes:
+  - Cards: `bg-white dark:bg-[#16161f]` with `border-surface-200 dark:border-white/[0.07]`.
+  - Welcome hero: `bg-surface-100 dark:bg-[#13131e]`.
+  - Text: `text-surface-900 dark:text-white` (headings) / `text-surface-500 dark:text-surface-400` (subtitles).
+  - Accent top borders and icon circle backgrounds kept as inline styles (color-specific).
+- `localStorage` note: existing users with "dark" saved in localStorage need to run `localStorage.removeItem('theme')` once to reset to new default.
+
+#### Files Added
+- `src/components/theme-toggle.tsx`
+
+#### Main Files Updated
+- `src/components/providers.tsx`
+- `src/app/dashboard/layout.tsx`
+- `src/app/dashboard/page.tsx`
+
+#### Commits
+- `41511a6` — feat: add light/dark theme toggle with light mode as default
+
+### Verification
+- `npx tsc --noEmit` passes.
+- Pushed to `main` → Vercel auto-deployed to `https://www.musnid.com`.
+
+---
+
 ## 2026-06-01 — Sales & Dashboard Redesign: Mobile Parity
 
 ### Completed

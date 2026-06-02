@@ -6,6 +6,11 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+export type EmployeeActionType =
+  | "clock_in" | "clock_out"
+  | "invoice_created" | "invoice_deleted"
+  | "product_added" | "product_updated" | "product_deleted";
+
 export type Database = {
   public: {
     Tables: {
@@ -1012,6 +1017,31 @@ export type Database = {
           },
         ];
       };
+      // ── نظام الموظفين المرتبط بحسابات التطبيق ──────────────────────────────
+      business_employees: {
+        Row: { id: string; business_id: string; profile_id: string; invited_by: string | null; role_type: "staff" | "cashier"; status: "active" | "suspended" | "removed"; created_at: string; updated_at: string };
+        Insert: { id?: string; business_id: string; profile_id: string; invited_by?: string | null; role_type?: "staff" | "cashier"; status?: "active" | "suspended" | "removed"; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["business_employees"]["Insert"]>;
+        Relationships: [];
+      };
+      employee_permissions: {
+        Row: { id: string; business_id: string; employee_id: string; cashier_access: boolean; can_read: boolean; can_create: boolean; can_update: boolean; can_delete: boolean; can_manage_products: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; business_id: string; employee_id: string; cashier_access?: boolean; can_read?: boolean; can_create?: boolean; can_update?: boolean; can_delete?: boolean; can_manage_products?: boolean; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["employee_permissions"]["Insert"]>;
+        Relationships: [];
+      };
+      employee_sessions: {
+        Row: { id: string; business_id: string; employee_id: string; profile_id: string; clocked_in_at: string; clocked_out_at: string | null; created_at: string };
+        Insert: { id?: string; business_id: string; employee_id: string; profile_id: string; clocked_in_at?: string; clocked_out_at?: string | null; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["employee_sessions"]["Insert"]>;
+        Relationships: [];
+      };
+      employee_audit_log: {
+        Row: { id: string; business_id: string; employee_id: string; profile_id: string; action_type: EmployeeActionType; entity_type: string | null; entity_id: string | null; description: string | null; metadata: Json; created_at: string };
+        Insert: { id?: string; business_id: string; employee_id: string; profile_id: string; action_type: EmployeeActionType; entity_type?: string | null; entity_id?: string | null; description?: string | null; metadata?: Json; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["employee_audit_log"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -1056,3 +1086,7 @@ export type TaskContextTag = Database["public"]["Enums"]["task_context_tag"];
 export type InvoiceSettingsRow = Database["public"]["Tables"]["invoice_settings"]["Row"];
 export type InvoiceRow = Database["public"]["Tables"]["invoices"]["Row"];
 export type InvoiceItemRow = Database["public"]["Tables"]["invoice_items"]["Row"];
+export type BusinessEmployee    = Database["public"]["Tables"]["business_employees"]["Row"];
+export type EmployeePermissions = Database["public"]["Tables"]["employee_permissions"]["Row"];
+export type EmployeeSession     = Database["public"]["Tables"]["employee_sessions"]["Row"];
+export type EmployeeAuditLog    = Database["public"]["Tables"]["employee_audit_log"]["Row"];
