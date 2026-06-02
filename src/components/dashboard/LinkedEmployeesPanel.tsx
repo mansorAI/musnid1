@@ -3,8 +3,7 @@
 import { useState, useTransition } from "react";
 import {
   Shield, Clock, Trash2, UserPlus, ChevronLeft,
-  Briefcase, CreditCard, Eye, Plus, Pencil, X,
-  LogIn, LogOut, AlertCircle,
+  Briefcase, CreditCard, X, AlertCircle,
 } from "lucide-react";
 import {
   searchProfileByEmail,
@@ -13,8 +12,8 @@ import {
   removeEmployee,
   getEmployeeSessions,
   getEmployeeAuditLog,
-  ACTION_LABEL,
 } from "@/app/dashboard/staff/actions";
+import { ACTION_LABEL } from "@/app/dashboard/staff/employee-constants";
 import type { BusinessEmployee, EmployeePermissions, EmployeeSession, EmployeeAuditLog } from "@/types/database";
 
 // ── types ──────────────────────────────────────────────────────────────────────
@@ -54,7 +53,7 @@ function AddEmployeeDialog({ onClose }: { onClose: () => void }) {
   const [step, setStep]   = useState<Step>("search");
   const [email, setEmail] = useState("");
   const [found, setFound] = useState<{ id: string; full_name: string | null; email: string } | null>(null);
-  const [roleType, setRoleType] = useState<"staff" | "cashier" | null>(null);
+  const [, setRoleType] = useState<"staff" | "cashier" | null>(null);
   const [perms, setPerms] = useState({ can_read: true, can_create: false, can_update: false, can_delete: false, can_manage_products: false });
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
