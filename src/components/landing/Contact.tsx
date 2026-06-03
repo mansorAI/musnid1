@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Loader2, Send, Mail, MapPin, Phone } from "lucide-react";
+import { Loader2, Send, Mail, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { useInView } from "@/hooks/useInView";
 
@@ -36,9 +36,8 @@ export default function Contact() {
               <h3 className="text-lg font-bold text-surface-900 dark:text-white mb-4">معلومات التواصل</h3>
               <div className="space-y-4">
                 {[
-                  { icon: Mail, label: "البريد الإلكتروني", value: "hello@musnid.sa" },
-                  { icon: Phone, label: "الهاتف", value: "+966 50 123 4567" },
-                  { icon: MapPin, label: "الموقع", value: "الرياض، المملكة العربية السعودية" },
+                  { icon: Mail, label: "البريد الإلكتروني", value: "info@musnid.com" },
+                  { icon: MapPin, label: "الموقع", value: "عرعر، الحدود الشمالية" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
