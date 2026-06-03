@@ -133,6 +133,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </div>
 
           <form action={signUpWithEmail} className="space-y-4">
+            <div className="rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-700/40 px-4 py-3 text-sm text-primary-700 dark:text-primary-300">
+              هذا الحساب للأعمال فقط. إذا كنت فرداً، حمّل تطبيق مُسند للجوال.
+            </div>
             <div>
               <label htmlFor="signup-email" className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">إنشاء حساب جديد — البريد الإلكتروني</label>
               <input id="signup-email" name="email" type="email" placeholder="owner@example.com" className={inputClass} />
@@ -142,7 +145,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
               <input id="signup-password" name="password" type="password" placeholder="6 أحرف على الأقل" className={inputClass} />
             </div>
             <SubmitButton pendingText="جاري إنشاء الحساب..." className="btn-secondary w-full mt-2">
-              إنشاء حساب
+              إنشاء حساب نشاط تجاري
             </SubmitButton>
           </form>
         </section>
