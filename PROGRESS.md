@@ -2,6 +2,60 @@
 
 ---
 
+## 2026-06-03 — نافذة تفاصيل الموظف + نظام الصلاحيات + إصلاح Vercel
+
+### تم إنجازه
+
+#### 1. نافذة تفاصيل الموظف — `src/components/dashboard/LinkedEmployeesPanel.tsx`
+
+**الضغط على صف الموظف** يفتح نافذة `EmployeeDetailDialog` بـ 3 تبويبات:
+
+| التبويب | المحتوى |
+|--------|---------|
+| الدخول والخروج | جلسات دخول/خروج الكاشير مع المدة |
+| الفواتير | الفواتير التي أصدرها هذا الموظف (رقم، مبلغ، تاريخ، حالة) |
+| التعديلات | سجل الإجراءات مُصفَّى — بدون دخول/خروج أو إنشاء فاتورة |
+
+- الـ dialogs مرفوعة خارج `glass-card` لتجنب stacking context
+- `loadSessions` نُقلت إلى `useEffect` بدلاً من الاستدعاء أثناء render
+- زر الساعة حُذف (الضغط على الصف يفتح نفس النافذة)
+
+#### 2. إضافة `getEmployeeInvoices` — `src/app/dashboard/staff/actions.ts`
+Server Action يجلب الفواتير من `invoices` حيث `created_by = profile_id` للموظف
+
+#### 3. نظام الصلاحيات الجديد
+
+**واجهة الصلاحيات مقسّمة لمجموعتين:**
+
+**المجالات:** مبيعات (`can_sales`) | الفواتير (`can_invoice`) | إدارة المنتجات (`can_manage_products`)
+**الإجراءات:** قراءة (`can_read`) | تعديل (`can_update`) | حذف (`can_delete`)
+
+- `AddEmployeeDialog` و `PermissionsDialog` محدّثان
+- `updateEmployeePermissions` يحفظ الحقول الجديدة والقديمة
+- `linkEmployee` يُرسل الصلاحيات الجديدة
+
+#### 4. إصلاح Vercel Build
+- إضافة `nodemailer` كـ dependency
+- إضافة `serverExternalPackages: ["nodemailer"]` في `next.config.ts` للتوافق مع Turbopack
+- حذف import غير مستخدم (`EmployeeActionType`)
+
+### الملفات المعدّلة
+- `src/components/dashboard/LinkedEmployeesPanel.tsx` — نافذة 3 تبويبات + صلاحيات جديدة
+- `src/app/dashboard/staff/actions.ts` — `getEmployeeInvoices` + صلاحيات جديدة
+- `src/types/database.ts` — إضافة `can_invoice` و `can_sales`
+- `next.config.ts` — `serverExternalPackages`
+- `package.json` — إضافة `nodemailer`
+
+### Migrations مشتركة مع الموبايل مطلوبة
+- `20260603000001_invoices_with_employee_access.sql`
+- `20260603000002_add_sales_invoice_permissions.sql`
+- SQL يدوي لـ RLS على `menu_items` (موثّق في محادثة اليوم)
+
+**آخر تحديث:** 2026-06-03
+**الحالة:** نافذة تفاصيل الموظف تعمل ✅ | Vercel يبني ✅ | الصلاحيات الجديدة مطبّقة ✅ | ينتظر migrations على Supabase ⏳
+
+---
+
 ## 2026-06-03 — إيميل + تواصل + إعدادات الموقع
 
 ### تم إنجازه
