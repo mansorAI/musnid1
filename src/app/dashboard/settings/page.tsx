@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ReceiptText, Settings } from "lucide-react";
-import { createBusiness } from "@/app/dashboard/actions";
+import { Compass, Eye, EyeOff, ReceiptText, Settings } from "lucide-react";
+import { createBusiness, setMarketplaceVisibility } from "@/app/dashboard/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { businessTypeLabels } from "@/lib/demo-data";
-import { getCurrentBusiness } from "@/lib/dashboard-data";
+import { getCurrentBusiness, getMarketplaceVisibility } from "@/lib/dashboard-data";
 import type { BusinessType } from "@/types";
 
 const businessTypes = Object.entries(businessTypeLabels) as [BusinessType, string][];
@@ -24,12 +24,14 @@ const inputClass =
 type SettingsPageProps = {
   searchParams?: Promise<{
     error?: string;
+    zone?: string;
   }>;
 };
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const params = await searchParams;
   const business = await getCurrentBusiness();
+  const marketplace = await getMarketplaceVisibility();
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
@@ -87,6 +89,66 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           <ReceiptText className="size-5" />
         </div>
       </Link>
+
+      <div className="glass-card overflow-hidden">
+        <div className="flex items-center justify-between gap-4 border-b border-surface-200/50 p-6 dark:border-surface-700/30">
+          <div className="text-right">
+            <h2 className="text-lg font-bold text-surface-900 dark:text-white">إظهار المتجر في الزون</h2>
+            <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+              فعّل ظهور نشاطك للأفراد ضمن فئة {marketplace.categoryName}.
+            </p>
+          </div>
+          <div className="flex size-11 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300">
+            <Compass className="size-5" />
+          </div>
+        </div>
+        <div className="space-y-4 p-6">
+          {params?.zone === "enabled" ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300">
+              تم تفعيل ظهور المتجر في الزون.
+            </div>
+          ) : null}
+          {params?.zone === "disabled" ? (
+            <div className="rounded-xl border border-surface-200 bg-surface-50 p-3 text-sm text-surface-600 dark:border-surface-700 dark:bg-surface-800/50 dark:text-surface-300">
+              تم إيقاف ظهور المتجر في الزون.
+            </div>
+          ) : null}
+          {params?.error === "zone_category" || marketplace.targetCategoryMissing ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
+              فئة {marketplace.categoryName} غير موجودة في زون. أضفها في Supabase أولاً ثم أعد المحاولة.
+            </div>
+          ) : null}
+          {params?.error === "zone" ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+              تعذّر تحديث ظهور المتجر في الزون. تحقق من صلاحيات Supabase.
+            </div>
+          ) : null}
+
+          <div className="rounded-xl border border-surface-200/50 bg-surface-50/50 p-4 text-right dark:border-surface-700/30 dark:bg-surface-800/30">
+            <p className="text-sm text-surface-500 dark:text-surface-400">الحالة الحالية</p>
+            <p className={`mt-1 text-lg font-extrabold ${marketplace.active ? "text-emerald-600 dark:text-emerald-300" : "text-surface-900 dark:text-white"}`}>
+              {marketplace.active ? "ظاهر في الزون" : "غير ظاهر حالياً"}
+            </p>
+            <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+              الفئة: {marketplace.activeCategoryName ?? marketplace.categoryName}
+            </p>
+          </div>
+
+          <form action={setMarketplaceVisibility}>
+            <input type="hidden" name="enabled" value={marketplace.active ? "0" : "1"} />
+            <SubmitButton
+              pendingText="جاري التحديث..."
+              className={marketplace.active ? "w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-bold text-red-600 transition hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300" : "btn-primary w-full"}
+              disabled={!business || marketplace.targetCategoryMissing}
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                {marketplace.active ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {marketplace.active ? "إيقاف الظهور في الزون" : "إظهار المتجر في الزون"}
+              </span>
+            </SubmitButton>
+          </form>
+        </div>
+      </div>
 
       <div className="glass-card overflow-hidden">
         <div className="p-6 border-b border-surface-200/50 dark:border-surface-700/30">

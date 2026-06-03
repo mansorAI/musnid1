@@ -4,6 +4,20 @@ import { automationRules, recentConversations } from "@/lib/demo-data";
 import { scoreTasks, type PersonalTaskLike } from "@/lib/task-engine";
 import { getDefaultInvoiceSettings, parseInvoiceSettings } from "@/lib/zatca";
 import type { TaskContextTag } from "@/types";
+import type { Database } from "@/types/database";
+
+type BusinessType = Database["public"]["Enums"]["business_type"];
+
+const MARKETPLACE_CATEGORY_BY_TYPE: Partial<Record<BusinessType, string>> = {
+  restaurant: "مطاعم",
+  cafe: "كوفيهات",
+  clinic: "عيادات",
+  salon: "صالونات",
+  retail: "متاجر",
+  real_estate: "عقارات",
+  services: "خدمات",
+  other: "خدمات",
+};
 
 export async function getCurrentBusiness() {
   if (!hasSupabaseEnv()) return null;
@@ -24,6 +38,64 @@ export async function getCurrentBusiness() {
     .maybeSingle();
 
   return data;
+}
+
+export async function getMarketplaceVisibility() {
+  const business = await getCurrentBusiness();
+  if (!business) {
+    return {
+      business: null,
+      active: false,
+      categoryName: "زون",
+      activeCategoryName: null as string | null,
+      targetCategoryMissing: false,
+    };
+  }
+
+  const supabase = await createClient();
+  const targetCategoryName = MARKETPLACE_CATEGORY_BY_TYPE[business.type] ?? "خدمات";
+  const db = supabase as any;
+
+  const [categoriesResult, mappingResult] = await Promise.all([
+    db
+      .from("store_categories")
+      .select("id,name,icon")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    db
+      .from("business_category_mapping")
+      .select("id,is_public,category_id,store_categories:category_id (id,name,icon)")
+      .eq("business_id", business.id),
+  ]);
+
+  if (categoriesResult.error || mappingResult.error) {
+    return {
+      business,
+      active: false,
+      categoryName: targetCategoryName,
+      activeCategoryName: null,
+      targetCategoryMissing: true,
+    };
+  }
+
+  const categories = (categoriesResult.data ?? []) as { id: string; name: string; icon?: string | null }[];
+  const mappings = (mappingResult.data ?? []) as {
+    is_public: boolean;
+    store_categories?: { name?: string | null } | { name?: string | null }[] | null;
+  }[];
+  const targetCategory = categories.find((category) => category.name === targetCategoryName) ?? null;
+  const activeMapping = mappings.find((mapping) => mapping.is_public) ?? null;
+  const activeCategory = Array.isArray(activeMapping?.store_categories)
+    ? activeMapping?.store_categories[0]
+    : activeMapping?.store_categories;
+
+  return {
+    business,
+    active: Boolean(activeMapping),
+    categoryName: targetCategoryName,
+    activeCategoryName: activeCategory?.name ?? null,
+    targetCategoryMissing: !targetCategory,
+  };
 }
 
 export async function getCustomers() {
