@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import {
-  Shield, Clock, Trash2, UserPlus, ChevronLeft,
+  Shield, Trash2, UserPlus, ChevronLeft,
   Briefcase, CreditCard, X, AlertCircle,
 } from "lucide-react";
 import {
@@ -12,9 +12,29 @@ import {
   removeEmployee,
   getEmployeeSessions,
   getEmployeeAuditLog,
+  getEmployeeInvoices,
 } from "@/app/dashboard/staff/actions";
 import { ACTION_LABEL } from "@/app/dashboard/staff/employee-constants";
 import type { BusinessEmployee, EmployeePermissions, EmployeeSession, EmployeeAuditLog } from "@/types/database";
+
+type EmployeeInvoice = {
+  id: string;
+  invoice_number: string;
+  total_amount: number;
+  vat_amount: number;
+  issued_at: string;
+  status: string;
+  payment_method: string;
+  buyer_name: string | null;
+};
+
+const INVOICE_STATUS_LABEL: Record<string, string> = {
+  draft: "مسودة", issued: "صادرة", reported: "مبلّغة",
+  cleared: "معتمدة", rejected: "مرفوضة", cancelled: "ملغاة",
+};
+const PAYMENT_LABEL: Record<string, string> = {
+  cash: "نقدي", card: "شبكة", bank_transfer: "تحويل", other: "أخرى",
+};
 
 // ── types ──────────────────────────────────────────────────────────────────────
 
@@ -315,12 +335,13 @@ function PermissionsDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () 
   );
 }
 
-// ── Log Dialog ────────────────────────────────────────────────────────────────
+// ── Employee Detail Dialog (3 tabs) ──────────────────────────────────────────
 
-function LogDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () => void }) {
-  const [tab, setTab]       = useState<"sessions" | "log">("sessions");
-  const [sessions, setSessions] = useState<EmployeeSession[] | null>(null);
-  const [logs, setLogs]     = useState<EmployeeAuditLog[] | null>(null);
+function EmployeeDetailDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () => void }) {
+  const [tab, setTab] = useState<"sessions" | "invoices" | "log">("sessions");
+  const [sessions,  setSessions]  = useState<EmployeeSession[]    | null>(null);
+  const [invoices,  setInvoices]  = useState<EmployeeInvoice[]    | null>(null);
+  const [logs,      setLogs]      = useState<EmployeeAuditLog[]   | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const loadSessions = () => {
@@ -328,6 +349,14 @@ function LogDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () => void 
     startTransition(async () => {
       const data = await getEmployeeSessions(emp.id);
       setSessions(data as EmployeeSession[]);
+    });
+  };
+
+  const loadInvoices = () => {
+    if (invoices !== null) return;
+    startTransition(async () => {
+      const data = await getEmployeeInvoices(emp.profile_id);
+      setInvoices(data as EmployeeInvoice[]);
     });
   };
 
@@ -341,68 +370,149 @@ function LogDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () => void 
 
   if (sessions === null) loadSessions();
 
-  const name = emp.profile?.full_name ?? emp.profile?.email ?? "موظف";
+  const name    = emp.profile?.full_name ?? emp.profile?.email ?? "موظف";
+  const email   = emp.profile?.email ?? "";
+  const avatar  = (emp.profile?.full_name ?? email).charAt(0).toUpperCase();
+  const isCashier = emp.role_type === "cashier";
+
+  const TABS = [
+    { key: "sessions" as const,  label: "الدخول والخروج" },
+    { key: "invoices" as const,  label: "الفواتير" },
+    { key: "log"      as const,  label: "التعديلات" },
+  ];
+
+  const handleTabClick = (t: "sessions" | "invoices" | "log") => {
+    setTab(t);
+    if (t === "invoices") loadInvoices();
+    if (t === "log")      loadLogs();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={onClose}>
-      <div className="w-full sm:max-w-lg bg-white dark:bg-surface-900 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()} dir="rtl">
+      <div
+        className="w-full sm:max-w-lg bg-white dark:bg-surface-900 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[85vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+        dir="rtl"
+      >
         {/* Header */}
         <div className="p-5 border-b border-surface-200 dark:border-surface-700 shrink-0">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 text-surface-500">
               <X className="w-4 h-4" />
             </button>
-            <div className="text-right">
-              <h2 className="font-bold text-surface-900 dark:text-white">سجلات الموظف</h2>
-              <p className="text-xs text-surface-500 mt-0.5">{name}</p>
+            {/* Profile */}
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="flex items-center gap-2 justify-end">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    isCashier ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                              : "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+                  }`}>
+                    {isCashier ? "كاشير" : "طاقم عمل"}
+                  </span>
+                  <p className="font-bold text-surface-900 dark:text-white">{name}</p>
+                </div>
+                <p className="text-xs text-surface-400 mt-0.5">{email}</p>
+              </div>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0 ${
+                isCashier ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                          : "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+              }`}>
+                {avatar}
+              </div>
             </div>
           </div>
-          <div className="flex gap-2">
-            {(["sessions", "log"] as const).map((t) => (
+
+          {/* Tabs */}
+          <div className="flex gap-1 bg-surface-100 dark:bg-surface-800 rounded-xl p-1">
+            {TABS.map((t) => (
               <button
-                key={t}
-                onClick={() => { setTab(t); if (t === "log") loadLogs(); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                  tab === t
-                    ? "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-                    : "text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-800"
+                key={t.key}
+                onClick={() => handleTabClick(t.key)}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  tab === t.key
+                    ? "bg-white dark:bg-surface-700 text-surface-900 dark:text-white shadow-sm"
+                    : "text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
                 }`}
               >
-                {t === "sessions" ? "الدخول والخروج" : "الإجراءات"}
+                {t.label}
               </button>
             ))}
           </div>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto flex-1 p-4 space-y-3">
-          {isPending && <p className="text-sm text-surface-400 text-center py-6">جاري التحميل...</p>}
+        <div className="overflow-y-auto flex-1 p-4 space-y-2.5">
+          {isPending && (
+            <p className="text-sm text-surface-400 text-center py-8">جاري التحميل...</p>
+          )}
 
+          {/* ── جلسات الدخول والخروج ── */}
           {tab === "sessions" && !isPending && (sessions ?? []).length === 0 && (
-            <p className="text-sm text-surface-400 text-center py-6">لا توجد جلسات بعد</p>
+            <p className="text-sm text-surface-400 text-center py-8">لا توجد جلسات بعد</p>
           )}
           {tab === "sessions" && (sessions ?? []).map((s) => (
             <div key={s.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700">
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.clocked_out_at ? "bg-surface-100 dark:bg-surface-800 text-surface-500" : "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"}`}>
-                  {fmtDuration(s.clocked_in_at, s.clocked_out_at)}
-                </span>
-              </div>
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                s.clocked_out_at
+                  ? "bg-surface-100 dark:bg-surface-800 text-surface-500"
+                  : "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+              }`}>
+                {fmtDuration(s.clocked_in_at, s.clocked_out_at)}
+              </span>
               <div className="text-right">
-                <p className="text-sm font-semibold text-surface-900 dark:text-white">{fmtDate(s.clocked_in_at)}</p>
-                {s.clocked_out_at && <p className="text-xs text-surface-400 mt-0.5">خروج: {fmtDate(s.clocked_out_at)}</p>}
+                <p className="text-sm font-semibold text-surface-900 dark:text-white">
+                  دخول: {fmtDate(s.clocked_in_at)}
+                </p>
+                {s.clocked_out_at && (
+                  <p className="text-xs text-surface-400 mt-0.5">خروج: {fmtDate(s.clocked_out_at)}</p>
+                )}
               </div>
             </div>
           ))}
 
+          {/* ── الفواتير ── */}
+          {tab === "invoices" && !isPending && (invoices ?? []).length === 0 && (
+            <p className="text-sm text-surface-400 text-center py-8">لم يُصدر هذا الموظف أي فاتورة بعد</p>
+          )}
+          {tab === "invoices" && (invoices ?? []).map((inv) => (
+            <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold text-surface-900 dark:text-white">
+                  {Number(inv.total_amount).toFixed(2)}
+                  <span className="text-xs font-normal text-surface-400 mr-1">ر.س</span>
+                </span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  inv.status === "issued"   ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300" :
+                  inv.status === "reported" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" :
+                  inv.status === "cancelled"? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400" :
+                  "bg-surface-100 dark:bg-surface-800 text-surface-500"
+                }`}>
+                  {INVOICE_STATUS_LABEL[inv.status] ?? inv.status}
+                </span>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-semibold text-surface-900 dark:text-white">{inv.invoice_number}</p>
+                <p className="text-xs text-surface-400 mt-0.5">
+                  {fmtDate(inv.issued_at)}
+                  {inv.buyer_name ? ` · ${inv.buyer_name}` : ""}
+                  {" · "}{PAYMENT_LABEL[inv.payment_method] ?? inv.payment_method}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {/* ── التعديلات ── */}
           {tab === "log" && !isPending && (logs ?? []).length === 0 && (
-            <p className="text-sm text-surface-400 text-center py-6">لا توجد إجراءات بعد</p>
+            <p className="text-sm text-surface-400 text-center py-8">لا توجد إجراءات بعد</p>
           )}
           {tab === "log" && (logs ?? []).map((l) => (
             <div key={l.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700">
-              <span className="text-xs text-surface-400">{fmtDate(l.created_at)}</span>
+              <span className="text-xs text-surface-400 shrink-0">{fmtDate(l.created_at)}</span>
               <div className="text-right">
-                <p className="text-sm font-semibold text-surface-900 dark:text-white">{ACTION_LABEL[l.action_type] ?? l.action_type}</p>
+                <p className="text-sm font-semibold text-surface-900 dark:text-white">
+                  {ACTION_LABEL[l.action_type] ?? l.action_type}
+                </p>
                 {l.description && <p className="text-xs text-surface-400 mt-0.5">{l.description}</p>}
               </div>
             </div>
@@ -412,6 +522,7 @@ function LogDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () => void 
     </div>
   );
 }
+
 
 // ── Employee Card ─────────────────────────────────────────────────────────────
 
@@ -436,9 +547,12 @@ function EmployeeCard({ emp }: { emp: LinkedEmployee }) {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 px-5 py-4">
+      <div
+        className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800/40 transition-colors"
+        onClick={() => setShowLog(true)}
+      >
         {/* أزرار الإجراءات */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={handleRemove}
             disabled={isPending}
@@ -446,13 +560,6 @@ function EmployeeCard({ emp }: { emp: LinkedEmployee }) {
             className="p-1.5 rounded-lg text-surface-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setShowLog(true)}
-            title="السجلات"
-            className="p-1.5 rounded-lg text-surface-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
-          >
-            <Clock className="w-4 h-4" />
           </button>
           {isCashier && (
             <button
@@ -488,8 +595,8 @@ function EmployeeCard({ emp }: { emp: LinkedEmployee }) {
         </div>
       </div>
 
-      {showPerms && <PermissionsDialog emp={emp} onClose={() => setShowPerms(false)} />}
-      {showLog   && <LogDialog        emp={emp} onClose={() => setShowLog(false)} />}
+      {showPerms && <PermissionsDialog    emp={emp} onClose={() => setShowPerms(false)} />}
+      {showLog   && <EmployeeDetailDialog emp={emp} onClose={() => setShowLog(false)} />}
     </>
   );
 }

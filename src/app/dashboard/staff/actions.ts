@@ -245,3 +245,23 @@ export async function getEmployeeAuditLog(employeeId: string) {
   return data ?? [];
 }
 
+// ── جلب فواتير الموظف ────────────────────────────────────────────────────────
+
+export async function getEmployeeInvoices(profileId: string) {
+  if (!hasSupabaseEnv()) return [];
+
+  const business = await getCurrentBusiness();
+  if (!business) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("invoices")
+    .select("id, invoice_number, total_amount, vat_amount, issued_at, status, payment_method, buyer_name")
+    .eq("business_id", business.id)
+    .eq("created_by", profileId)
+    .order("issued_at", { ascending: false })
+    .limit(50);
+
+  return data ?? [];
+}
+
