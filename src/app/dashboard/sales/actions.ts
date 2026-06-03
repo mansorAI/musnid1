@@ -80,11 +80,24 @@ export async function addSalesProduct(formData: FormData) {
   const { business, supabase } = await requireBusiness("/dashboard/sales/products");
   const name = String(formData.get("name") ?? "").trim();
   const price = toNumber(formData.get("price"));
+  const categoryId = String(formData.get("category_id") ?? "").trim() || null;
 
   if (!name || price <= 0) redirect("/dashboard/sales/products?error=product");
 
+  if (categoryId) {
+    const { data: category } = await supabase
+      .from("menu_categories")
+      .select("id")
+      .eq("id", categoryId)
+      .eq("business_id", business.id)
+      .maybeSingle();
+
+    if (!category) redirect("/dashboard/sales/products?error=category");
+  }
+
   const { error } = await supabase.from("menu_items").insert({
     business_id: business.id,
+    category_id: categoryId,
     name,
     price,
     is_available: true,
@@ -94,6 +107,52 @@ export async function addSalesProduct(formData: FormData) {
   if (error) redirect("/dashboard/sales/products?error=product");
 
   revalidatePath("/dashboard/sales/products");
+  redirect("/dashboard/sales/products");
+}
+
+export async function addSalesCategory(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/products");
+  const name = String(formData.get("name") ?? "").trim();
+
+  if (!name) redirect("/dashboard/sales/products?error=category");
+
+  const { data: lastCategory } = await supabase
+    .from("menu_categories")
+    .select("display_order")
+    .eq("business_id", business.id)
+    .order("display_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { error } = await supabase.from("menu_categories").insert({
+    business_id: business.id,
+    name,
+    display_order: (lastCategory?.display_order ?? 0) + 1,
+  });
+
+  if (error) redirect("/dashboard/sales/products?error=category");
+
+  revalidatePath("/dashboard/sales/products");
+  revalidatePath("/dashboard/menu");
+  redirect("/dashboard/sales/products");
+}
+
+export async function deleteSalesProduct(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/products");
+  const productId = String(formData.get("product_id") ?? "").trim();
+
+  if (!productId) redirect("/dashboard/sales/products?error=delete");
+
+  const { error } = await supabase
+    .from("menu_items")
+    .delete()
+    .eq("id", productId)
+    .eq("business_id", business.id);
+
+  if (error) redirect("/dashboard/sales/products?error=delete");
+
+  revalidatePath("/dashboard/sales/products");
+  revalidatePath("/dashboard/menu");
   redirect("/dashboard/sales/products");
 }
 

@@ -478,13 +478,18 @@ export async function getSalesProductsData() {
   if (!business) {
     return {
       businessId: null,
+      categories: [
+        { id: "demo-cat-1", name: "مشروبات", display_order: 1 },
+        { id: "demo-cat-2", name: "وجبات", display_order: 2 },
+      ],
       products: [
-        { id: "demo-p1", name: "قهوة اليوم", price: 18, is_available: true },
-        { id: "demo-p2", name: "كيكة تمر", price: 26, is_available: true },
-        { id: "demo-p3", name: "ساندويتش دجاج", price: 32, is_available: true },
+        { id: "demo-p1", name: "قهوة اليوم", price: 18, is_available: true, category_id: "demo-cat-1" },
+        { id: "demo-p2", name: "كيكة تمر", price: 26, is_available: true, category_id: "demo-cat-1" },
+        { id: "demo-p3", name: "ساندويتش دجاج", price: 32, is_available: true, category_id: "demo-cat-2" },
       ],
       settings: getDefaultInvoiceSettings("مُسند"),
       settingsFallback: true,
+      canManageProducts: true,
     };
   }
 
@@ -492,6 +497,11 @@ export async function getSalesProductsData() {
 
   return {
     businessId: business.id,
+    categories: menuData.categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      display_order: category.display_order,
+    })),
     products: menuData.items
       .filter((item) => item.is_available)
       .map((item) => ({
@@ -499,8 +509,10 @@ export async function getSalesProductsData() {
         name: item.name,
         price: Number(item.price),
         is_available: item.is_available,
+        category_id: item.category_id,
       })),
     settings: settingsData.settings,
     settingsFallback: settingsData.fromFallback,
+    canManageProducts: true,
   };
 }
