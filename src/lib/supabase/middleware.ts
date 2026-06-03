@@ -37,14 +37,30 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
-  const isOnboardingRoute = request.nextUrl.pathname.startsWith("/onboarding");
+  const { pathname } = request.nextUrl;
+  const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isOnboardingRoute = pathname.startsWith("/onboarding");
+  const isAdminRoute = pathname.startsWith("/admin");
 
-  if ((isDashboardRoute || isOnboardingRoute) && !user) {
+  if ((isDashboardRoute || isOnboardingRoute || isAdminRoute) && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/sign-in";
-    redirectUrl.searchParams.set("next", request.nextUrl.pathname);
+    redirectUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isAdminRoute && user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "admin") {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/dashboard";
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return response;

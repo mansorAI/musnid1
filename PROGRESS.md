@@ -2,6 +2,84 @@
 
 ---
 
+## 2026-06-03 — لوحة تحكم الأدمن
+
+### تم إنجازه
+
+#### 1. تحديث `src/types/database.ts`
+- إضافة `role: "admin" | "business" | "customer"` لجدول `profiles`
+- إضافة جداول `plans`, `plan_features`, `business_subscriptions`
+- إضافة `user_is_admin()` للـ Functions
+- تصدير: `UserRole`, `Plan`, `PlanFeature`, `BusinessSubscription`
+
+#### 2. حماية مسارات `/admin`
+- إنشاء `src/middleware.ts` — نقطة دخول Middleware
+- تحديث `src/lib/supabase/middleware.ts` — فحص `role === "admin"` قبل الوصول لأي `/admin/*`
+- المستخدم غير الأدمن يُعاد توجيهه لـ `/dashboard`
+
+#### 3. بيانات الأدمن — `src/lib/admin-data.ts`
+- `getAdminUser()` — التحقق من أن المستخدم الحالي admin
+- `getAdminStats()` — إحصائيات إجمالية (مستخدمون، أعمال، أفراد، باقات)
+- `getAllMembers()` — جميع الأعضاء مع الدور
+- `getAllBusinesses()` — جميع المنشآت مع بيانات المالك
+- `getPlans()` — الباقات مع مميزاتها
+- `getBusinessSubscriptions()` — الاشتراكات النشطة
+
+#### 4. لوحة التحكم — `src/app/admin/`
+| الملف | الوظيفة |
+|-------|---------|
+| `layout.tsx` | Header + nav (نظرة عامة / الأعضاء / الباقات / الخصائص) + حماية server-side |
+| `page.tsx` | إحصائيات المنصة (4 بطاقات) + روابط سريعة |
+| `members/page.tsx` | جدول الأعضاء + فلتر حسب الدور + تغيير دور أي عضو |
+| `packages/page.tsx` | عرض وإنشاء وحذف الباقات + إضافة/حذف خصائص |
+| `features/page.tsx` | كتالوج الخصائص + إسناد باقة لمنشأة + جدول الاشتراكات |
+| `actions.ts` | Server Actions: updateMemberRole, createPlan, deletePlan, addPlanFeature, removePlanFeature, assignSubscription |
+
+### قرارات تصميمية
+| القرار | السبب |
+|--------|--------|
+| لوحة التحكم في الويب فقط | شاشة كبيرة + جداول بيانات + لا يحتاج تحديث Store |
+| role بدل حساب شخصي | أمان + قابلية التوسع لإضافة مساعد إداري |
+| حماية مزدوجة (middleware + layout) | middleware للأداء، layout للـ fallback |
+
+#### 5. إصلاح تعارض Middleware
+- Next.js 16 يستخدم `proxy.ts` بدل `middleware.ts` — حُذف `src/middleware.ts` بعد اكتشاف التعارض
+- الحماية تعمل عبر `src/proxy.ts` الموجود مسبقاً + `src/lib/supabase/middleware.ts`
+
+#### 6. تفعيل حساب الأدمن
+- تشغيل SQL في Supabase: `UPDATE profiles SET role = 'admin' WHERE email = 'mansor.learning@gmail.com'`
+- تم التحقق من فتح لوحة التحكم على `localhost:3000/admin` بنجاح ✅
+
+### ملاحظة تقنية مهمة
+- Next.js 16 (Turbopack) يرفض وجود `middleware.ts` و `proxy.ts` معاً — استخدم `proxy.ts` فقط
+
+**آخر تحديث:** 2026-06-03
+**الحالة:** لوحة تحكم الأدمن مكتملة ✅ | TypeScript نظيف ✅ | مختبرة محلياً ✅
+
+---
+
+## 2026-06-02 — إصلاحات الإنتاج + تطبيق Migration
+
+### تم إنجازه
+
+#### 1. إصلاح Build Vercel
+- نقل `ACTION_LABEL` من `actions.ts` إلى `employee-constants.ts` لأن `"use server"` لا يقبل objects
+- تنظيف unused imports في `LinkedEmployeesPanel.tsx`
+
+#### 2. إصلاح RLS البحث بالإيميل
+- إضافة policy على `profiles` تسمح لأصحاب المنشآت بالبحث عن موظفين
+
+#### 3. إصلاح عمود role_type
+- إضافة `role_type` يدوياً بـ `ALTER TABLE` بعد أن كان الـ migration طُبِّق بدونه
+
+### الملفات المضافة
+- `src/app/dashboard/staff/employee-constants.ts` — ACTION_LABEL مستقل
+
+**آخر تحديث:** 2026-06-02
+**الحالة:** النظام يعمل على الإنتاج ✅
+
+---
+
 ## 2026-06-02 — نظام الموظفين المرتبط بحسابات التطبيق
 
 ### تم إنجازه
