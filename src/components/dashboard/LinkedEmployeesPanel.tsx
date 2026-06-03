@@ -503,17 +503,25 @@ function EmployeeDetailDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: 
           {tab === "log" && !isPending && (logs ?? []).length === 0 && (
             <p className="text-sm text-surface-400 text-center py-8">لا توجد إجراءات بعد</p>
           )}
-          {tab === "log" && (logs ?? []).map((l) => (
-            <div key={l.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700">
-              <span className="text-xs text-surface-400 shrink-0">{fmtDate(l.created_at)}</span>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-surface-900 dark:text-white">
-                  {ACTION_LABEL[l.action_type] ?? l.action_type}
-                </p>
-                {l.description && <p className="text-xs text-surface-400 mt-0.5">{l.description}</p>}
+          {tab === "log" && !isPending && (logs ?? []).filter((l) =>
+            !["clock_in", "clock_out", "invoice_created"].includes(l.action_type)
+          ).length === 0 && (
+            <p className="text-sm text-surface-400 text-center py-8">لا توجد تعديلات بعد</p>
+          )}
+          {tab === "log" && (logs ?? [])
+            .filter((l) => !["clock_in", "clock_out", "invoice_created"].includes(l.action_type))
+            .map((l) => (
+              <div key={l.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700">
+                <span className="text-xs text-surface-400 shrink-0">{fmtDate(l.created_at)}</span>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-surface-900 dark:text-white">
+                    {ACTION_LABEL[l.action_type] ?? l.action_type}
+                  </p>
+                  {l.description && <p className="text-xs text-surface-400 mt-0.5">{l.description}</p>}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          }
         </div>
       </div>
     </div>
