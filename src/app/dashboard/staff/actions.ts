@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getCurrentBusiness } from "@/lib/dashboard-data";
-import type { EmployeeActionType } from "@/types/database";
 
 // ── الإجراءات القديمة (الدليل) ────────────────────────────────────────────────
 
@@ -101,10 +100,8 @@ export async function linkEmployee(formData: FormData) {
       business_id:         business.id,
       employee_id:         emp.id,
       cashier_access:      true,
-      can_read:            formData.get("can_read")            === "true",
-      can_create:          formData.get("can_create")          === "true",
-      can_update:          formData.get("can_update")          === "true",
-      can_delete:          formData.get("can_delete")          === "true",
+      can_sales:           formData.get("can_sales")           === "true",
+      can_invoice:         formData.get("can_invoice")         === "true",
       can_manage_products: formData.get("can_manage_products") === "true",
     };
     const { error: permError } = await supabase.from("employee_permissions").insert(perms);
@@ -144,10 +141,8 @@ export async function updateEmployeePermissions(formData: FormData) {
   const { error } = await supabase
     .from("employee_permissions")
     .update({
-      can_read:            formData.get("can_read")            === "true",
-      can_create:          formData.get("can_create")          === "true",
-      can_update:          formData.get("can_update")          === "true",
-      can_delete:          formData.get("can_delete")          === "true",
+      can_sales:           formData.get("can_sales")           === "true",
+      can_invoice:         formData.get("can_invoice")         === "true",
       can_manage_products: formData.get("can_manage_products") === "true",
       updated_at:          new Date().toISOString(),
     })
