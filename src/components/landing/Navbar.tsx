@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Menu, X, Moon, Sun, MessageSquare } from "lucide-react";
@@ -45,7 +45,7 @@ export default function Navbar() {
             <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center shadow-md">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مسند</span>
+            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مُسند</span>
           </a>
 
           <div className="hidden md:flex items-center gap-1">

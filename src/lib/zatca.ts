@@ -1,4 +1,4 @@
-export type TaxMode = "none" | "inclusive" | "exclusive";
+﻿export type TaxMode = "none" | "inclusive" | "exclusive";
 
 export type InvoiceSettings = {
   sellerName: string;
@@ -84,7 +84,7 @@ export function generateZatcaQrPayload(input: {
   return Buffer.from(bytes).toString("base64");
 }
 
-export function getDefaultInvoiceSettings(sellerName = "مسند") {
+export function getDefaultInvoiceSettings(sellerName = "مُسند") {
   return {
     sellerName,
     vatNumber: "",
@@ -93,7 +93,7 @@ export function getDefaultInvoiceSettings(sellerName = "مسند") {
   };
 }
 
-export function parseInvoiceSettings(value: unknown, sellerName = "مسند"): InvoiceSettings {
+export function parseInvoiceSettings(value: unknown, sellerName = "مُسند"): InvoiceSettings {
   const defaults = getDefaultInvoiceSettings(sellerName);
   if (!value || typeof value !== "object") return defaults;
 

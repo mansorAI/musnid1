@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { Smartphone, Settings, Rocket, Headphones } from "lucide-react";
 import { useInView } from "@/hooks/useInView";
 
 const steps = [
-  { icon: Smartphone, step: "01", title: "اربط واتساب", desc: "اربط رقم واتساب أعمالك بمنصة مسند بخطوات بسيطة في أقل من 5 دقائق." },
+  { icon: Smartphone, step: "01", title: "اربط واتساب", desc: "اربط رقم واتساب أعمالك بمنصة مُسند بخطوات بسيطة في أقل من 5 دقائق." },
   { icon: Settings, step: "02", title: "خصّص الإعدادات", desc: "أنشئ ردوداً تلقائية، أضف فريقك، وابنِ قاعدتك المعرفية حسب احتياجاتك." },
   { icon: Rocket, step: "03", title: "ابدأ الإدارة", desc: "أدر محادثاتك من لوحة تحكم واحدة. تتبع، ردّ، وتابع بسهولة وفعالية." },
   { icon: Headphones, step: "04", title: "طوّر باستمرار", desc: "حلّل أداءك، حسّن ردودك، وطوّر خدمة عملائك مع تقارير ورؤى ذكية." },

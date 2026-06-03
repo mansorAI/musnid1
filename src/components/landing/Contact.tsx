@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Loader2, Send, Mail, MapPin, Phone } from "lucide-react";
@@ -26,7 +26,7 @@ export default function Contact() {
       <div className="container-max relative z-10">
         <div ref={titleRef} className={`text-center mb-14 md:mb-20 ${titleVisible ? "animate-fade-in-up" : "opacity-0"}`}>
           <span className="inline-block px-4 py-1.5 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 text-sm font-medium mb-4">تواصل معنا</span>
-          <h2 className="section-title mb-4 text-surface-900 dark:text-white">جاهز لبدء <span className="gradient-text">رحلتك مع مسند</span></h2>
+          <h2 className="section-title mb-4 text-surface-900 dark:text-white">جاهز لبدء <span className="gradient-text">رحلتك مع مُسند</span></h2>
           <p className="section-subtitle mx-auto">تواصل معنا وسنساعدك على اختيار الخطة المناسبة والبدء بأسرع وقت</p>
         </div>
 

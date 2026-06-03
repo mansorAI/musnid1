@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { MessageSquare, Sparkles } from "lucide-react";
 import { signInWithEmail, signUpWithEmail } from "./actions";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -51,7 +51,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             <div className="w-11 h-11 rounded-xl gradient-bg flex items-center justify-center shadow-lg">
               <MessageSquare className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-extrabold text-surface-900 dark:text-white">مسند</span>
+            <span className="text-2xl font-extrabold text-surface-900 dark:text-white">مُسند</span>
           </Link>
 
           <div className="space-y-5">
@@ -87,11 +87,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مسند</span>
+            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مُسند</span>
           </div>
 
           <div className="mb-6">
-            <h2 className="text-2xl font-extrabold text-surface-900 dark:text-white">الدخول إلى مسند</h2>
+            <h2 className="text-2xl font-extrabold text-surface-900 dark:text-white">الدخول إلى مُسند</h2>
             <p className="text-sm text-surface-500 dark:text-surface-400 mt-1">
               استخدم حسابك أو أنشئ حسابًا جديدًا.
             </p>

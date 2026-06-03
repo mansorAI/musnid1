@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -7,7 +7,7 @@ const options = [
   {
     value: "dark",
     label: "داكن",
-    description: "الافتراضي لمسند ولوحات التشغيل",
+    description: "الافتراضي لمُسند ولوحات التشغيل",
     icon: Moon,
     color: "#7a5af8",
   },

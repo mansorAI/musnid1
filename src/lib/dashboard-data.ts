@@ -1,4 +1,4 @@
-import { hasSupabaseEnv } from "@/lib/env";
+﻿import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { automationRules, recentConversations } from "@/lib/demo-data";
 import { scoreTasks, type PersonalTaskLike } from "@/lib/task-engine";
@@ -362,7 +362,7 @@ export async function getTasksData() {
 
 export async function getInvoiceSettingsData() {
   const business = await getCurrentBusiness();
-  if (!business) return { settings: getDefaultInvoiceSettings("مسند"), businessId: null, fromFallback: true };
+  if (!business) return { settings: getDefaultInvoiceSettings("مُسند"), businessId: null, fromFallback: true };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -483,7 +483,7 @@ export async function getSalesProductsData() {
         { id: "demo-p2", name: "كيكة تمر", price: 26, is_available: true },
         { id: "demo-p3", name: "ساندويتش دجاج", price: 32, is_available: true },
       ],
-      settings: getDefaultInvoiceSettings("مسند"),
+      settings: getDefaultInvoiceSettings("مُسند"),
       settingsFallback: true,
     };
   }

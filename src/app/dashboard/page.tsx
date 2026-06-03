@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import {
   AlertCircle, Banknote, FileText, Files, MessageSquareText, ReceiptText,
   Settings2, ShoppingBag, Users,
@@ -68,7 +68,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <div className="pointer-events-none absolute -bottom-16 -left-5 h-40 w-40 rounded-full opacity-[0.05]" style={{ background: "#14b8a6" }} />
         <div className="relative flex items-center justify-between">
           <span className="text-sm text-surface-500 dark:text-surface-400">
-            {business?.name ? `${business.name} · المبيعات والفوترة` : "مسند"}
+            {business?.name ? `${business.name} · المبيعات والفوترة` : "مُسند"}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />

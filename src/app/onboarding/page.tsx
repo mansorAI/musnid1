@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { OnboardingForm } from "./onboarding-form";
@@ -39,7 +39,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
             <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-bg shadow-md">
               <MessageCircle className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مسند</span>
+            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مُسند</span>
           </Link>
           <span className="rounded-full border border-primary-200 bg-primary-50 px-4 py-2 text-sm font-medium text-primary-700 dark:border-primary-800 dark:bg-primary-900/30 dark:text-primary-200">
             إعداد النشاط

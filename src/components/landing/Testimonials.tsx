@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { Star, Quote } from "lucide-react";
 import { useInView } from "@/hooks/useInView";
 
 const testimonials = [
-  { name: "محمد العتيبي", role: "صاحب مطعم البيت السعودي", text: "مسند غيّر طريقة تعاملنا مع العملاء بالكامل. الآن نرد على حجوزات واتساب في ثوانٍ بدل ساعات. عملاؤنا سعداء ونحن أكثر إنتاجية.", rating: 5 },
+  { name: "محمد العتيبي", role: "صاحب مطعم البيت السعودي", text: "مُسند غيّر طريقة تعاملنا مع العملاء بالكامل. الآن نرد على حجوزات واتساب في ثوانٍ بدل ساعات. عملاؤنا سعداء ونحن أكثر إنتاجية.", rating: 5 },
   { name: "سارة الدوسري", role: "مديرة عيادة نور الطبية", text: "الردود التلقائية وفّرت على فريقنا وقتاً كبيراً. المرضى يحصلون على ردود فورية حتى خارج ساعات العمل. أنصح بها بشدة.", rating: 5 },
   { name: "خالد الشمري", role: "مؤسس متجر أناقة", text: "منصة سهلة الاستخدام وتقاريرها ممتازة. نعرف بالضبط كم محادثة، وقت الرد، ورضا العملاء. إدارة احترافية بضغطة زر.", rating: 5 },
 ];
@@ -38,8 +38,8 @@ export default function Testimonials() {
       <div className="container-max relative z-10">
         <div ref={titleRef} className={`text-center mb-14 md:mb-20 ${titleVisible ? "animate-fade-in-up" : "opacity-0"}`}>
           <span className="inline-block px-4 py-1.5 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 text-sm font-medium mb-4">آراء العملاء</span>
-          <h2 className="section-title mb-4 text-surface-900 dark:text-white">عملاؤنا <span className="gradient-text">يثقون بمسند</span></h2>
-          <p className="section-subtitle mx-auto">أكثر من 2,000 عميل يعتمدون على مسند لإدارة محادثاتهم اليومية</p>
+          <h2 className="section-title mb-4 text-surface-900 dark:text-white">عملاؤنا <span className="gradient-text">يثقون بمُسند</span></h2>
+          <p className="section-subtitle mx-auto">أكثر من 2,000 عميل يعتمدون على مُسند لإدارة محادثاتهم اليومية</p>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t, i) => <TestimonialCard key={i} testimonial={t} index={i} />)}

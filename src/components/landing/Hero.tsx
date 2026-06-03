@@ -1,4 +1,4 @@
-import { ArrowLeft, MessageSquare, Play, Sparkles, Users, Zap, Shield } from "lucide-react";
+﻿import { ArrowLeft, MessageSquare, Play, Sparkles, Users, Zap, Shield } from "lucide-react";
 import Link from "next/link";
 
 export default function Hero() {
@@ -28,7 +28,7 @@ export default function Hero() {
             </h1>
 
             <p className="section-subtitle mx-auto lg:mx-0 mb-8 animate-fade-in-up delay-200">
-              مسند يساعدك على إدارة محادثات العملاء، أتمتة الردود، وبناء قاعدة معرفية من لوحة
+              مُسند يساعدك على إدارة محادثات العملاء، أتمتة الردود، وبناء قاعدة معرفية من لوحة
               تحكم واحدة بسيطة. وفّر وقتك وحسّن جودة خدمتك.
             </p>
 
@@ -75,7 +75,7 @@ export default function Hero() {
                       <MessageSquare className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-surface-900 dark:text-white">لوحة تحكم مسند</div>
+                      <div className="text-sm font-bold text-surface-900 dark:text-white">لوحة تحكم مُسند</div>
                       <div className="text-xs text-surface-500">محادثات نشطة</div>
                     </div>
                   </div>

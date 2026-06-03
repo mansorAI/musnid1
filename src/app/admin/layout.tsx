@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   LayoutDashboard, Users, Package, Settings, Shield, LogOut,
@@ -30,7 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div className="text-right">
-              <span className="text-xl font-extrabold text-surface-900 dark:text-white">مسند</span>
+              <span className="text-xl font-extrabold text-surface-900 dark:text-white">مُسند</span>
               <span className="mr-2 text-xs font-semibold text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 px-2 py-0.5 rounded-full">
                 أدمن
               </span>

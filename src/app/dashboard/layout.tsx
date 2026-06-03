@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import {
   Bot, BookOpenText, CalendarDays, CheckSquare, LayoutDashboard, MessageCircle,
   MessageSquareText, ReceiptText, Settings, UserCheck, UtensilsCrossed, Users, Wrench,
@@ -48,7 +48,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center shadow-md">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مسند</span>
+            <span className="text-xl font-extrabold text-surface-900 dark:text-white">مُسند</span>
           </Link>
 
           <div className="flex items-center gap-3">

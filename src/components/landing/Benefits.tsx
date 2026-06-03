@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { TrendingUp, Clock, HeartHandshake, Award, Target } from "lucide-react";
 import { useInView } from "@/hooks/useInView";
@@ -40,7 +40,7 @@ export default function Benefits() {
     <section id="benefits" className="section-padding gradient-bg-subtle relative overflow-hidden">
       <div className="container-max relative z-10">
         <div ref={titleRef} className={`text-center mb-14 md:mb-20 ${titleVisible ? "animate-fade-in-up" : "opacity-0"}`}>
-          <span className="inline-block px-4 py-1.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium mb-4">لماذا مسند</span>
+          <span className="inline-block px-4 py-1.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium mb-4">لماذا مُسند</span>
           <h2 className="section-title mb-4 text-surface-900 dark:text-white">منصة صُممت لتجعل <span className="gradient-text">عملك أسهل</span></h2>
           <p className="section-subtitle mx-auto">فوائد ملموسة تُحسّن طريقة تواصلك مع عملائك وتُرتقي بجودة خدمتك</p>
         </div>
