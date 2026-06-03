@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, Send, Mail, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { useInView } from "@/hooks/useInView";
+import { sendContactEmail } from "@/app/contact/actions";
 
 export default function Contact() {
   const { ref: titleRef, isInView: titleVisible } = useInView();
@@ -11,14 +12,18 @@ export default function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", business: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    window.setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await sendContactEmail(formData);
       setFormData({ name: "", email: "", business: "", message: "" });
-      toast.success("تم استلام رسالتك. سنتواصل معك قريبا.");
-    }, 600);
+      toast.success("تم استلام رسالتك. سنتواصل معك قريباً.");
+    } catch {
+      toast.error("حدث خطأ أثناء الإرسال. حاول مرة أخرى.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
