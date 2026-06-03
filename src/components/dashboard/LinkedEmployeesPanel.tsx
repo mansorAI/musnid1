@@ -526,9 +526,15 @@ function EmployeeDetailDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: 
 
 // ── Employee Card ─────────────────────────────────────────────────────────────
 
-function EmployeeCard({ emp }: { emp: LinkedEmployee }) {
-  const [showPerms, setShowPerms] = useState(false);
-  const [showLog,   setShowLog]   = useState(false);
+function EmployeeCard({
+  emp,
+  onOpenDetail,
+  onOpenPerms,
+}: {
+  emp: LinkedEmployee;
+  onOpenDetail: () => void;
+  onOpenPerms: () => void;
+}) {
   const [isPending, startTransition] = useTransition();
 
   const isCashier = emp.role_type === "cashier";
@@ -546,65 +552,62 @@ function EmployeeCard({ emp }: { emp: LinkedEmployee }) {
   };
 
   return (
-    <>
-      <div
-        className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800/40 transition-colors"
-        onClick={() => setShowLog(true)}
-      >
-        {/* أزرار الإجراءات */}
-        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800/40 transition-colors"
+      onClick={onOpenDetail}
+    >
+      {/* أزرار الإجراءات */}
+      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={handleRemove}
+          disabled={isPending}
+          title="إزالة"
+          className="p-1.5 rounded-lg text-surface-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+        {isCashier && (
           <button
-            onClick={handleRemove}
-            disabled={isPending}
-            title="إزالة"
-            className="p-1.5 rounded-lg text-surface-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            onClick={onOpenPerms}
+            title="الصلاحيات"
+            className="p-1.5 rounded-lg text-surface-400 hover:text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-950/30 transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
+            <Shield className="w-4 h-4" />
           </button>
-          {isCashier && (
-            <button
-              onClick={() => setShowPerms(true)}
-              title="الصلاحيات"
-              className="p-1.5 rounded-lg text-surface-400 hover:text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-950/30 transition-colors"
-            >
-              <Shield className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* المعلومات */}
-        <div className="flex items-center gap-3 flex-1 justify-end">
-          <div className="text-right">
-            <div className="flex items-center gap-2 justify-end">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                isCashier
-                  ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
-                  : "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-              }`}>
-                {isCashier ? "كاشير" : "طاقم عمل"}
-              </span>
-              <p className="font-bold text-surface-900 dark:text-white text-sm">{name}</p>
-            </div>
-            <p className="text-xs text-surface-400 mt-0.5">{email}</p>
-          </div>
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-            isCashier ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300" : "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-          }`}>
-            {avatar}
-          </div>
-        </div>
+        )}
       </div>
 
-      {showPerms && <PermissionsDialog    emp={emp} onClose={() => setShowPerms(false)} />}
-      {showLog   && <EmployeeDetailDialog emp={emp} onClose={() => setShowLog(false)} />}
-    </>
+      {/* المعلومات */}
+      <div className="flex items-center gap-3 flex-1 justify-end">
+        <div className="text-right">
+          <div className="flex items-center gap-2 justify-end">
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+              isCashier
+                ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                : "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+            }`}>
+              {isCashier ? "كاشير" : "طاقم عمل"}
+            </span>
+            <p className="font-bold text-surface-900 dark:text-white text-sm">{name}</p>
+          </div>
+          <p className="text-xs text-surface-400 mt-0.5">{email}</p>
+        </div>
+        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+          isCashier ? "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300" : "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+        }`}>
+          {avatar}
+        </div>
+      </div>
+    </div>
   );
 }
 
 // ── Main Panel ────────────────────────────────────────────────────────────────
 
 export function LinkedEmployeesPanel({ employees }: { employees: LinkedEmployee[] }) {
-  const [showAdd, setShowAdd] = useState(false);
+  const [showAdd,    setShowAdd]    = useState(false);
+  const [detailEmp,  setDetailEmp]  = useState<LinkedEmployee | null>(null);
+  const [permsEmp,   setPermsEmp]   = useState<LinkedEmployee | null>(null);
 
   return (
     <>
@@ -631,13 +634,21 @@ export function LinkedEmployeesPanel({ employees }: { employees: LinkedEmployee[
         ) : (
           <div className="divide-y divide-surface-200/30 dark:divide-surface-700/20">
             {employees.map((emp) => (
-              <EmployeeCard key={emp.id} emp={emp} />
+              <EmployeeCard
+                key={emp.id}
+                emp={emp}
+                onOpenDetail={() => setDetailEmp(emp)}
+                onOpenPerms={() => setPermsEmp(emp)}
+              />
             ))}
           </div>
         )}
       </div>
 
-      {showAdd && <AddEmployeeDialog onClose={() => setShowAdd(false)} />}
+      {/* الـ dialogs خارج glass-card لتجنب stacking context */}
+      {showAdd   && <AddEmployeeDialog    onClose={() => setShowAdd(false)} />}
+      {detailEmp && <EmployeeDetailDialog emp={detailEmp} onClose={() => setDetailEmp(null)} />}
+      {permsEmp  && <PermissionsDialog    emp={permsEmp}  onClose={() => setPermsEmp(null)} />}
     </>
   );
 }
