@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import {
   Shield, Trash2, UserPlus, ChevronLeft,
   Briefcase, CreditCard, X, AlertCircle,
@@ -344,13 +344,12 @@ function EmployeeDetailDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: 
   const [logs,      setLogs]      = useState<EmployeeAuditLog[]   | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const loadSessions = () => {
-    if (sessions !== null) return;
+  useEffect(() => {
     startTransition(async () => {
       const data = await getEmployeeSessions(emp.id);
       setSessions(data as EmployeeSession[]);
     });
-  };
+  }, [emp.id]);
 
   const loadInvoices = () => {
     if (invoices !== null) return;
@@ -367,8 +366,6 @@ function EmployeeDetailDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: 
       setLogs(data as EmployeeAuditLog[]);
     });
   };
-
-  if (sessions === null) loadSessions();
 
   const name    = emp.profile?.full_name ?? emp.profile?.email ?? "موظف";
   const email   = emp.profile?.email ?? "";
