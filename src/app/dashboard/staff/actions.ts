@@ -103,6 +103,9 @@ export async function linkEmployee(formData: FormData) {
       can_sales:           formData.get("can_sales")           === "true",
       can_invoice:         formData.get("can_invoice")         === "true",
       can_manage_products: formData.get("can_manage_products") === "true",
+      can_read:            formData.get("can_read")            === "true",
+      can_update:          formData.get("can_update")          === "true",
+      can_delete:          formData.get("can_delete")          === "true",
     };
     const { error: permError } = await supabase.from("employee_permissions").insert(perms);
     if (permError) return { error: permError.message };
@@ -144,6 +147,9 @@ export async function updateEmployeePermissions(formData: FormData) {
       can_sales:           formData.get("can_sales")           === "true",
       can_invoice:         formData.get("can_invoice")         === "true",
       can_manage_products: formData.get("can_manage_products") === "true",
+      can_read:            formData.get("can_read")            === "true",
+      can_update:          formData.get("can_update")          === "true",
+      can_delete:          formData.get("can_delete")          === "true",
       updated_at:          new Date().toISOString(),
     })
     .eq("employee_id", employeeId);

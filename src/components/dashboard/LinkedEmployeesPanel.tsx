@@ -43,12 +43,21 @@ type LinkedEmployee = BusinessEmployee & {
   permissions: EmployeePermissions | null;
 };
 
-type PermKey = "can_sales" | "can_invoice" | "can_manage_products";
-const PERM_LABELS: { key: PermKey; label: string; desc: string }[] = [
-  { key: "can_sales",           label: "مبيعات",           desc: "يدخل المنتجات ويضيف للسلة ويصدر فاتورة" },
-  { key: "can_invoice",         label: "الفواتير",          desc: "يعرض قائمة الفواتير ويصدر فاتورة مباشرة" },
-  { key: "can_manage_products", label: "إدارة المنتجات",    desc: "يضيف منتجاً جديداً في كاشير المنتجات" },
+type PermKey = "can_sales" | "can_invoice" | "can_manage_products" | "can_read" | "can_update" | "can_delete";
+
+const AREA_PERMS: { key: PermKey; label: string; desc: string }[] = [
+  { key: "can_sales",           label: "مبيعات",         desc: "يدخل المنتجات، يضيف للسلة، يصدر فاتورة" },
+  { key: "can_invoice",         label: "الفواتير",        desc: "يعرض قائمة الفواتير ويصدر فاتورة مباشرة" },
+  { key: "can_manage_products", label: "إدارة المنتجات",  desc: "يضيف منتجاً جديداً في كاشير المنتجات" },
 ];
+
+const ACTION_PERMS: { key: PermKey; label: string; desc: string }[] = [
+  { key: "can_read",   label: "قراءة",  desc: "يعرض البيانات ضمن مجالاته" },
+  { key: "can_update", label: "تعديل",  desc: "يعدّل بيانات ضمن مجالاته" },
+  { key: "can_delete", label: "حذف",    desc: "يحذف بيانات ضمن مجالاته" },
+];
+
+const PERM_LABELS = [...AREA_PERMS, ...ACTION_PERMS];
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("ar-SA", {
@@ -72,7 +81,7 @@ function AddEmployeeDialog({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [found, setFound] = useState<{ id: string; full_name: string | null; email: string } | null>(null);
   const [, setRoleType] = useState<"staff" | "cashier" | null>(null);
-  const [perms, setPerms] = useState({ can_sales: false, can_invoice: false, can_manage_products: false });
+  const [perms, setPerms] = useState({ can_sales: false, can_invoice: false, can_manage_products: false, can_read: true, can_update: false, can_delete: false });
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -241,26 +250,27 @@ function AddEmployeeDialog({ onClose }: { onClose: () => void }) {
               }}
               className="space-y-3"
             >
-              <p className="text-sm text-surface-500 dark:text-surface-400">حدد الصلاحيات الممنوحة للكاشير</p>
-              {PERM_LABELS.map((p) => (
+              <p className="text-xs font-bold text-surface-500 dark:text-surface-400 text-right">المجالات</p>
+              {AREA_PERMS.map((p) => (
                 <label key={p.key} className="flex items-start justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800/50 gap-3">
-                  <input
-                    type="checkbox"
-                    checked={perms[p.key]}
-                    onChange={(e) => setPerms((prev) => ({ ...prev, [p.key]: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-teal-500 mt-0.5 shrink-0"
-                  />
+                  <input type="checkbox" checked={perms[p.key]} onChange={(e) => setPerms((prev) => ({ ...prev, [p.key]: e.target.checked }))} className="w-4 h-4 rounded accent-teal-500 mt-0.5 shrink-0" />
                   <div className="text-right flex-1">
                     <p className="text-sm font-medium text-surface-800 dark:text-surface-200">{p.label}</p>
                     <p className="text-xs text-surface-400 mt-0.5">{p.desc}</p>
                   </div>
                 </label>
               ))}
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-3 rounded-xl bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 disabled:opacity-50 transition-colors"
-              >
+              <p className="text-xs font-bold text-surface-500 dark:text-surface-400 text-right pt-1">الإجراءات</p>
+              {ACTION_PERMS.map((p) => (
+                <label key={p.key} className="flex items-start justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800/50 gap-3">
+                  <input type="checkbox" checked={perms[p.key]} onChange={(e) => setPerms((prev) => ({ ...prev, [p.key]: e.target.checked }))} className="w-4 h-4 rounded accent-teal-500 mt-0.5 shrink-0" />
+                  <div className="text-right flex-1">
+                    <p className="text-sm font-medium text-surface-800 dark:text-surface-200">{p.label}</p>
+                    <p className="text-xs text-surface-400 mt-0.5">{p.desc}</p>
+                  </div>
+                </label>
+              ))}
+              <button type="submit" disabled={isPending} className="w-full py-3 rounded-xl bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 disabled:opacity-50 transition-colors">
                 {isPending ? "جاري الإضافة..." : "إضافة كاشير"}
               </button>
             </form>
@@ -278,6 +288,9 @@ function PermissionsDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () 
     can_sales:           emp.permissions?.can_sales           ?? false,
     can_invoice:         emp.permissions?.can_invoice         ?? false,
     can_manage_products: emp.permissions?.can_manage_products ?? false,
+    can_read:            emp.permissions?.can_read            ?? true,
+    can_update:          emp.permissions?.can_update          ?? false,
+    can_delete:          emp.permissions?.can_delete          ?? false,
   });
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -310,14 +323,20 @@ function PermissionsDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () 
         </div>
         <div className="p-5 space-y-3">
           {error && <p className="text-sm text-red-600">{error}</p>}
-          {PERM_LABELS.map((p) => (
+          <p className="text-xs font-bold text-surface-500 dark:text-surface-400 text-right">المجالات</p>
+          {AREA_PERMS.map((p) => (
             <label key={p.key} className="flex items-start justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800/50 gap-3">
-              <input
-                type="checkbox"
-                checked={perms[p.key]}
-                onChange={(e) => setPerms((prev) => ({ ...prev, [p.key]: e.target.checked }))}
-                className="w-4 h-4 rounded accent-teal-500 mt-0.5 shrink-0"
-              />
+              <input type="checkbox" checked={perms[p.key]} onChange={(e) => setPerms((prev) => ({ ...prev, [p.key]: e.target.checked }))} className="w-4 h-4 rounded accent-teal-500 mt-0.5 shrink-0" />
+              <div className="text-right flex-1">
+                <p className="text-sm font-medium text-surface-800 dark:text-surface-200">{p.label}</p>
+                <p className="text-xs text-surface-400 mt-0.5">{p.desc}</p>
+              </div>
+            </label>
+          ))}
+          <p className="text-xs font-bold text-surface-500 dark:text-surface-400 text-right pt-1">الإجراءات</p>
+          {ACTION_PERMS.map((p) => (
+            <label key={p.key} className="flex items-start justify-between p-3 rounded-xl border border-surface-200 dark:border-surface-700 cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800/50 gap-3">
+              <input type="checkbox" checked={perms[p.key]} onChange={(e) => setPerms((prev) => ({ ...prev, [p.key]: e.target.checked }))} className="w-4 h-4 rounded accent-teal-500 mt-0.5 shrink-0" />
               <div className="text-right flex-1">
                 <p className="text-sm font-medium text-surface-800 dark:text-surface-200">{p.label}</p>
                 <p className="text-xs text-surface-400 mt-0.5">{p.desc}</p>
