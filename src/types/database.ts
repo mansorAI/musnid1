@@ -1046,8 +1046,8 @@ export type Database = {
         Relationships: [];
       };
       employee_permissions: {
-        Row: { id: string; business_id: string; employee_id: string; cashier_access: boolean; can_read: boolean; can_create: boolean; can_update: boolean; can_delete: boolean; can_manage_products: boolean; can_invoice: boolean; can_sales: boolean; created_at: string; updated_at: string };
-        Insert: { id?: string; business_id: string; employee_id: string; cashier_access?: boolean; can_read?: boolean; can_create?: boolean; can_update?: boolean; can_delete?: boolean; can_manage_products?: boolean; can_invoice?: boolean; can_sales?: boolean; created_at?: string; updated_at?: string };
+        Row: { id: string; business_id: string; employee_id: string; cashier_access: boolean; can_read: boolean; can_create: boolean; can_update: boolean; can_delete: boolean; can_manage_products: boolean; can_product_settings: boolean; can_invoice: boolean; can_sales: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; business_id: string; employee_id: string; cashier_access?: boolean; can_read?: boolean; can_create?: boolean; can_update?: boolean; can_delete?: boolean; can_manage_products?: boolean; can_product_settings?: boolean; can_invoice?: boolean; can_sales?: boolean; created_at?: string; updated_at?: string };
         Update: Partial<Database["public"]["Tables"]["employee_permissions"]["Insert"]>;
         Relationships: [];
       };
