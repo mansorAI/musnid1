@@ -43,13 +43,14 @@ type LinkedEmployee = BusinessEmployee & {
   permissions: EmployeePermissions | null;
 };
 
-type PermKey = "can_sales" | "can_invoice" | "can_manage_products" | "can_product_settings" | "can_read" | "can_update" | "can_delete";
+type PermKey = "can_sales" | "can_invoice" | "can_manage_products" | "can_product_settings" | "can_manage_orders" | "can_read" | "can_update" | "can_delete";
 
 const AREA_PERMS: { key: PermKey; label: string; desc: string }[] = [
   { key: "can_sales",           label: "مبيعات",         desc: "يدخل المنتجات، يضيف للسلة، يصدر فاتورة" },
   { key: "can_invoice",         label: "الفواتير",        desc: "يعرض قائمة الفواتير ويصدر فاتورة مباشرة" },
   { key: "can_manage_products", label: "إدارة المنتجات",  desc: "يضيف منتجاً جديداً في كاشير المنتجات" },
   { key: "can_product_settings", label: "إعداد المنتج",   desc: "يفتح إعدادات عرض كروت المنتجات" },
+  { key: "can_manage_orders",   label: "الطلبات",         desc: "يراجع طلبات زون ويقبلها أو يرفضها" },
 ];
 
 const ACTION_PERMS: { key: PermKey; label: string; desc: string }[] = [
@@ -82,7 +83,7 @@ function AddEmployeeDialog({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [found, setFound] = useState<{ id: string; full_name: string | null; email: string } | null>(null);
   const [, setRoleType] = useState<"staff" | "cashier" | null>(null);
-  const [perms, setPerms] = useState({ can_sales: false, can_invoice: false, can_manage_products: false, can_product_settings: false, can_read: true, can_update: false, can_delete: false });
+  const [perms, setPerms] = useState({ can_sales: false, can_invoice: false, can_manage_products: false, can_product_settings: false, can_manage_orders: false, can_read: true, can_update: false, can_delete: false });
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -290,6 +291,7 @@ function PermissionsDialog({ emp, onClose }: { emp: LinkedEmployee; onClose: () 
     can_invoice:         emp.permissions?.can_invoice         ?? false,
     can_manage_products: emp.permissions?.can_manage_products ?? false,
     can_product_settings: emp.permissions?.can_product_settings ?? false,
+    can_manage_orders:   emp.permissions?.can_manage_orders   ?? false,
     can_read:            emp.permissions?.can_read            ?? true,
     can_update:          emp.permissions?.can_update          ?? false,
     can_delete:          emp.permissions?.can_delete          ?? false,
