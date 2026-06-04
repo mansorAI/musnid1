@@ -57,7 +57,9 @@ export async function updateSession(request: NextRequest) {
       .maybeSingle();
 
     const metadataRole = typeof user.user_metadata?.role === "string" ? user.user_metadata.role : null;
-    const role = profile?.role ?? metadataRole ?? "business";
+    const role = profile?.role && profile.role !== "business"
+      ? profile.role
+      : metadataRole ?? profile?.role ?? "business";
 
     if (role === "customer") {
       const redirectUrl = request.nextUrl.clone();

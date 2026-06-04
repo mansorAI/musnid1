@@ -50,7 +50,9 @@ function redirectWithAuthError(error: { message?: string; code?: string }) {
 
 function resolveUserRole(profileRole?: string | null, metadataRole?: unknown) {
   const roleFromMetadata = typeof metadataRole === "string" ? metadataRole : null;
-  return profileRole ?? roleFromMetadata ?? "business";
+  return profileRole && profileRole !== "business"
+    ? profileRole
+    : roleFromMetadata ?? profileRole ?? "business";
 }
 
 export async function signInWithEmail(formData: FormData) {
