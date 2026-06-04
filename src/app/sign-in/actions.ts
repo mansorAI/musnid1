@@ -48,6 +48,11 @@ function redirectWithAuthError(error: { message?: string; code?: string }) {
   redirect(`/sign-in?error=signup&detail=${detail}`);
 }
 
+function resolveUserRole(profileRole?: string | null, metadataRole?: unknown) {
+  const roleFromMetadata = typeof metadataRole === "string" ? metadataRole : null;
+  return profileRole ?? roleFromMetadata ?? "business";
+}
+
 export async function signInWithEmail(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
@@ -74,6 +79,17 @@ export async function signInWithEmail(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const role = resolveUserRole(profile?.role, user.user_metadata?.role);
+    if (role === "customer") {
+      redirect("/individual-app");
+    }
+
     const { data: business } = await supabase
       .from("businesses")
       .select("id")

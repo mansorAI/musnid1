@@ -49,14 +49,23 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (isAdminRoute && user) {
+  if ((isDashboardRoute || isOnboardingRoute || isAdminRoute) && user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (profile?.role !== "admin") {
+    const metadataRole = typeof user.user_metadata?.role === "string" ? user.user_metadata.role : null;
+    const role = profile?.role ?? metadataRole ?? "business";
+
+    if (role === "customer") {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/individual-app";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (isAdminRoute && role !== "admin") {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/dashboard";
       return NextResponse.redirect(redirectUrl);
