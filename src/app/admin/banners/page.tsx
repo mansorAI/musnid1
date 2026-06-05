@@ -68,11 +68,12 @@ export default async function BannersPage() {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-surface-500 dark:text-surface-400">لون الخلفية</label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <input
                   name="bg_color"
                   defaultValue="#7a5af8"
-                  className="rounded-xl border px-3 py-2 text-sm bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white w-28"
+                  placeholder="اتركه فارغاً للصورة فقط"
+                  className="rounded-xl border px-3 py-2 text-sm bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white w-48"
                 />
                 <div className="flex gap-1.5">
                   {COLOR_PRESETS.map((c) => (
@@ -85,6 +86,7 @@ export default async function BannersPage() {
                   ))}
                 </div>
               </div>
+              <p className="text-xs text-surface-400 dark:text-surface-600 mt-0.5">اتركه فارغاً لعرض الصورة بدون خلفية</p>
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-surface-500 dark:text-surface-400">القسم</label>
@@ -197,7 +199,7 @@ export default async function BannersPage() {
                               name="bg_color"
                               defaultValue={banner.bg_color}
                               className="flex-1 rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
-                              placeholder="#7a5af8"
+                              placeholder="فارغ = بدون خلفية"
                             />
                             <input
                               name="sort_order"

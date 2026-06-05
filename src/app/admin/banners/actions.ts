@@ -17,7 +17,7 @@ export async function createBanner(formData: FormData) {
   const title = (formData.get("title") as string).trim();
   const subtitle = (formData.get("subtitle") as string)?.trim() || null;
   const image_url = (formData.get("image_url") as string)?.trim() || null;
-  const bg_color = (formData.get("bg_color") as string) || "#7a5af8";
+  const bg_color = (formData.get("bg_color") as string)?.trim() ?? "";
   const section_key = (formData.get("section_key") as string) || "general";
   const sort_order = Number(formData.get("sort_order") ?? 0);
 
@@ -33,7 +33,7 @@ export async function updateBanner(formData: FormData) {
   const title = (formData.get("title") as string).trim();
   const subtitle = (formData.get("subtitle") as string)?.trim() || null;
   const image_url = (formData.get("image_url") as string)?.trim() || null;
-  const bg_color = (formData.get("bg_color") as string) || "#7a5af8";
+  const bg_color = (formData.get("bg_color") as string)?.trim() ?? "";
   const section_key = (formData.get("section_key") as string) || "general";
   const sort_order = Number(formData.get("sort_order") ?? 0);
 
