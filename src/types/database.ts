@@ -282,6 +282,24 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["business_offers"]["Insert"]>;
         Relationships: [{ foreignKeyName: "business_offers_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] }];
       };
+      store_categories: {
+        Row: { id: string; name: string; icon: string; action_type: "order" | "booking" | "inquiry"; supports_bot: boolean; sort_order: number; is_active: boolean; section_key: string; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; icon?: string; action_type?: "order" | "booking" | "inquiry"; supports_bot?: boolean; sort_order?: number; is_active?: boolean; section_key?: string; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["store_categories"]["Insert"]>;
+        Relationships: [];
+      };
+      zone_sections: {
+        Row: { id: string; name: string; section_key: string; sort_order: number; is_active: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; section_key: string; sort_order?: number; is_active?: boolean; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["zone_sections"]["Insert"]>;
+        Relationships: [];
+      };
+      ad_banners: {
+        Row: { id: string; title: string; subtitle: string | null; image_url: string | null; bg_color: string; section_key: string; is_active: boolean; sort_order: number; created_at: string; updated_at: string };
+        Insert: { id?: string; title: string; subtitle?: string | null; image_url?: string | null; bg_color?: string; section_key?: string; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["ad_banners"]["Insert"]>;
+        Relationships: [];
+      };
       calendar_overrides: {
         Row: {
           id: string;
@@ -1118,7 +1136,10 @@ export type InvoiceSettingsRow = Database["public"]["Tables"]["invoice_settings"
 export type InvoiceRow = Database["public"]["Tables"]["invoices"]["Row"];
 export type InvoiceItemRow = Database["public"]["Tables"]["invoice_items"]["Row"];
 export type UserRole = "admin" | "business" | "customer";
-export type BusinessOffer = Database["public"]["Tables"]["business_offers"]["Row"];
+export type BusinessOffer  = Database["public"]["Tables"]["business_offers"]["Row"];
+export type StoreCategory  = Database["public"]["Tables"]["store_categories"]["Row"];
+export type ZoneSection    = Database["public"]["Tables"]["zone_sections"]["Row"];
+export type AdBanner       = Database["public"]["Tables"]["ad_banners"]["Row"];
 export type Plan = Database["public"]["Tables"]["plans"]["Row"];
 export type PlanFeature = Database["public"]["Tables"]["plan_features"]["Row"];
 export type BusinessSubscription = Database["public"]["Tables"]["business_subscriptions"]["Row"];

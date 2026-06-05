@@ -70,6 +70,8 @@ export default async function AdminPage() {
         <QuickLink href="/admin/members" label="إدارة الأعضاء" desc="عرض وتحرير بيانات الأعضاء وتغيير أدوارهم" />
         <QuickLink href="/admin/packages" label="إدارة الباقات" desc="إنشاء وتعديل باقات الاشتراك ومميزاتها" />
         <QuickLink href="/admin/features" label="إدارة الخصائص" desc="تعريف مفاتيح الخصائص وإسنادها للباقات" />
+        <QuickLink href="/admin/zone" label="إدارة زون" desc="أضف وعدّل أقسام زون والأنشطة المعروضة للعملاء" />
+        <QuickLink href="/admin/banners" label="البنرات الإعلانية" desc="أضف وعدّل البنرات المتحركة في واجهة زون" />
       </div>
     </div>
   );
