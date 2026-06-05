@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/env";
 import type { Database } from "@/types/database";
 
@@ -103,13 +104,15 @@ export async function createBusiness(formData: FormData) {
 }
 
 export async function updateWhatsappNumber(formData: FormData) {
-  const { supabase, userId } = await getUserId();
+  const { userId } = await getUserId();
   const number = String(formData.get("whatsapp_number") ?? "").trim() || null;
 
   const cookieStore = await cookies();
   const bizId = cookieStore.get(BIZ_COOKIE)?.value;
 
-  let query = supabase
+  const adminSupabase = createAdminClient();
+
+  let query = adminSupabase
     .from("businesses")
     .update({ whatsapp_number: number })
     .eq("owner_id", userId);
