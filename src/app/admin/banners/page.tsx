@@ -94,6 +94,7 @@ export default async function BannersPage() {
                 name="section_key"
                 className="rounded-xl border px-3 py-2 text-sm bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
               >
+                <option value="all">🌐 كل الأقسام</option>
                 {sections.map((s) => (
                   <option key={s.section_key} value={s.section_key}>{s.name}</option>
                 ))}
