@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -255,4 +255,67 @@ export async function issueProductInvoice(formData: FormData) {
   revalidatePath("/dashboard/sales");
   revalidatePath(`/dashboard/sales/${invoice.id}`);
   redirect(`/dashboard/sales/${invoice.id}`);
+}
+
+
+// ── العروض ──────────────────────────────────────────────────────────────────
+
+export async function addOffer(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/products");
+  const title = String(formData.get("title") ?? "").trim();
+  const product_id = String(formData.get("product_id") ?? "").trim() || null;
+
+  if (!title) redirect("/dashboard/sales/products?error=offer_title");
+
+  const { data: existing } = await supabase
+    .from("business_offers")
+    .select("id, sort_order")
+    .eq("business_id", business.id)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+
+  const sort_order = existing && existing.length > 0 ? (existing[0] as any).sort_order + 1 : 0;
+
+  await supabase.from("business_offers").insert({
+    business_id: business.id,
+    title,
+    product_id,
+    is_visible: true,
+    sort_order,
+  });
+
+  revalidatePath("/dashboard/sales/products");
+  redirect("/dashboard/sales/products");
+}
+
+export async function toggleOfferVisibility(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/products");
+  const offerId = String(formData.get("offer_id") ?? "").trim();
+  const isVisible = formData.get("is_visible") === "true";
+
+  if (!offerId) return;
+
+  await supabase
+    .from("business_offers")
+    .update({ is_visible: isVisible })
+    .eq("id", offerId)
+    .eq("business_id", business.id);
+
+  revalidatePath("/dashboard/sales/products");
+}
+
+export async function deleteOffer(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/products");
+  const offerId = String(formData.get("offer_id") ?? "").trim();
+
+  if (!offerId) redirect("/dashboard/sales/products");
+
+  await supabase
+    .from("business_offers")
+    .delete()
+    .eq("id", offerId)
+    .eq("business_id", business.id);
+
+  revalidatePath("/dashboard/sales/products");
+  redirect("/dashboard/sales/products");
 }

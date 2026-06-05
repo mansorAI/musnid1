@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { AlertTriangle, FolderPlus, Plus, ReceiptText, Trash2 } from "lucide-react";
-import { getSalesProductsData } from "@/lib/dashboard-data";
+import { AlertTriangle, Eye, EyeOff, FolderPlus, Plus, ReceiptText, Tag, Trash2 } from "lucide-react";
+import { getBusinessOffers, getSalesProductsData } from "@/lib/dashboard-data";
 import { cn } from "@/lib/utils";
 import { calculateInvoiceTotals } from "@/lib/zatca";
-import { addSalesCategory, addSalesProduct, deleteSalesProduct, issueProductInvoice } from "../actions";
+import { addOffer, addSalesCategory, addSalesProduct, deleteOffer, deleteSalesProduct, issueProductInvoice, toggleOfferVisibility } from "../actions";
 
 const sar = new Intl.NumberFormat("ar-SA", { style: "currency", currency: "SAR" });
 
@@ -12,7 +12,7 @@ type ProductsPageProps = {
 };
 
 export default async function SalesProductsPage({ searchParams }: ProductsPageProps) {
-  const [params, data] = await Promise.all([searchParams, getSalesProductsData()]);
+  const [params, data, offersData] = await Promise.all([searchParams, getSalesProductsData(), getBusinessOffers()]);
   const activeCategoryId = params?.category ?? "all";
   const filteredProducts =
     activeCategoryId === "all"
@@ -175,6 +175,77 @@ export default async function SalesProductsPage({ searchParams }: ProductsPagePr
           <p className="mt-2">الإجمالي: {sar.format(preview.total)}</p>
           <p>الضريبة: {sar.format(preview.taxTotal)}</p>
           <p>الوضع: {data.settings.taxMode}</p>
+        </div>
+
+        {/* ── إدارة العروض ── */}
+        <div className="glass-card space-y-4 p-6">
+          <div className="flex items-center justify-between">
+            <Tag className="size-5 text-teal-500" />
+            <h2 className="text-lg font-bold text-surface-900 dark:text-white">العروض</h2>
+          </div>
+
+          {/* إضافة عرض جديد */}
+          <form action={addOffer} className="space-y-3 rounded-xl border border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-800/40">
+            <p className="text-xs font-semibold text-surface-500 dark:text-surface-400">عرض جديد</p>
+            <input
+              name="title"
+              required
+              placeholder="مثال: خصم 15% على القهوة"
+              className="w-full rounded-xl border border-surface-200 bg-white px-4 py-3 text-sm dark:border-surface-700 dark:bg-surface-900"
+            />
+            <select
+              name="product_id"
+              className="w-full rounded-xl border border-surface-200 bg-white px-4 py-3 text-sm dark:border-surface-700 dark:bg-surface-900"
+            >
+              <option value="">بدون منتج محدد</option>
+              {offersData.products.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <button className="btn-secondary w-full text-sm">
+              <Plus className="size-4" />
+              حفظ العرض
+            </button>
+          </form>
+
+          {/* قائمة العروض */}
+          {offersData.offers.length === 0 ? (
+            <p className="py-4 text-center text-sm text-surface-400 dark:text-surface-500">لا توجد عروض بعد</p>
+          ) : (
+            <ul className="space-y-2">
+              {offersData.offers.map((offer) => {
+                const linked = offersData.products.find((p) => p.id === offer.product_id);
+                return (
+                  <li key={offer.id} className="flex items-center gap-3 rounded-xl border border-surface-200 bg-white p-3 dark:border-surface-700 dark:bg-surface-800/50">
+                    <form action={deleteOffer}>
+                      <input type="hidden" name="offer_id" value={offer.id} />
+                      <button type="submit" className="text-red-500 hover:text-red-700">
+                        <Trash2 className="size-4" />
+                      </button>
+                    </form>
+                    <form action={toggleOfferVisibility}>
+                      <input type="hidden" name="offer_id" value={offer.id} />
+                      <input type="hidden" name="is_visible" value={offer.is_visible ? "false" : "true"} />
+                      <button type="submit" title={offer.is_visible ? "إخفاء" : "إظهار"}>
+                        {offer.is_visible
+                          ? <Eye className="size-4 text-teal-500" />
+                          : <EyeOff className="size-4 text-surface-400" />
+                        }
+                      </button>
+                    </form>
+                    <div className="flex-1 text-right">
+                      <p className="text-sm font-bold text-surface-900 dark:text-white">{offer.title}</p>
+                      {linked && <p className="text-xs text-surface-400">المنتج: {linked.name}</p>}
+                    </div>
+                    <span className={cn(
+                      "size-2 rounded-full",
+                      offer.is_visible ? "bg-teal-500" : "bg-surface-300 dark:bg-surface-600"
+                    )} />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </aside>
     </div>

@@ -276,6 +276,12 @@ export type Database = {
           },
         ];
       };
+      business_offers: {
+        Row: { id: string; business_id: string; title: string; product_id: string | null; is_visible: boolean; sort_order: number; created_at: string; updated_at: string };
+        Insert: { id?: string; business_id: string; title: string; product_id?: string | null; is_visible?: boolean; sort_order?: number; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["business_offers"]["Insert"]>;
+        Relationships: [{ foreignKeyName: "business_offers_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] }];
+      };
       calendar_overrides: {
         Row: {
           id: string;
@@ -1046,8 +1052,8 @@ export type Database = {
         Relationships: [];
       };
       employee_permissions: {
-        Row: { id: string; business_id: string; employee_id: string; cashier_access: boolean; can_read: boolean; can_create: boolean; can_update: boolean; can_delete: boolean; can_manage_products: boolean; can_product_settings: boolean; can_manage_orders: boolean; can_invoice: boolean; can_sales: boolean; created_at: string; updated_at: string };
-        Insert: { id?: string; business_id: string; employee_id: string; cashier_access?: boolean; can_read?: boolean; can_create?: boolean; can_update?: boolean; can_delete?: boolean; can_manage_products?: boolean; can_product_settings?: boolean; can_manage_orders?: boolean; can_invoice?: boolean; can_sales?: boolean; created_at?: string; updated_at?: string };
+        Row: { id: string; business_id: string; employee_id: string; cashier_access: boolean; can_read: boolean; can_create: boolean; can_update: boolean; can_delete: boolean; can_manage_products: boolean; can_product_settings: boolean; can_manage_orders: boolean; can_invoice: boolean; can_sales: boolean; can_manage_offers: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; business_id: string; employee_id: string; cashier_access?: boolean; can_read?: boolean; can_create?: boolean; can_update?: boolean; can_delete?: boolean; can_manage_products?: boolean; can_product_settings?: boolean; can_manage_orders?: boolean; can_invoice?: boolean; can_sales?: boolean; can_manage_offers?: boolean; created_at?: string; updated_at?: string };
         Update: Partial<Database["public"]["Tables"]["employee_permissions"]["Insert"]>;
         Relationships: [];
       };
@@ -1112,6 +1118,7 @@ export type InvoiceSettingsRow = Database["public"]["Tables"]["invoice_settings"
 export type InvoiceRow = Database["public"]["Tables"]["invoices"]["Row"];
 export type InvoiceItemRow = Database["public"]["Tables"]["invoice_items"]["Row"];
 export type UserRole = "admin" | "business" | "customer";
+export type BusinessOffer = Database["public"]["Tables"]["business_offers"]["Row"];
 export type Plan = Database["public"]["Tables"]["plans"]["Row"];
 export type PlanFeature = Database["public"]["Tables"]["plan_features"]["Row"];
 export type BusinessSubscription = Database["public"]["Tables"]["business_subscriptions"]["Row"];

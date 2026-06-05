@@ -1,4 +1,5 @@
-﻿import { hasSupabaseEnv } from "@/lib/env";
+﻿import { cookies } from "next/headers";
+import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { automationRules, recentConversations } from "@/lib/demo-data";
 import { scoreTasks, type PersonalTaskLike } from "@/lib/task-engine";
@@ -19,15 +20,38 @@ const MARKETPLACE_CATEGORY_BY_TYPE: Partial<Record<BusinessType, string>> = {
   other: "خدمات",
 };
 
+export async function getAllBusinesses() {
+  if (!hasSupabaseEnv()) return [];
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("businesses")
+    .select("*")
+    .eq("owner_id", user.id)
+    .order("created_at", { ascending: true });
+  return data ?? [];
+}
+
 export async function getCurrentBusiness() {
   if (!hasSupabaseEnv()) return null;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+
+  const cookieStore = await cookies();
+  const activeBizId = cookieStore.get("active_biz_id")?.value;
+
+  if (activeBizId) {
+    const { data: specific } = await supabase
+      .from("businesses")
+      .select("*")
+      .eq("id", activeBizId)
+      .eq("owner_id", user.id)
+      .maybeSingle();
+    if (specific) return specific;
+  }
 
   const { data } = await supabase
     .from("businesses")
@@ -586,5 +610,22 @@ export async function getSalesProductsData() {
     settings: settingsData.settings,
     settingsFallback: settingsData.fromFallback,
     canManageProducts: true,
+  };
+}
+
+export async function getBusinessOffers() {
+  const business = await getCurrentBusiness();
+  if (!business) return { businessId: null, offers: [], products: [] };
+
+  const supabase = await import("@/lib/supabase/server").then((m) => m.createClient());
+  const [offersResult, productsResult] = await Promise.all([
+    supabase.from("business_offers").select("*").eq("business_id", business.id).order("sort_order", { ascending: true }),
+    supabase.from("menu_items").select("id,name").eq("business_id", business.id).eq("is_available", true),
+  ]);
+
+  return {
+    businessId: business.id,
+    offers: (offersResult.data ?? []) as import("@/types/database").BusinessOffer[],
+    products: (productsResult.data ?? []) as { id: string; name: string }[],
   };
 }
