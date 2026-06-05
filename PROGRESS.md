@@ -2,6 +2,155 @@
 
 ---
 
+## 2026-06-05 — صفحة سياسة الخصوصية
+
+### ملفات جديدة/معدّلة
+- `src/app/privacy/page.tsx` ← صفحة سياسة الخصوصية الجديدة
+- `src/components/landing/Footer.tsx` ← تحديث رابط "سياسة الخصوصية" من `#` إلى `/privacy`
+
+### المحتوى
+- البيانات المُجمَّعة: أرقام واتساب + بيانات الأعمال + بيانات الاستخدام
+- الاستخدام: إرسال رسائل تجارية + تشغيل الخدمة + الدعم الفني
+- عدم بيع البيانات لأطراف ثالثة
+- الشركاء التقنيون: Twilio + Meta WhatsApp Business API + Supabase
+- حقوق المستخدم: الوصول، التعديل، الحذف، الاعتراض
+
+---
+
+## 2026-06-04 — جلسة اليوم الكاملة (محدّث)
+
+### إصلاح bug اختفاء الطلب (لا يوجد تأثير مباشر على الويب)
+- الإصلاح في الموبايل فقط — الويب لا يملك شاشة orders بنفس المنطق
+
+---
+
+## 2026-06-04 — جلسة اليوم الكاملة
+
+### ميزة العروض
+- `BusinessOffer` type في `src/types/database.ts`
+- `getBusinessOffers()` في `src/lib/dashboard-data.ts`
+- Server Actions: `addOffer`, `toggleOfferVisibility`, `deleteOffer` في `sales/actions.ts`
+- صفحة `sales/products/page.tsx`: قسم إدارة العروض في الـ sidebar
+
+### صلاحية العروض للموظفين
+- `can_manage_offers` مضاف لـ `employee_permissions` Row/Insert في `src/types/database.ts`
+
+### وصف المنتج
+- `display_note` مضاف لـ `menu_items` Row/Insert في `src/types/database.ts`
+
+### Migrations مطبّقة
+- `20260604000011_business_offers.sql` ✅
+- `20260604000012_add_offers_permission.sql` ✅
+- `20260604000013_add_display_note_to_menu_items.sql` ✅
+
+---
+
+## 2026-06-04 — ميزة العروض (سجل قديم)
+
+- أضيف نوع `BusinessOffer` في `src/types/database.ts`
+- أضيفت `getBusinessOffers()` في `src/lib/dashboard-data.ts`
+- أضيفت Server Actions: `addOffer`, `toggleOfferVisibility`, `deleteOffer` في `sales/actions.ts`
+- صفحة `dashboard/sales/products/page.tsx`: قسم إدارة العروض في الـ sidebar
+- **خطوة مطلوبة**: تطبيق migration `20260604000011_business_offers.sql` على Supabase
+
+---
+
+## 2026-06-04 — متعدد الأنشطة + إعدادات الفريق
+
+### الويب — `C:\pro\musnid1\musnid`
+
+#### متعدد الأنشطة — دعم أكثر من نشاط بنفس الحساب
+- **`src/lib/dashboard-data.ts`**:
+  - `getAllBusinesses()` — يجلب جميع أنشطة المستخدم الحالي.
+  - `getCurrentBusiness()` — يقرأ cookie `active_biz_id` ويُرجع النشاط المحدد، يتراجع للأول إن لم يوجد.
+- **`src/app/dashboard/actions.ts`**:
+  - `switchBusiness(formData)` — Server Action يحفظ `active_biz_id` في cookie مدتها سنة + redirect.
+  - `createBusiness()` — بعد الإنشاء يضبط cookie النشاط الجديد تلقائياً.
+- **`src/app/dashboard/settings/page.tsx`**:
+  - قسم "الأنشطة" جديد في أعلى الصفحة.
+  - Grid يعرض كل الأنشطة — النشاط النشط مميّز بإطار وعلامة ✓.
+  - زر submit لكل نشاط يبدّل إليه (Server Action → cookie → redirect).
+  - رابط "إضافة نشاط" يُنزل للنموذج الموجود أسفل الصفحة.
+  - نموذج الإضافة أُعيدت تسميته "إضافة نشاط جديد".
+
+#### قرار تقني
+- الويب (SSR) يستخدم **HTTP cookie** لحفظ النشاط النشط بدلاً من Zustand (لا يوجد client-side store في Server Components).
+- الموبايل يستخدم **AsyncStorage** عبر zustand persist.
+- كلاهما يحمل `activeBizId` بين الجلسات.
+
+### الملفات المعدّلة
+`src/lib/dashboard-data.ts` · `src/app/dashboard/actions.ts` · `src/app/dashboard/settings/page.tsx`
+
+**آخر تحديث:** 2026-06-04
+**الحالة:** التغييرات محلية — تحتاج push لـ main ⏳
+
+---
+
+## 2026-06-03 — الزون، المنتجات، طلبات الكاشير، وإعدادات الظهور
+
+### الويب — `C:\pro\musnid1\musnid`
+
+#### تم إنجازه
+- إضافة تصنيفات كاشير المنتجات في `/dashboard/sales/products`.
+- إضافة زر/نموذج **إضافة تصنيف** وربط المنتج بالتصنيف عند الإضافة.
+- فلترة المنتجات في الكاشير حسب التصنيف.
+- إضافة صلاحية حذف المنتج من كاشير المنتجات لمن يملك إدارة المنتجات.
+- إضافة كرت **إظهار المتجر في الزون** داخل `/dashboard/settings`.
+- إضافة Server Action باسم `setMarketplaceVisibility` لتفعيل/إيقاف ظهور المتجر في الزون.
+- إضافة `getMarketplaceVisibility` لجلب حالة الظهور الحالية وفئة الزون المناسبة حسب نوع النشاط.
+- تحديث `SubmitButton` ليدعم `disabled` حتى يتعطل زر الزون عند عدم وجود نشاط أو عند نقص فئة الزون.
+
+#### النشر
+- تم رفع تحديث تصنيفات كاشير المنتجات سابقاً: `950e2ea feat: add product cashier categories`.
+- تم رفع تحديث زر إظهار المتجر في الزون: `f6bbef9 add zone visibility setting`.
+- الفرع المرفوع: `origin/main`.
+- المستودع: `https://github.com/mansorAI/musnid1.git`.
+
+#### التحقق
+- `npx.cmd tsc --noEmit` نجح.
+
+### الموبايل — `C:\pro\musnid1\musnid-mobile`
+
+#### تم إنجازه
+- ربط منتجات المتاجر الظاهرة في الزون داخل شاشة الأفراد.
+- عرض المنتجات داخل صفحة المتجر في الزون مع تصنيفات للأنشطة مثل المطاعم والمقاهي والصالونات والعيادات.
+- تمكين الفرد من اختيار المنتجات وإرسال طلب.
+- حفظ طلبات الزون في `customer_interactions` و `interaction_items`.
+- تحويل تنبيه الكاشير من كرت كبير مباشر إلى تبويبة/زر **الطلبات** مع شارة عدد الطلبات.
+- عند دخول الكاشير إلى **الطلبات** تظهر قائمة الطلبات.
+- الضغط على الطلب يفتح تفاصيله مثل السلة: المنتجات، الكمية، السعر، الإجمالي.
+- إضافة أزرار **قبول الطلب** و **رفض الطلب**:
+  - القبول يغير الحالة إلى `accepted`.
+  - الرفض يغير الحالة إلى `cancelled`.
+- إضافة خيار مستقل في إعدادات الموبايل باسم **إظهار المتجر في الزون**.
+- إضافة تصنيفات المنتجات في كاشير الموبايل وزر إضافة تصنيف.
+- ربط إضافة المنتج بالتصنيف.
+- إضافة حذف المنتج لمن لديه صلاحية إدارة المنتجات.
+- تعديل نموذج إضافة المنتج حسب نوع النشاط:
+  - العقارات: اسم العرض، سعر اختياري، موقع، رفع صورة من الجهاز.
+  - بقية الأنشطة: اسم المنتج، السعر، الصورة، التصنيف.
+- دعم استخدام الموقع الحالي للعقار عبر `expo-location`.
+- دعم اختيار صورة من الجهاز عبر `expo-image-picker`.
+- إزالة التلميحات/الـ placeholders من حقول إضافة المنتج والتصنيف.
+- تثبيت `expo-image-picker` و `expo-location`.
+
+#### Supabase
+- إنشاء migration لصلاحيات إدارة المنتجات والتصنيفات: `20260603000003_menu_product_management_permissions.sql`.
+- إنشاء migration لبكت صور المنتجات: `20260603000004_menu_image_storage.sql`.
+- المستخدم طبّق migrations المطلوبة يدوياً من Supabase SQL Editor.
+
+#### التحقق
+- `npx.cmd tsc --noEmit` نجح.
+- `npx.cmd expo install --check` نجح.
+
+#### ملاحظة نشر
+- مشروع الموبايل لا يملك remote Git مضبوطاً حالياً، لذلك تغييرات الموبايل بقيت محلية ولم تُرفع عبر `git push`.
+
+**آخر تحديث:** 2026-06-03  
+**الحالة:** الويب مرفوع على `main` ✅ | Supabase مطبّق يدوياً ✅ | الموبايل محلي وجاهز للفحص ✅
+
+---
+
 ## 2026-06-03 — نافذة تفاصيل الموظف + نظام الصلاحيات + إصلاح Vercel
 
 ### تم إنجازه
@@ -1000,3 +1149,55 @@ Authentication > URL Configuration > Site URL
 - Test real sign-up/sign-in and organization creation flows on production.
 - Replace remaining demo dashboard reads with live Supabase data where needed.
 - Integrate WhatsApp provider, AI response layer, and payment provider.
+---
+
+## 2026-06-04 — ملخص إنجازات اليوم في المشروعين
+
+### الموبايل — `C:\pro\musnid1\musnid-mobile`
+- أضيفت حقول تواصل المنتج: `contact_phone` و `whatsapp_number`، مع إلزام اختيار وسيلة تواصل واحدة على الأقل.
+- أضيفت أزرار الاتصال والواتساب في منتج زون، وتفتح `tel:` أو `wa.me` حسب الرقم المحفوظ.
+- أضيف خيار عرض/إخفاء أزرار المكالمة والواتساب ضمن إعدادات عرض المنتج.
+- أضيفت صلاحية `إعداد المنتج` (`can_product_settings`) وصلاحية `الطلبات` (`can_manage_orders`) للكاشير.
+- أُصلح ظهور زر الحذف للكاشير الذي يملك تعديل فقط، وأصبح الحذف مشروطاً بـ `can_delete`.
+- أضيفت صفحة مستقلة لطلبات زون للكاشير: `app/(main)/sales/orders.tsx`.
+- تم ربط قبول الطلب بفتح صفحة إصدار الفاتورة، وربط رفض الطلب بسبب جاهز أو سبب مخصص.
+- أضيفت تبويبة `طلباتي` للأفراد لعرض حالة الطلب: بانتظار المراجعة، مقبول، مرفوض مع السبب.
+- أصبح ممكناً ربط نفس الحساب كـ `كاشير` و`طاقم عمل` لنفس المنشأة.
+- أضيف زر `عرض طاقم العمل في زون` في `الإعدادات > معلومات المنشأة > زون`.
+- أضيف عرض طاقم العمل داخل متجر زون للأفراد فقط عند تفعيل الزر.
+- تم تعديل اختيار سجل الكاشير في صفحات المنتجات والطلبات حتى لا يختار سجل الطاقم عند وجود دورين.
+- تم تشغيل `npx.cmd tsc --noEmit` ونجح.
+
+### الويب — `C:\pro\musnid1\musnid`
+- أضيفت صلاحية `إعداد المنتج` في لوحة موظفي صاحب المنشأة.
+- أضيفت صلاحية `الطلبات` للكاشير في لوحة موظفي صاحب المنشأة.
+- تم تحديث حفظ الصلاحيات وأنواع قاعدة البيانات للحقول الجديدة.
+- تم منع حسابات الأفراد من الدخول إلى إعداد المنشأة عبر الويب.
+- أضيفت صفحة رسالة للأفراد: `src/app/individual-app/page.tsx` تطلب تحميل التطبيق.
+- تم تحديث middleware لمنع الفرد من فتح `/dashboard` أو `/onboarding` مباشرة.
+- تم دعم اكتشاف حساب الفرد من `user_metadata.role` حتى لو كان `profiles.role` افتراضياً `business`.
+- تم رفع تغييرات الويب التالية إلى `origin/main`:
+  - `8d78b49 Add product settings permission`
+  - `693ea62 Add cashier orders permission`
+  - `19710eb Block individual web onboarding`
+  - `629253e Detect individual web accounts from metadata`
+  - `c724131 Allow employees to have staff and cashier roles`
+  - `99d6f75 Add Zone staff visibility setting`
+- تم تشغيل `npx.cmd tsc --noEmit` ونجح.
+
+### Supabase migrations المضافة/المستخدمة اليوم
+- `20260604000002_menu_item_contact_options.sql`
+- `20260604000003_employee_order_audit_actions.sql`
+- `20260604000004_cashier_zone_order_policies.sql`
+- `20260604000005_add_product_settings_permission.sql`
+- `20260604000006_add_cashier_orders_permission.sql`
+- `20260604000007_allow_employee_multiple_roles.sql`
+- `20260604000008_zone_staff_visibility.sql`
+
+### ملاحظات نشر
+- تغييرات الويب المهمة مرفوعة إلى GitHub/Vercel.
+- تغييرات الموبايل محلية ومفحوصة.
+- Supabase CLI غير مربوط محلياً، لذلك يجب تطبيق migrations على Supabase الحي من SQL Editor أو عبر `supabase login` ثم `supabase link` ثم `supabase db push`.
+
+**آخر تحديث:** 2026-06-04  
+**الحالة:** الموبايل مفحوص محلياً ✅ | الويب مرفوع ✅ | تطبيق migrations على Supabase الحي مطلوب ⏳

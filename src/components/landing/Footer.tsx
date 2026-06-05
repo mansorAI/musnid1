@@ -5,7 +5,7 @@ const footerLinks = {
   product: { title: "المنتج", links: [{ label: "المميزات", href: "#features" }, { label: "الأسعار", href: "#pricing" }, { label: "كيف يعمل", href: "#how-it-works" }, { label: "التكاملات", href: "#" }] },
   company: { title: "الشركة", links: [{ label: "عن مُسند", href: "#" }, { label: "المدونة", href: "#" }, { label: "فرص العمل", href: "#" }, { label: "تواصل معنا", href: "#contact" }] },
   support: { title: "الدعم", links: [{ label: "مركز المساعدة", href: "#" }, { label: "الأسئلة الشائعة", href: "#faq" }, { label: "الحالة", href: "#" }, { label: "التوثيق", href: "#" }] },
-  legal: { title: "قانوني", links: [{ label: "سياسة الخصوصية", href: "#" }, { label: "شروط الاستخدام", href: "#" }, { label: "الأمان", href: "#" }] },
+  legal: { title: "قانوني", links: [{ label: "سياسة الخصوصية", href: "/privacy" }, { label: "شروط الاستخدام", href: "#" }, { label: "الأمان", href: "#" }] },
 };
 
 export default function Footer() {
