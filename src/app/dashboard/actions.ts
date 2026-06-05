@@ -104,24 +104,35 @@ export async function createBusiness(formData: FormData) {
 }
 
 export async function updateWhatsappNumber(formData: FormData) {
-  const { userId } = await getUserId();
+  const { supabase, userId } = await getUserId();
   const number = String(formData.get("whatsapp_number") ?? "").trim() || null;
 
   const cookieStore = await cookies();
   const bizId = cookieStore.get(BIZ_COOKIE)?.value;
 
-  const adminSupabase = createAdminClient();
+  // Resolve the active business id
+  let targetBizId = bizId;
+  if (!targetBizId) {
+    const { data: firstBiz } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("owner_id", userId)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    targetBizId = firstBiz?.id;
+  }
 
-  let query = adminSupabase
+  if (!targetBizId) {
+    redirect("/dashboard/settings?error=whatsapp");
+  }
+
+  const adminSupabase = createAdminClient();
+  const { error } = await adminSupabase
     .from("businesses")
     .update({ whatsapp_number: number })
+    .eq("id", targetBizId)
     .eq("owner_id", userId);
-
-  if (bizId) query = query.eq("id", bizId);
-
-  const { data: updated, error } = await query.select("id,whatsapp_number");
-
-  console.log("[updateWhatsappNumber] userId:", userId, "bizId:", bizId, "number:", number, "updated:", updated, "error:", error);
 
   if (error) {
     console.error("updateWhatsappNumber error:", error);
