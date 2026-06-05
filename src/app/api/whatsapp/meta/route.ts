@@ -88,6 +88,9 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminClient();
 
   // 1. Find business by whatsapp_number
+  const { data: allBiz } = await supabase.from("businesses").select("id,name,whatsapp_number").limit(20);
+  console.log("[meta-webhook] looking for:", toE164, "| all whatsapp_numbers:", JSON.stringify(allBiz?.map(b => ({ id: b.id.slice(0,8), wa: b.whatsapp_number }))));
+
   const { data: business } = await supabase
     .from("businesses")
     .select("*")
