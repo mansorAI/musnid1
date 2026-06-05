@@ -2,9 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/env";
 import type { Database } from "@/types/database";
+
+const BIZ_COOKIE = "active_biz_id";
+const COOKIE_OPTS = { path: "/", httpOnly: true, sameSite: "lax" as const, maxAge: 60 * 60 * 24 * 365 };
 
 type BusinessType = Database["public"]["Enums"]["business_type"];
 
@@ -53,6 +57,15 @@ async function getUserId() {
   return { supabase, userId: user.id, userEmail: user.email ?? "" };
 }
 
+export async function switchBusiness(formData: FormData) {
+  const bizId = String(formData.get("biz_id") ?? "").trim();
+  if (!bizId) redirect("/dashboard/settings");
+  const cookieStore = await cookies();
+  cookieStore.set(BIZ_COOKIE, bizId, COOKIE_OPTS);
+  revalidatePath("/dashboard");
+  redirect("/dashboard/settings");
+}
+
 export async function createBusiness(formData: FormData) {
   const { supabase, userId, userEmail } = await getUserId();
 
@@ -61,7 +74,6 @@ export async function createBusiness(formData: FormData) {
   const city = String(formData.get("city") ?? "").trim() || null;
   const whatsappNumber = String(formData.get("whatsapp_number") ?? "").trim() || null;
 
-  // Ensure profile exists (handles users created before handle_new_user trigger)
   await supabase.from("profiles").upsert(
     { id: userId, email: userEmail },
     { onConflict: "id", ignoreDuplicates: true },
@@ -69,22 +81,50 @@ export async function createBusiness(formData: FormData) {
 
   const slug = generateSlug(name);
 
-  const { error } = await supabase.from("businesses").insert({
+  const { data: newBiz, error } = await supabase.from("businesses").insert({
     owner_id: userId,
     name,
     slug,
     type: businessType,
     city,
     whatsapp_number: whatsappNumber,
-  });
+  }).select("id").single();
 
-  if (error) {
+  if (error || !newBiz) {
     console.error("createBusiness error:", error);
     redirect("/dashboard/settings?error=business");
   }
 
+  const cookieStore = await cookies();
+  cookieStore.set(BIZ_COOKIE, newBiz.id, COOKIE_OPTS);
+
   revalidatePath("/dashboard");
   redirect("/dashboard?created_business=1");
+}
+
+export async function updateWhatsappNumber(formData: FormData) {
+  const { supabase, userId } = await getUserId();
+  const number = String(formData.get("whatsapp_number") ?? "").trim() || null;
+
+  const cookieStore = await cookies();
+  const bizId = cookieStore.get(BIZ_COOKIE)?.value;
+
+  const query = supabase
+    .from("businesses")
+    .update({ whatsapp_number: number })
+    .eq("owner_id", userId);
+
+  if (bizId) query.eq("id", bizId);
+
+  const { error } = await query;
+
+  if (error) {
+    console.error("updateWhatsappNumber error:", error);
+    redirect("/dashboard/settings?error=whatsapp");
+  }
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard/settings?whatsapp=updated");
 }
 
 export async function setMarketplaceVisibility(formData: FormData) {

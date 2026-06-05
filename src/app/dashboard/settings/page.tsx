@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Compass, Eye, EyeOff, ReceiptText, Settings } from "lucide-react";
-import { createBusiness, setMarketplaceVisibility } from "@/app/dashboard/actions";
+import { Building2, Check, Compass, Eye, EyeOff, Plus, ReceiptText, Settings } from "lucide-react";
+import { createBusiness, setMarketplaceVisibility, switchBusiness, updateWhatsappNumber } from "@/app/dashboard/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { businessTypeLabels } from "@/lib/demo-data";
-import { getCurrentBusiness, getMarketplaceVisibility } from "@/lib/dashboard-data";
+import { getCurrentBusiness, getAllBusinesses, getMarketplaceVisibility } from "@/lib/dashboard-data";
 import type { BusinessType } from "@/types";
 
 const businessTypes = Object.entries(businessTypeLabels) as [BusinessType, string][];
@@ -25,13 +25,17 @@ type SettingsPageProps = {
   searchParams?: Promise<{
     error?: string;
     zone?: string;
+    whatsapp?: string;
   }>;
 };
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const params = await searchParams;
-  const business = await getCurrentBusiness();
-  const marketplace = await getMarketplaceVisibility();
+  const [business, businesses, marketplace] = await Promise.all([
+    getCurrentBusiness(),
+    getAllBusinesses(),
+    getMarketplaceVisibility(),
+  ]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
@@ -39,6 +43,67 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         <p className="text-sm text-surface-500 dark:text-surface-400">الإعداد</p>
         <h1 className="text-2xl font-extrabold text-surface-900 dark:text-white">بيانات النشاط وربط WhatsApp</h1>
       </section>
+
+      {/* ─── الأنشطة ─── */}
+      <div className="glass-card overflow-hidden lg:col-span-2">
+        <div className="flex items-center justify-between p-6 border-b border-surface-200/50 dark:border-surface-700/30">
+          <h2 className="text-lg font-bold text-surface-900 dark:text-white">الأنشطة</h2>
+          <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400">
+            <Building2 className="w-5 h-5" />
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {businesses.map((biz) => {
+              const isActive = biz.id === business?.id;
+              const typeLabel = businessTypeLabels[biz.type as keyof typeof businessTypeLabels] ?? biz.type;
+              return (
+                <form key={biz.id} action={switchBusiness}>
+                  <input type="hidden" name="biz_id" value={biz.id} />
+                  <button
+                    type="submit"
+                    disabled={isActive}
+                    className={`w-full text-right rounded-xl border p-4 transition-all ${
+                      isActive
+                        ? "border-primary-400 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-500/50 cursor-default"
+                        : "border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/30 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 cursor-pointer"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="mt-0.5 shrink-0">
+                        {isActive
+                          ? <Check className="w-4 h-4 text-primary-500" />
+                          : <div className="w-4 h-4 rounded-full border-2 border-surface-300 dark:border-surface-600" />
+                        }
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className={`font-bold truncate ${isActive ? "text-primary-700 dark:text-primary-300" : "text-surface-900 dark:text-white"}`}>
+                          {biz.name}
+                        </p>
+                        <p className="mt-0.5 text-xs text-surface-500 dark:text-surface-400 truncate">
+                          {typeLabel}{biz.city ? ` · ${biz.city}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    {!isActive && (
+                      <p className="mt-2 text-xs text-primary-600 dark:text-primary-400 font-medium">اضغط للتبديل</p>
+                    )}
+                  </button>
+                </form>
+              );
+            })}
+
+            {/* بطاقة إضافة نشاط جديد */}
+            <a
+              href="#add-business"
+              className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-surface-300 dark:border-surface-600 p-4 text-surface-400 dark:text-surface-500 hover:border-primary-400 hover:text-primary-500 dark:hover:border-primary-500 dark:hover:text-primary-400 transition-colors min-h-[80px]"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="text-sm font-semibold">إضافة نشاط</span>
+            </a>
+          </div>
+        </div>
+      </div>
 
       <div className="glass-card overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-surface-200/50 dark:border-surface-700/30">
@@ -59,12 +124,25 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                   <p className="text-sm text-surface-500 dark:text-surface-400">المدينة</p>
                   <p className="mt-1 font-medium text-surface-900 dark:text-white">{business.city ?? "غير محددة"}</p>
                 </div>
-                <div className="rounded-xl border border-surface-200/50 dark:border-surface-700/30 bg-surface-50/50 dark:bg-surface-800/30 p-4">
+                <form action={updateWhatsappNumber} className="rounded-xl border border-surface-200/50 dark:border-surface-700/30 bg-surface-50/50 dark:bg-surface-800/30 p-4 space-y-3">
                   <p className="text-sm text-surface-500 dark:text-surface-400">رقم WhatsApp</p>
-                  <p className="mt-1 font-medium text-surface-900 dark:text-white" dir="ltr">
-                    {business.whatsapp_number ?? "غير مربوط"}
-                  </p>
-                </div>
+                  {params?.whatsapp === "updated" && (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">تم تحديث الرقم ✓</p>
+                  )}
+                  {params?.error === "whatsapp" && (
+                    <p className="text-xs text-red-500 font-medium">تعذّر الحفظ، حاول مجدداً</p>
+                  )}
+                  <Input
+                    name="whatsapp_number"
+                    dir="ltr"
+                    defaultValue={business.whatsapp_number ?? ""}
+                    placeholder="+9665XXXXXXXX"
+                    className={inputClass}
+                  />
+                  <SubmitButton pendingText="جاري الحفظ..." className="btn-primary w-full !py-2 !text-sm">
+                    حفظ الرقم
+                  </SubmitButton>
+                </form>
               </div>
             </div>
           ) : (
@@ -162,9 +240,9 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </div>
       </div>
 
-      <div className="glass-card overflow-hidden">
+      <div id="add-business" className="glass-card overflow-hidden">
         <div className="p-6 border-b border-surface-200/50 dark:border-surface-700/30">
-          <h2 className="text-lg font-bold text-surface-900 dark:text-white">إنشاء النشاط</h2>
+          <h2 className="text-lg font-bold text-surface-900 dark:text-white">إضافة نشاط جديد</h2>
         </div>
         <div className="p-6">
           {params?.error ? (
