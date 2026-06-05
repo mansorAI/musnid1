@@ -109,12 +109,12 @@ export async function updateWhatsappNumber(formData: FormData) {
   const cookieStore = await cookies();
   const bizId = cookieStore.get(BIZ_COOKIE)?.value;
 
-  const query = supabase
+  let query = supabase
     .from("businesses")
     .update({ whatsapp_number: number })
     .eq("owner_id", userId);
 
-  if (bizId) query.eq("id", bizId);
+  if (bizId) query = query.eq("id", bizId);
 
   const { error } = await query;
 
