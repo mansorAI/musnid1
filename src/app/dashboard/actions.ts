@@ -119,7 +119,9 @@ export async function updateWhatsappNumber(formData: FormData) {
 
   if (bizId) query = query.eq("id", bizId);
 
-  const { error } = await query;
+  const { data: updated, error } = await query.select("id,whatsapp_number");
+
+  console.log("[updateWhatsappNumber] userId:", userId, "bizId:", bizId, "number:", number, "updated:", updated, "error:", error);
 
   if (error) {
     console.error("updateWhatsappNumber error:", error);
