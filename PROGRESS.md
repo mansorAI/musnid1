@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-06-07 — إعدادات عرض المنتج للأقسام والأنشطة
+
+**`/admin/display-config`** (جديد)
+- صفحة إدارة تعرض الأقسام مع أنشطتها في accordion قابل للطي/الفتح
+- لكل قسم: 7 مربعات اختيار (showImage, showPrice, showDescription, showLocation, showContactActions, showQtyControls, bookingButton)
+- لكل نشاط: إعداد خاص يُلغي إعداد القسم، مع عرض "من القسم" للقيم الموروثة
+- زر "حذف الإعداد" لإعادة الوراثة
+- رابط "عرض المنتج" في شريط التنقل الإداري
+
+**`src/app/admin/display-config/actions.ts`** (جديد)
+- `setSectionDisplayConfig`, `clearSectionDisplayConfig`
+- `setCategoryDisplayConfig`, `clearCategoryDisplayConfig`
+
+**`src/types/database.ts`**: `product_display_config: Json | null` لـ `store_categories` و`zone_sections`
+
+---
+
 ## 2026-06-06 — إدارة زون والبنرات من لوحة التحكم
 
 ### الميزات الجديدة
