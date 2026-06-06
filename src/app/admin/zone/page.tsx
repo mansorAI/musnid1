@@ -243,19 +243,24 @@ export default async function ZonePage() {
                     </code>
                   </td>
                   <td className="px-4 py-3">
-                    <form action={moveCategorySection} className="flex items-center gap-1">
-                      <input type="hidden" name="id" value={cat.id} />
-                      <select
-                        name="section_key"
-                        defaultValue={cat.section_key}
-                        className="rounded-lg border px-2 py-1 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
-                      >
-                        {sections.map((s) => (
-                          <option key={s.section_key} value={s.section_key}>{s.name}</option>
-                        ))}
-                      </select>
-                      <SubmitButton pendingText="..." className="text-xs text-emerald-600 hover:underline">نقل</SubmitButton>
-                    </form>
+                    <div className="flex flex-wrap gap-1">
+                      {sections.map((s) => (
+                        <form key={s.section_key} action={moveCategorySection}>
+                          <input type="hidden" name="id" value={cat.id} />
+                          <input type="hidden" name="section_key" value={s.section_key} />
+                          <SubmitButton
+                            pendingText="..."
+                            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                              cat.section_key === s.section_key
+                                ? "bg-violet-600 text-white border-violet-600"
+                                : "text-surface-500 border-surface-300 hover:border-violet-400 hover:text-violet-600 dark:border-surface-600 dark:text-surface-400 dark:hover:text-violet-400"
+                            }`}
+                          >
+                            {s.name}
+                          </SubmitButton>
+                        </form>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-xs text-surface-500 dark:text-surface-400">
