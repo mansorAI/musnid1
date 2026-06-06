@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  LayoutDashboard, Users, Package, Settings, Shield, LogOut, Layers, Image, LayoutGrid,
+  LayoutDashboard, Users, Package, Settings, Shield, LogOut, Layers, Image, LayoutGrid, Palette,
 } from "lucide-react";
 import { signOut } from "@/app/sign-in/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -16,6 +16,7 @@ const adminNav = [
   { href: "/admin/zone", label: "زون", icon: Layers },
   { href: "/admin/banners", label: "البنرات", icon: Image },
   { href: "/admin/display-config", label: "عرض المنتج", icon: LayoutGrid },
+  { href: "/admin/app-theme", label: "مظهر التطبيق", icon: Palette },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

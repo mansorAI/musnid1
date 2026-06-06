@@ -294,6 +294,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["zone_sections"]["Insert"]>;
         Relationships: [];
       };
+      platform_settings: {
+        Row: { id: string; bg_color_start: string; bg_color_end: string; card_color: string; updated_at: string };
+        Insert: { id?: string; bg_color_start?: string; bg_color_end?: string; card_color?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["platform_settings"]["Insert"]>;
+        Relationships: [];
+      };
       ad_banners: {
         Row: { id: string; title: string; subtitle: string | null; image_url: string | null; bg_color: string; section_key: string; is_active: boolean; sort_order: number; created_at: string; updated_at: string };
         Insert: { id?: string; title: string; subtitle?: string | null; image_url?: string | null; bg_color?: string; section_key?: string; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string };
@@ -1138,8 +1144,9 @@ export type InvoiceItemRow = Database["public"]["Tables"]["invoice_items"]["Row"
 export type UserRole = "admin" | "business" | "customer";
 export type BusinessOffer  = Database["public"]["Tables"]["business_offers"]["Row"];
 export type StoreCategory  = Database["public"]["Tables"]["store_categories"]["Row"];
-export type ZoneSection    = Database["public"]["Tables"]["zone_sections"]["Row"];
-export type AdBanner       = Database["public"]["Tables"]["ad_banners"]["Row"];
+export type ZoneSection       = Database["public"]["Tables"]["zone_sections"]["Row"];
+export type AdBanner          = Database["public"]["Tables"]["ad_banners"]["Row"];
+export type PlatformSettings  = Database["public"]["Tables"]["platform_settings"]["Row"];
 export type Plan = Database["public"]["Tables"]["plans"]["Row"];
 export type PlanFeature = Database["public"]["Tables"]["plan_features"]["Row"];
 export type BusinessSubscription = Database["public"]["Tables"]["business_subscriptions"]["Row"];
