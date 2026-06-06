@@ -231,9 +231,17 @@ export default async function ZonePage() {
                         className="font-medium text-surface-900 dark:text-white bg-transparent border-b border-transparent hover:border-surface-300 dark:hover:border-surface-600 focus:border-violet-500 outline-none w-28"
                       />
                       <input type="hidden" name="icon" value={cat.icon} />
-                      <input type="hidden" name="section_key" value={cat.section_key} />
                       <input type="hidden" name="action_type" value={cat.action_type} />
                       <input type="hidden" name="sort_order" value={cat.sort_order} />
+                      <select
+                        name="section_key"
+                        defaultValue={cat.section_key}
+                        className="rounded-lg border px-2 py-1 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
+                      >
+                        {sections.map((s) => (
+                          <option key={s.section_key} value={s.section_key}>{s.name}</option>
+                        ))}
+                      </select>
                       <SubmitButton pendingText="..." className="text-xs text-violet-600 hover:underline">حفظ</SubmitButton>
                     </form>
                   </td>
