@@ -3,7 +3,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import type { StoreCategory, ZoneSection } from "@/types/database";
 import {
   createSection, updateSection, toggleSection, deleteSection,
-  createCategory, updateCategory, toggleCategory, deleteCategory,
+  createCategory, updateCategory, toggleCategory, deleteCategory, moveCategorySection,
 } from "./actions";
 
 async function getZoneData() {
@@ -231,17 +231,9 @@ export default async function ZonePage() {
                         className="font-medium text-surface-900 dark:text-white bg-transparent border-b border-transparent hover:border-surface-300 dark:hover:border-surface-600 focus:border-violet-500 outline-none w-28"
                       />
                       <input type="hidden" name="icon" value={cat.icon} />
+                      <input type="hidden" name="section_key" value={cat.section_key} />
                       <input type="hidden" name="action_type" value={cat.action_type} />
                       <input type="hidden" name="sort_order" value={cat.sort_order} />
-                      <select
-                        name="section_key"
-                        defaultValue={cat.section_key}
-                        className="rounded-lg border px-2 py-1 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
-                      >
-                        {sections.map((s) => (
-                          <option key={s.section_key} value={s.section_key}>{s.name}</option>
-                        ))}
-                      </select>
                       <SubmitButton pendingText="..." className="text-xs text-violet-600 hover:underline">حفظ</SubmitButton>
                     </form>
                   </td>
@@ -251,9 +243,19 @@ export default async function ZonePage() {
                     </code>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs text-surface-500 dark:text-surface-400">
-                      {sections.find((s) => s.section_key === cat.section_key)?.name ?? cat.section_key}
-                    </span>
+                    <form action={moveCategorySection} className="flex items-center gap-1">
+                      <input type="hidden" name="id" value={cat.id} />
+                      <select
+                        name="section_key"
+                        defaultValue={cat.section_key}
+                        className="rounded-lg border px-2 py-1 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
+                      >
+                        {sections.map((s) => (
+                          <option key={s.section_key} value={s.section_key}>{s.name}</option>
+                        ))}
+                      </select>
+                      <SubmitButton pendingText="..." className="text-xs text-emerald-600 hover:underline">نقل</SubmitButton>
+                    </form>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-xs text-surface-500 dark:text-surface-400">

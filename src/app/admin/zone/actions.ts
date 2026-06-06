@@ -87,6 +87,22 @@ export async function updateCategory(formData: FormData) {
   revalidatePath("/admin/zone");
 }
 
+export async function moveCategorySection(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const id = formData.get("id") as string;
+  const section_key = (formData.get("section_key") as string).trim();
+
+  await supabase
+    .from("store_categories")
+    .update({ section_key, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  revalidatePath("/admin/zone");
+  revalidatePath("/admin/display-config");
+}
+
 export async function toggleCategory(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
