@@ -1,8 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { getAdminUser } from "@/lib/admin-data";
+import type { Database } from "@/types/database";
+
+function getServiceClient() {
+  return createServiceClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
 
 async function requireAdmin() {
   const user = await getAdminUser();
@@ -89,18 +99,21 @@ export async function updateCategory(formData: FormData) {
 
 export async function moveCategorySection(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
+  const supabase = getServiceClient();
 
   const id = formData.get("id") as string;
   const section_key = (formData.get("section_key") as string).trim();
 
-  await supabase
+  const { error } = await supabase
     .from("store_categories")
     .update({ section_key, updated_at: new Date().toISOString() })
     .eq("id", id);
 
+  if (error) throw new Error(error.message);
+
   revalidatePath("/admin/zone");
   revalidatePath("/admin/display-config");
+  redirect("/admin/zone");
 }
 
 export async function toggleCategory(formData: FormData) {
