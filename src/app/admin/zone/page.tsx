@@ -90,7 +90,7 @@ export default async function ZonePage() {
               {sections.map((section) => (
                 <tr key={section.id} className="hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
                   <td className="px-4 py-3">
-                    <form action={updateSection} className="flex items-center gap-2">
+                    <form action={updateSection} className="flex items-center gap-2 flex-wrap">
                       <input type="hidden" name="id" value={section.id} />
                       <input
                         name="name"
@@ -98,6 +98,20 @@ export default async function ZonePage() {
                         className="font-medium text-surface-900 dark:text-white bg-transparent border-b border-transparent hover:border-surface-300 dark:hover:border-surface-600 focus:border-violet-500 outline-none w-28"
                       />
                       <input type="hidden" name="sort_order" value={section.sort_order} />
+                      <div className="flex items-center gap-1" title="لون البداية للخلفية">
+                        <input
+                          type="color"
+                          name="bg_color_start"
+                          defaultValue={section.bg_color_start ?? "#1a5c3a"}
+                          className="w-7 h-7 rounded cursor-pointer border border-surface-200 dark:border-surface-700"
+                        />
+                        <input
+                          type="color"
+                          name="bg_color_end"
+                          defaultValue={section.bg_color_end ?? "#2d9e6b"}
+                          className="w-7 h-7 rounded cursor-pointer border border-surface-200 dark:border-surface-700"
+                        />
+                      </div>
                       <SubmitButton pendingText="..." className="text-xs text-violet-600 hover:underline">حفظ</SubmitButton>
                     </form>
                   </td>

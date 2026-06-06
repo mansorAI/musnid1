@@ -41,8 +41,10 @@ export async function updateSection(formData: FormData) {
   const id = formData.get("id") as string;
   const name = (formData.get("name") as string).trim();
   const sort_order = Number(formData.get("sort_order") ?? 0);
+  const bg_color_start = (formData.get("bg_color_start") as string)?.trim() || "#1a5c3a";
+  const bg_color_end = (formData.get("bg_color_end") as string)?.trim() || "#2d9e6b";
 
-  await supabase.from("zone_sections").update({ name, sort_order, updated_at: new Date().toISOString() }).eq("id", id);
+  await supabase.from("zone_sections").update({ name, sort_order, bg_color_start, bg_color_end, updated_at: new Date().toISOString() }).eq("id", id);
   revalidatePath("/admin/zone");
 }
 

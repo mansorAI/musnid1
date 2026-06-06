@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-06-07 — تصميم زون بخلفية متدرجة + كروت بيضاء (Admin Control)
+
+### الويب
+- `/admin/zone/page.tsx`: إضافة color picker مزدوج (bg_color_start, bg_color_end) لكل قسم
+- `/admin/zone/actions.ts`: `updateSection` يحفظ لوني التدرج مع باقي بيانات القسم
+- `src/types/database.ts`: إضافة `bg_color_start` و `bg_color_end` لـ `zone_sections.Row`
+
+### Migration
+ملف `20260607000002_zone_section_bg_colors.sql` — يُطبَّق في Supabase:
+```sql
+ALTER TABLE zone_sections
+  ADD COLUMN IF NOT EXISTS bg_color_start text DEFAULT '#1a5c3a',
+  ADD COLUMN IF NOT EXISTS bg_color_end   text DEFAULT '#2d9e6b';
+```
+
+---
+
 ## 2026-06-07 — إعدادات عرض المنتج للأقسام والأنشطة
 
 **`/admin/display-config`** (جديد)

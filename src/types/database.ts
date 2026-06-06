@@ -289,8 +289,8 @@ export type Database = {
         Relationships: [];
       };
       zone_sections: {
-        Row: { id: string; name: string; section_key: string; sort_order: number; is_active: boolean; product_display_config: Json | null; created_at: string; updated_at: string };
-        Insert: { id?: string; name: string; section_key: string; sort_order?: number; is_active?: boolean; product_display_config?: Json | null; created_at?: string; updated_at?: string };
+        Row: { id: string; name: string; section_key: string; sort_order: number; is_active: boolean; product_display_config: Json | null; bg_color_start: string | null; bg_color_end: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; section_key: string; sort_order?: number; is_active?: boolean; product_display_config?: Json | null; bg_color_start?: string | null; bg_color_end?: string | null; created_at?: string; updated_at?: string };
         Update: Partial<Database["public"]["Tables"]["zone_sections"]["Insert"]>;
         Relationships: [];
       };
