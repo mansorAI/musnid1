@@ -1,5 +1,5 @@
 import { getPlans, getBusinessSubscriptions, getBusinessDirectFeatures } from "@/lib/admin-data";
-import { assignSubscription, addDirectFeature, removeDirectFeature } from "@/app/admin/actions";
+import { assignSubscription, addDirectFeature, removeDirectFeature, toggleSubscriptionStatus } from "@/app/admin/actions";
 import { getAllBusinesses } from "@/lib/admin-data";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Trash2 } from "lucide-react";
@@ -210,40 +210,61 @@ export default async function FeaturesPage() {
               <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">الباقة</th>
               <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">الحالة</th>
               <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">تاريخ الانتهاء</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
-            {subscriptions.map((sub: any) => (
-              <tr key={sub.id} className="hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
-                <td className="px-4 py-3 font-medium text-surface-900 dark:text-white">
-                  {sub.business?.name ?? "—"}
-                  {directByBusiness[(sub as any).business_id]?.length ? (
-                    <span className="mr-2 text-xs rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5">
-                      +{directByBusiness[(sub as any).business_id].length} مباشر
+            {subscriptions.map((sub: any) => {
+              const isActive = sub.status === "active" || sub.status === "trial";
+              const toggleTo = isActive ? "cancelled" : "active";
+              return (
+                <tr key={sub.id} className="hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-surface-900 dark:text-white">
+                    {sub.business?.name ?? "—"}
+                    {directByBusiness[(sub as any).business_id]?.length ? (
+                      <span className="mr-2 text-xs rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5">
+                        +{directByBusiness[(sub as any).business_id].length} مباشر
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="px-4 py-3 text-surface-600 dark:text-surface-400">
+                    {sub.plan?.name ?? "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                      sub.status === "active"
+                        ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        : sub.status === "trial"
+                        ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+                        : "bg-surface-100 text-surface-500 dark:bg-surface-800"
+                    }`}>
+                      {sub.status === "active" ? "نشط" : sub.status === "trial" ? "تجريبي" : "موقوف"}
                     </span>
-                  ) : null}
-                </td>
-                <td className="px-4 py-3 text-surface-600 dark:text-surface-400">
-                  {sub.plan?.name ?? "—"}
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                    sub.status === "active"
-                      ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
-                      : sub.status === "trial"
-                      ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
-                      : "bg-surface-100 text-surface-500 dark:bg-surface-800"
-                  }`}>
-                    {sub.status === "active" ? "نشط" : sub.status === "trial" ? "تجريبي" : sub.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-surface-500 dark:text-surface-400 text-xs">
-                  {sub.expires_at
-                    ? new Date(sub.expires_at).toLocaleDateString("ar-SA")
-                    : "بلا انتهاء"}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-4 py-3 text-surface-500 dark:text-surface-400 text-xs">
+                    {sub.expires_at
+                      ? new Date(sub.expires_at).toLocaleDateString("ar-SA")
+                      : "بلا انتهاء"}
+                  </td>
+                  <td className="px-4 py-3 text-left">
+                    <form action={toggleSubscriptionStatus}>
+                      <input type="hidden" name="subId" value={sub.id} />
+                      <input type="hidden" name="newStatus" value={toggleTo} />
+                      <SubmitButton
+                        pendingText="..."
+                        className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
+                          isActive
+                            ? "bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                            : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                        }`}
+                      >
+                        {isActive ? "إيقاف" : "تفعيل"}
+                      </SubmitButton>
+                    </form>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {subscriptions.length === 0 && (

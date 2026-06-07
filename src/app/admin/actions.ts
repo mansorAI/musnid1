@@ -204,3 +204,18 @@ export async function removeDirectFeature(formData: FormData) {
 
   revalidatePath("/admin/features");
 }
+
+export async function toggleSubscriptionStatus(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceClient();
+
+  const subId      = formData.get("subId") as string;
+  const newStatus  = formData.get("newStatus") as string;
+
+  await supabase
+    .from("business_subscriptions")
+    .update({ status: newStatus as "active" | "cancelled" | "trial" | "expired" })
+    .eq("id", subId);
+
+  revalidatePath("/admin/features");
+}
