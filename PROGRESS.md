@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-06-08 — ميزة الحجز: showDateButton + showTimeButton في لوحة التحكم
+
+### `src/app/admin/display-config/page.tsx`
+- `DisplayKey` أُضيف إليه `showDateButton` و `showTimeButton`
+- `DISPLAY_OPTIONS` يعرض الخيارَين ضمن قسم "أزرار الحجز" في `ConfigCheckboxes`
+
+### `src/app/admin/display-config/actions.ts`
+- `DisplayConfigFields` و `DISPLAY_KEYS` يشملان `showDateButton` و `showTimeButton`
+- يُحفَظان في `product_display_config` على مستوى القسم أو النشاط
+
+### الموبايل (products.tsx) — تحديث متزامن
+- أُضيف `BookingDatePicker` (تقويم عربي بالشهور والأيام) + `BookingTimePicker` (شبكة ص/م)
+- كارت مستطيل: أزرار الإدارة والكمية على الصورة، أزرار التاريخ/الوقت في المحتوى
+- كارت مربع: دعم زرَي التاريخ والوقت مع تكيّف الارتفاع
+- Modal الإعدادات: قسم "إعداد الحجز" لتحديد أيام وأوقات الحجز
+
+---
+
 ## 2026-06-08 — نظام الخصائص المباشرة + تفعيل/إيقاف/حذف الاشتراكات
 
 ### 1. `business_features` — خصائص مباشرة لمنشأة بدون باقة

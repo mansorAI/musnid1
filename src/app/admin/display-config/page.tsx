@@ -9,9 +9,10 @@ import {
 type DisplayKey =
   | "showImage" | "showPrice" | "showDescription" | "showLocation"
   | "showContactActions" | "showQtyControls" | "bookingButton"
+  | "showDateButton" | "showTimeButton"
   | "showGridLayout" | "showListLayout";
 
-const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" }[] = [
+const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" | "booking" }[] = [
   { key: "showImage",          label: "عرض الصورة" },
   { key: "showPrice",          label: "عرض السعر" },
   { key: "showDescription",    label: "وصف المنتج" },
@@ -19,8 +20,10 @@ const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" }[] = 
   { key: "showContactActions", label: "مكالمة/واتساب" },
   { key: "showQtyControls",    label: "أزرار الكمية" },
   { key: "bookingButton",      label: "زر الحجز" },
-  { key: "showGridLayout",     label: "كارت مربع ⊞",     group: "layout" },
-  { key: "showListLayout",     label: "كارت مستطيل ☰",  group: "layout" },
+  { key: "showDateButton",     label: "زر التاريخ 📅",  group: "booking" },
+  { key: "showTimeButton",     label: "زر الوقت 🕐",    group: "booking" },
+  { key: "showGridLayout",     label: "كارت مربع ⊞",    group: "layout" },
+  { key: "showListLayout",     label: "كارت مستطيل ☰", group: "layout" },
 ];
 
 type DisplayConfig = Record<DisplayKey, boolean>;
@@ -44,8 +47,9 @@ function ConfigCheckboxes({
   config: DisplayConfig | null;
   inherited?: DisplayConfig | null;
 }) {
-  const mainOpts   = DISPLAY_OPTIONS.filter((o) => !o.group);
-  const layoutOpts = DISPLAY_OPTIONS.filter((o) => o.group === "layout");
+  const mainOpts    = DISPLAY_OPTIONS.filter((o) => !o.group);
+  const bookingOpts = DISPLAY_OPTIONS.filter((o) => o.group === "booking");
+  const layoutOpts  = DISPLAY_OPTIONS.filter((o) => o.group === "layout");
 
   const renderOpt = (opt: (typeof DISPLAY_OPTIONS)[number]) => {
     const checked = config != null ? (config[opt.key] ?? false) : (inherited?.[opt.key] ?? true);
@@ -77,6 +81,12 @@ function ConfigCheckboxes({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
         {mainOpts.map(renderOpt)}
+      </div>
+      <div className="border-t dark:border-surface-700 pt-3">
+        <p className="text-xs text-surface-400 dark:text-surface-500 mb-2 text-right">أزرار الحجز</p>
+        <div className="flex gap-2">
+          {bookingOpts.map(renderOpt)}
+        </div>
       </div>
       <div className="border-t dark:border-surface-700 pt-3">
         <p className="text-xs text-surface-400 dark:text-surface-500 mb-2 text-right">شكل الكارت</p>

@@ -12,6 +12,8 @@ type DisplayConfigFields = {
   showContactActions: boolean;
   showQtyControls: boolean;
   bookingButton: boolean;
+  showDateButton: boolean;
+  showTimeButton: boolean;
   showGridLayout: boolean;
   showListLayout: boolean;
 };
@@ -19,6 +21,7 @@ type DisplayConfigFields = {
 const DISPLAY_KEYS: (keyof DisplayConfigFields)[] = [
   "showImage", "showPrice", "showDescription", "showLocation",
   "showContactActions", "showQtyControls", "bookingButton",
+  "showDateButton", "showTimeButton",
   "showGridLayout", "showListLayout",
 ];
 
