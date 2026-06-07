@@ -1,5 +1,5 @@
 import { getPlans, getBusinessSubscriptions, getBusinessDirectFeatures } from "@/lib/admin-data";
-import { assignSubscription, addDirectFeature, removeDirectFeature, toggleSubscriptionStatus } from "@/app/admin/actions";
+import { assignSubscription, addDirectFeature, removeDirectFeature, toggleSubscriptionStatus, deleteSubscription } from "@/app/admin/actions";
 import { getAllBusinesses } from "@/lib/admin-data";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Trash2 } from "lucide-react";
@@ -247,20 +247,31 @@ export default async function FeaturesPage() {
                       : "بلا انتهاء"}
                   </td>
                   <td className="px-4 py-3 text-left">
-                    <form action={toggleSubscriptionStatus}>
-                      <input type="hidden" name="subId" value={sub.id} />
-                      <input type="hidden" name="newStatus" value={toggleTo} />
-                      <SubmitButton
-                        pendingText="..."
-                        className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
-                          isActive
-                            ? "bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
-                            : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                        }`}
-                      >
-                        {isActive ? "إيقاف" : "تفعيل"}
-                      </SubmitButton>
-                    </form>
+                    <div className="flex items-center gap-2 justify-end">
+                      <form action={toggleSubscriptionStatus}>
+                        <input type="hidden" name="subId" value={sub.id} />
+                        <input type="hidden" name="newStatus" value={toggleTo} />
+                        <SubmitButton
+                          pendingText="..."
+                          className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
+                            isActive
+                              ? "bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                              : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                          }`}
+                        >
+                          {isActive ? "إيقاف" : "تفعيل"}
+                        </SubmitButton>
+                      </form>
+                      <form action={deleteSubscription}>
+                        <input type="hidden" name="subId" value={sub.id} />
+                        <SubmitButton
+                          pendingText="..."
+                          className="text-xs px-2 py-1 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-200 dark:hover:border-rose-800"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </SubmitButton>
+                      </form>
+                    </div>
                   </td>
                 </tr>
               );
