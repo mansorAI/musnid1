@@ -137,3 +137,53 @@ export async function deleteCategory(formData: FormData) {
   await supabase.from("store_categories").delete().eq("id", id);
   revalidatePath("/admin/zone");
 }
+
+// ── Category Icon Upload ──────────────────────────────────────────────────────
+
+export async function uploadCategoryIcon(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceClient();
+
+  const categoryId = formData.get("category_id") as string;
+  const file = formData.get("icon_file") as File;
+
+  if (!file || file.size === 0) throw new Error("لم يتم اختيار ملف");
+  if (file.size > 2 * 1024 * 1024) throw new Error("حجم الملف أكبر من 2MB");
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+  const path = `${categoryId}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("category-icons")
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data: { publicUrl } } = supabase.storage
+    .from("category-icons")
+    .getPublicUrl(path);
+
+  // أضف cache-busting لتحديث الصورة فوراً
+  const iconUrl = `${publicUrl}?v=${Date.now()}`;
+
+  await supabase
+    .from("store_categories")
+    .update({ icon_url: iconUrl, updated_at: new Date().toISOString() })
+    .eq("id", categoryId);
+
+  revalidatePath("/admin/zone");
+}
+
+export async function removeCategoryIcon(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceClient();
+
+  const categoryId = formData.get("category_id") as string;
+
+  await supabase
+    .from("store_categories")
+    .update({ icon_url: null, updated_at: new Date().toISOString() })
+    .eq("id", categoryId);
+
+  revalidatePath("/admin/zone");
+}

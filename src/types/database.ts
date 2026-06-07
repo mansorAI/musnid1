@@ -283,8 +283,8 @@ export type Database = {
         Relationships: [{ foreignKeyName: "business_offers_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] }];
       };
       store_categories: {
-        Row: { id: string; name: string; icon: string; action_type: "order" | "booking" | "inquiry"; supports_bot: boolean; sort_order: number; is_active: boolean; section_key: string; product_display_config: Json | null; created_at: string; updated_at: string };
-        Insert: { id?: string; name: string; icon?: string; action_type?: "order" | "booking" | "inquiry"; supports_bot?: boolean; sort_order?: number; is_active?: boolean; section_key?: string; product_display_config?: Json | null; created_at?: string; updated_at?: string };
+        Row: { id: string; name: string; icon: string; icon_url: string | null; action_type: "order" | "booking" | "inquiry"; supports_bot: boolean; sort_order: number; is_active: boolean; section_key: string; product_display_config: Json | null; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; icon?: string; icon_url?: string | null; action_type?: "order" | "booking" | "inquiry"; supports_bot?: boolean; sort_order?: number; is_active?: boolean; section_key?: string; product_display_config?: Json | null; created_at?: string; updated_at?: string };
         Update: Partial<Database["public"]["Tables"]["store_categories"]["Insert"]>;
         Relationships: [];
       };

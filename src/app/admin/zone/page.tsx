@@ -4,6 +4,7 @@ import type { StoreCategory, ZoneSection } from "@/types/database";
 import {
   createSection, updateSection, toggleSection, deleteSection,
   createCategory, updateCategory, toggleCategory, deleteCategory, moveCategorySection,
+  uploadCategoryIcon, removeCategoryIcon,
 } from "./actions";
 
 async function getZoneData() {
@@ -226,7 +227,7 @@ export default async function ZonePage() {
             <thead className="bg-surface-50 dark:bg-surface-800/50">
               <tr>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">الاسم</th>
-                <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">الأيقونة</th>
+                <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">صورة النشاط</th>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">القسم</th>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">النوع</th>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">الحالة</th>
@@ -252,9 +253,35 @@ export default async function ZonePage() {
                     </form>
                   </td>
                   <td className="px-4 py-3">
-                    <code className="text-xs rounded bg-surface-100 dark:bg-surface-800 px-2 py-0.5 text-surface-600 dark:text-surface-400">
-                      {cat.icon}
-                    </code>
+                    <div className="flex items-center gap-2">
+                      {/* معاينة الصورة الحالية */}
+                      {cat.icon_url ? (
+                        <img
+                          src={cat.icon_url}
+                          alt={cat.name}
+                          className="w-10 h-10 rounded-full object-cover border border-surface-200 dark:border-surface-700 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center shrink-0 text-surface-400 text-xs">
+                          ؟
+                        </div>
+                      )}
+                      {/* رفع صورة جديدة */}
+                      <form action={uploadCategoryIcon} encType="multipart/form-data" className="flex items-center gap-1">
+                        <input type="hidden" name="category_id" value={cat.id} />
+                        <label className="cursor-pointer text-xs text-violet-600 hover:underline">
+                          {cat.icon_url ? "تغيير" : "رفع صورة"}
+                          <input type="file" name="icon_file" accept="image/*" className="hidden" onChange={(e) => e.currentTarget.form?.requestSubmit()} />
+                        </label>
+                      </form>
+                      {/* حذف الصورة */}
+                      {cat.icon_url && (
+                        <form action={removeCategoryIcon}>
+                          <input type="hidden" name="category_id" value={cat.id} />
+                          <SubmitButton pendingText="..." className="text-xs text-rose-500 hover:underline">حذف</SubmitButton>
+                        </form>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
