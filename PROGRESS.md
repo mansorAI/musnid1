@@ -2,6 +2,44 @@
 
 ---
 
+## 2026-06-08 — نظام الخصائص المباشرة + تفعيل/إيقاف/حذف الاشتراكات
+
+### 1. `business_features` — خصائص مباشرة لمنشأة بدون باقة
+**`src/lib/admin-data.ts`** — إضافة `getBusinessDirectFeatures()`
+- تجلب جميع الخصائص المباشرة مع اسم المنشأة لكل منها
+
+**`src/app/admin/actions.ts`** — إضافة 4 actions جديدة:
+| الدالة | الوظيفة |
+|--------|---------|
+| `addDirectFeature` | تُضيف خاصية مباشرة لمنشأة (upsert — لا تكرار) |
+| `removeDirectFeature` | تحذف خاصية مباشرة بالـ ID |
+| `toggleSubscriptionStatus` | تُبدّل status بين active/cancelled |
+| `deleteSubscription` | تحذف الاشتراك نهائياً من المنشأة |
+
+**`src/app/admin/features/page.tsx`** — تحديثات واجهة:
+- قسم جديد (خلفية أصفر) "إسناد خصائص مباشرة لمنشأة": dropdown للمنشأة + dropdown للخاصية + زر إضافة
+- جدول الخصائص المباشرة الحالية مع زر حذف لكل خاصية
+- جدول الاشتراكات: أُضيف عمود إجراءات بزرَّي "إيقاف/تفعيل" + "حذف نهائي"
+- badge "+N مباشر" يظهر بجانب اسم المنشأة في جدول الاشتراكات إذا كانت لها خصائص مباشرة
+- حُذفت `medical_records` وأُضيفت `add_business` في قوائم الخصائص
+
+**`src/app/admin/packages/page.tsx`**:
+- نفس التحديث: `medical_records` → `add_business` في `FEATURE_LABELS`
+- إزالة import غير مستخدم (`updatePlan`)
+
+**`src/types/database.ts`**:
+- إضافة `business_features` Row/Insert/Update/Relationships
+- `export type BusinessFeature`
+
+### الملفات المعدّلة
+- `src/app/admin/actions.ts`
+- `src/app/admin/features/page.tsx`
+- `src/app/admin/packages/page.tsx`
+- `src/lib/admin-data.ts`
+- `src/types/database.ts`
+
+---
+
 ## 2026-06-07 — إصلاح حفظ نشاط المنشأة من لوحة الأدمن
 
 **الملف**: `src/app/admin/actions.ts` — دالة `updateBusinessCategory`
