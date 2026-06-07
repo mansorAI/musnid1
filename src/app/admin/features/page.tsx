@@ -1,7 +1,8 @@
-import { getPlans, getBusinessSubscriptions } from "@/lib/admin-data";
-import { assignSubscription } from "@/app/admin/actions";
+import { getPlans, getBusinessSubscriptions, getBusinessDirectFeatures } from "@/lib/admin-data";
+import { assignSubscription, addDirectFeature, removeDirectFeature } from "@/app/admin/actions";
 import { getAllBusinesses } from "@/lib/admin-data";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { Trash2 } from "lucide-react";
 
 const FEATURES = [
   { key: "whatsapp_bot",  label: "بوت واتساب",       desc: "ردود ذكية تلقائية على واتساب" },
@@ -15,12 +16,25 @@ const FEATURES = [
   { key: "multi_branch",  label: "فروع متعددة",         desc: "إدارة أكثر من فرع" },
 ];
 
+const FEATURE_LABELS: Record<string, string> = Object.fromEntries(
+  FEATURES.map((f) => [f.key, f.label])
+);
+
 export default async function FeaturesPage() {
-  const [plans, businesses, subscriptions] = await Promise.all([
+  const [plans, businesses, subscriptions, directFeatures] = await Promise.all([
     getPlans(),
     getAllBusinesses(),
     getBusinessSubscriptions(),
+    getBusinessDirectFeatures(),
   ]);
+
+  // تجميع الخصائص المباشرة لكل منشأة
+  const directByBusiness = directFeatures.reduce<Record<string, typeof directFeatures>>((acc, f) => {
+    const bizId = (f as any).business_id;
+    if (!acc[bizId]) acc[bizId] = [];
+    acc[bizId].push(f);
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-8">
@@ -60,7 +74,7 @@ export default async function FeaturesPage() {
         ))}
       </div>
 
-      {/* Assign subscription to business */}
+      {/* ── إسناد باقة لمنشأة ── */}
       <div className="rounded-2xl border bg-white p-6 shadow-sm dark:bg-surface-900 dark:border-surface-800">
         <h2 className="mb-4 text-lg font-semibold text-surface-900 dark:text-white">
           إسناد باقة لمنشأة
@@ -97,7 +111,92 @@ export default async function FeaturesPage() {
         </form>
       </div>
 
-      {/* Active subscriptions */}
+      {/* ── إسناد خصائص مباشرة لمنشأة (بدون باقة) ── */}
+      <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-6 shadow-sm dark:bg-amber-900/10 dark:border-amber-800">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-surface-900 dark:text-white">
+            إسناد خصائص مباشرة لمنشأة
+          </h2>
+          <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
+            بدون باقة — خصائص فردية تُتفق عليها مع صاحب المنشأة
+          </p>
+        </div>
+        <form action={addDirectFeature} className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-surface-500 dark:text-surface-400">المنشأة</label>
+            <select
+              name="businessId"
+              className="rounded-xl border px-3 py-2 text-sm bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
+            >
+              {businesses.map((b: any) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-surface-500 dark:text-surface-400">الخاصية</label>
+            <select
+              name="featureKey"
+              className="rounded-xl border px-3 py-2 text-sm bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
+            >
+              {FEATURES.map((f) => (
+                <option key={f.key} value={f.key}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+          <SubmitButton
+            pendingText="جاري الإضافة..."
+            className="rounded-xl bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 transition-colors"
+          >
+            إضافة خاصية
+          </SubmitButton>
+        </form>
+
+        {/* الخصائص المباشرة الحالية */}
+        {directFeatures.length > 0 && (
+          <div className="mt-6 overflow-hidden rounded-xl border border-amber-200 dark:border-amber-800">
+            <div className="bg-amber-100 dark:bg-amber-900/30 px-4 py-2">
+              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                الخصائص المباشرة الحالية ({directFeatures.length})
+              </p>
+            </div>
+            <table className="w-full text-sm bg-white dark:bg-surface-900">
+              <tbody className="divide-y divide-amber-100 dark:divide-amber-900/30">
+                {directFeatures.map((f: any) => (
+                  <tr key={f.id} className="hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors">
+                    <td className="px-4 py-2.5 font-medium text-surface-900 dark:text-white">
+                      {f.business?.name ?? "—"}
+                    </td>
+                    <td className="px-4 py-2.5 text-surface-600 dark:text-surface-400">
+                      {FEATURE_LABELS[f.feature_key] ?? f.feature_key}
+                      <code className="mr-2 text-xs rounded bg-surface-100 dark:bg-surface-800 px-1.5 py-0.5 text-surface-500">
+                        {f.feature_key}
+                      </code>
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-surface-400">
+                      {new Date(f.created_at).toLocaleDateString("ar-SA")}
+                    </td>
+                    <td className="px-4 py-2.5 text-left">
+                      <form action={removeDirectFeature}>
+                        <input type="hidden" name="featureId" value={f.id} />
+                        <button
+                          type="submit"
+                          className="text-rose-500 hover:text-rose-700 transition-colors"
+                          title="إزالة الخاصية"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ── الاشتراكات النشطة ── */}
       <div className="overflow-hidden rounded-2xl border bg-white shadow-sm dark:bg-surface-900 dark:border-surface-800">
         <div className="p-4 border-b border-surface-100 dark:border-surface-800">
           <h2 className="font-semibold text-surface-900 dark:text-white">
@@ -118,6 +217,11 @@ export default async function FeaturesPage() {
               <tr key={sub.id} className="hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
                 <td className="px-4 py-3 font-medium text-surface-900 dark:text-white">
                   {sub.business?.name ?? "—"}
+                  {directByBusiness[(sub as any).business_id]?.length ? (
+                    <span className="mr-2 text-xs rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5">
+                      +{directByBusiness[(sub as any).business_id].length} مباشر
+                    </span>
+                  ) : null}
                 </td>
                 <td className="px-4 py-3 text-surface-600 dark:text-surface-400">
                   {sub.plan?.name ?? "—"}

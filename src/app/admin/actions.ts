@@ -179,3 +179,28 @@ export async function assignSubscription(formData: FormData) {
 
   revalidatePath("/admin/features");
 }
+
+export async function addDirectFeature(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceClient();
+
+  const businessId = formData.get("businessId") as string;
+  const featureKey = formData.get("featureKey") as string;
+
+  await supabase.from("business_features").upsert(
+    { business_id: businessId, feature_key: featureKey },
+    { onConflict: "business_id,feature_key" },
+  );
+
+  revalidatePath("/admin/features");
+}
+
+export async function removeDirectFeature(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceClient();
+
+  const featureId = formData.get("featureId") as string;
+  await supabase.from("business_features").delete().eq("id", featureId);
+
+  revalidatePath("/admin/features");
+}

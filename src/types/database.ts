@@ -1077,6 +1077,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["business_subscriptions"]["Insert"]>;
         Relationships: [{ foreignKeyName: "bs_business_id_fkey"; columns: ["business_id"]; isOneToOne: true; referencedRelation: "businesses"; referencedColumns: ["id"] }, { foreignKeyName: "bs_plan_id_fkey"; columns: ["plan_id"]; isOneToOne: false; referencedRelation: "plans"; referencedColumns: ["id"] }];
       };
+      business_features: {
+        Row: { id: string; business_id: string; feature_key: string; created_at: string };
+        Insert: { id?: string; business_id: string; feature_key: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["business_features"]["Insert"]>;
+        Relationships: [{ foreignKeyName: "business_features_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] }];
+      };
       // ── نظام الموظفين المرتبط بحسابات التطبيق ──────────────────────────────
       business_employees: {
         Row: { id: string; business_id: string; profile_id: string; invited_by: string | null; role_type: "staff" | "cashier"; status: "active" | "suspended" | "removed"; created_at: string; updated_at: string };
@@ -1159,6 +1165,7 @@ export type PlatformSettings  = Database["public"]["Tables"]["platform_settings"
 export type Plan = Database["public"]["Tables"]["plans"]["Row"];
 export type PlanFeature = Database["public"]["Tables"]["plan_features"]["Row"];
 export type BusinessSubscription = Database["public"]["Tables"]["business_subscriptions"]["Row"];
+export type BusinessFeature     = Database["public"]["Tables"]["business_features"]["Row"];
 export type BusinessEmployee    = Database["public"]["Tables"]["business_employees"]["Row"];
 export type EmployeePermissions = Database["public"]["Tables"]["employee_permissions"]["Row"];
 export type EmployeeSession     = Database["public"]["Tables"]["employee_sessions"]["Row"];

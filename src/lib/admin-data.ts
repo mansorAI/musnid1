@@ -113,3 +113,14 @@ export async function getBusinessSubscriptions() {
 
   return data ?? [];
 }
+
+export async function getBusinessDirectFeatures() {
+  const supabase = getServiceClient();
+
+  const { data } = await supabase
+    .from("business_features")
+    .select("*, business:businesses(id, name)")
+    .order("created_at", { ascending: false });
+
+  return data ?? [];
+}
