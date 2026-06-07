@@ -56,9 +56,22 @@ export async function getAllBusinesses() {
     .from("businesses")
     .select(`
       id, name, type, city, contact_email, subscription_tier, subscription_status, created_at,
-      owner:profiles!businesses_owner_id_fkey (id, email, full_name)
+      owner:profiles!businesses_owner_id_fkey (id, email, full_name),
+      business_category_mapping (category_id, is_public, store_categories (id, name))
     `)
     .order("created_at", { ascending: false });
+
+  return data ?? [];
+}
+
+export async function getAllCategories() {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("store_categories")
+    .select("id, name, section_key")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
 
   return data ?? [];
 }

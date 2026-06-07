@@ -288,6 +288,15 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["store_categories"]["Insert"]>;
         Relationships: [];
       };
+      business_category_mapping: {
+        Row: { id: string; business_id: string; category_id: string; is_public: boolean; created_at: string };
+        Insert: { id?: string; business_id: string; category_id: string; is_public?: boolean; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["business_category_mapping"]["Insert"]>;
+        Relationships: [
+          { foreignKeyName: "business_category_mapping_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] },
+          { foreignKeyName: "business_category_mapping_category_id_fkey"; columns: ["category_id"]; isOneToOne: false; referencedRelation: "store_categories"; referencedColumns: ["id"] }
+        ];
+      };
       zone_sections: {
         Row: { id: string; name: string; section_key: string; sort_order: number; is_active: boolean; product_display_config: Json | null; bg_color_start: string | null; bg_color_end: string | null; created_at: string; updated_at: string };
         Insert: { id?: string; name: string; section_key: string; sort_order?: number; is_active?: boolean; product_display_config?: Json | null; bg_color_start?: string | null; bg_color_end?: string | null; created_at?: string; updated_at?: string };

@@ -1,7 +1,6 @@
-import { getAllMembers, getAllBusinesses } from "@/lib/admin-data";
-import { updateMemberRole } from "@/app/admin/actions";
+import { getAllMembers, getAllBusinesses, getAllCategories } from "@/lib/admin-data";
+import { updateMemberRole, updateBusinessCategory } from "@/app/admin/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { Building2, User, Shield } from "lucide-react";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "أدمن",
@@ -21,7 +20,11 @@ export default async function MembersPage({
   searchParams: Promise<{ role?: string; tab?: string }>;
 }) {
   const { role: roleFilter, tab = "individuals" } = await searchParams;
-  const [members, businesses] = await Promise.all([getAllMembers(), getAllBusinesses()]);
+  const [members, businesses, categories] = await Promise.all([
+    getAllMembers(),
+    getAllBusinesses(),
+    getAllCategories(),
+  ]);
 
   const filteredMembers = roleFilter
     ? members.filter((m) => m.role === roleFilter)
@@ -144,28 +147,56 @@ export default async function MembersPage({
               <tr>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">المنشأة</th>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">المالك</th>
-                <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">النوع</th>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">المدينة</th>
-                <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">الاشتراك</th>
+                <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">النشاط الحالي</th>
+                <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">تغيير النشاط</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
-              {businesses.map((biz: any) => (
-                <tr key={biz.id} className="hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-surface-900 dark:text-white">{biz.name}</td>
-                  <td className="px-4 py-3 text-surface-600 dark:text-surface-400 text-xs">
-                    <div>{biz.owner?.full_name ?? "—"}</div>
-                    <div className="font-mono">{biz.owner?.email}</div>
-                  </td>
-                  <td className="px-4 py-3 text-surface-600 dark:text-surface-400">{biz.type}</td>
-                  <td className="px-4 py-3 text-surface-600 dark:text-surface-400">{biz.city ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400">
-                      {biz.subscription_tier}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {businesses.map((biz: any) => {
+                const currentMapping = biz.business_category_mapping?.[0];
+                const currentCategoryId = currentMapping?.category_id ?? "";
+                const currentCategoryName = currentMapping?.store_categories?.name ?? "—";
+                return (
+                  <tr key={biz.id} className="hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-surface-900 dark:text-white">
+                      <div>{biz.name}</div>
+                      <div className="text-xs text-surface-400">{biz.type}</div>
+                    </td>
+                    <td className="px-4 py-3 text-surface-600 dark:text-surface-400 text-xs">
+                      <div>{biz.owner?.full_name ?? "—"}</div>
+                      <div className="font-mono">{biz.owner?.email}</div>
+                    </td>
+                    <td className="px-4 py-3 text-surface-600 dark:text-surface-400">{biz.city ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300">
+                        {currentCategoryName}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <form action={updateBusinessCategory} className="flex items-center gap-2">
+                        <input type="hidden" name="businessId" value={biz.id} />
+                        <select
+                          name="categoryId"
+                          defaultValue={currentCategoryId}
+                          className="text-xs rounded-lg border px-2 py-1 bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white"
+                        >
+                          <option value="">— بدون نشاط —</option>
+                          {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                        <SubmitButton
+                          pendingText="..."
+                          className="text-xs px-3 py-1 rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                        >
+                          حفظ
+                        </SubmitButton>
+                      </form>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 

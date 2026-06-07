@@ -2,12 +2,43 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { getAdminUser } from "@/lib/admin-data";
+import type { Database } from "@/types/database";
+
+function getServiceClient() {
+  return createServiceClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
 
 async function requireAdmin() {
   const user = await getAdminUser();
   if (!user) throw new Error("غير مصرح");
   return user;
+}
+
+export async function updateBusinessCategory(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceClient();
+
+  const businessId = formData.get("businessId") as string;
+  const categoryId = formData.get("categoryId") as string;
+
+  if (!categoryId) {
+    await supabase.from("business_category_mapping").delete().eq("business_id", businessId);
+  } else {
+    // delete existing mapping then insert fresh (avoids onConflict ambiguity)
+    await supabase.from("business_category_mapping").delete().eq("business_id", businessId);
+    await supabase.from("business_category_mapping").insert({
+      business_id: businessId,
+      category_id: categoryId,
+      is_public: false,
+    });
+  }
+
+  revalidatePath("/admin/members");
 }
 
 export async function updateMemberRole(formData: FormData) {

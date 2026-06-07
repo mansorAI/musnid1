@@ -2,6 +2,47 @@
 
 ---
 
+## 2026-06-07 — نظام رفع أيقونات الأنشطة من لوحة الأدمن
+
+### الويب — لوحة الأدمن
+- **`CategoryIconUpload.tsx`** (Client Component جديد): زر رفع صورة لكل نشاط مع معاينة فورية
+- **`actions.ts`**: إضافة `uploadCategoryIcon` (رفع إلى Storage + حفظ URL) و`removeCategoryIcon`
+- **`/admin/zone/page.tsx`**: عمود "صورة النشاط" في جدول الأنشطة — معاينة + رفع + حذف
+- **`src/types/database.ts`**: إضافة `icon_url: string | null` لـ `store_categories`
+
+### قاعدة البيانات
+- Migration `20260607000004_category_icon_url.sql` ← **مطبّق**
+  - عمود `icon_url` في `store_categories`
+  - bucket `category-icons` مع RLS (قراءة عامة، كتابة للمديرين)
+
+---
+
+## 2026-06-07 — نظام ثيم عالمي للتطبيق (platform_settings)
+
+### الويب — لوحة الأدمن
+- **`/admin/app-theme/page.tsx`** (جديد): صفحة "مظهر التطبيق"
+  - معاينة حية تُظهر الخلفية والكروت قبل الحفظ
+  - color picker مزدوج: `bg_color_start` + `bg_color_end` (نفس اللون = لون صلب، مختلفان = تدرج)
+  - color picker لـ `card_color`
+  - 6 إعدادات سريعة: أبيض / أخضر مسنِد / رمادي / كحلي / بنفسجي / ذهبي
+- **`/admin/app-theme/actions.ts`** (جديد): `saveAppTheme()` — يستخدم service role client لـ upsert صف `id='default'` في `platform_settings`
+- **`/admin/layout.tsx`**: إضافة "مظهر التطبيق" (أيقونة Palette) للشريط العلوي
+- **`src/types/database.ts`**: إضافة جدول `platform_settings` (Row, Insert, Update, Relationships) + `export type PlatformSettings`
+
+### Migration
+**`20260607000003_platform_settings.sql`**:
+- جدول `platform_settings` بصف واحد `id='default'`
+- أعمدة: `bg_color_start`, `bg_color_end`, `card_color` — كلها `DEFAULT '#ffffff'`
+- RLS: قراءة علنية، كتابة للمديرين فقط
+- **حالة**: مُنشر على Vercel ✅ — يحتاج تطبيق Migration في Supabase Dashboard
+
+### قرار تقني
+- الافتراضي أبيض (`#ffffff`) — التطبيق يبدو مطابقاً للتصميم الأصلي حتى يغيّر الأدمن اللون
+- الموبايل يُخزّن الإعداد بـ Zustand + AsyncStorage ويُحدّثه من Supabase عند الفتح
+- الويب يقرأ مباشرة من Supabase عبر Server Component (لا كاش محلي)
+
+---
+
 ## 2026-06-07 — تصميم زون بخلفية متدرجة + كروت بيضاء (Admin Control)
 
 ### الويب
