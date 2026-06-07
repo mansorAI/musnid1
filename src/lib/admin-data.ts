@@ -1,4 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
+
+function getServiceClient() {
+  return createServiceClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
 
 export async function getAdminUser() {
   const supabase = await createClient();
@@ -50,7 +59,7 @@ export async function getAllMembers() {
 }
 
 export async function getAllBusinesses() {
-  const supabase = await createClient();
+  const supabase = getServiceClient();
 
   const { data } = await supabase
     .from("businesses")
@@ -65,7 +74,7 @@ export async function getAllBusinesses() {
 }
 
 export async function getAllCategories() {
-  const supabase = await createClient();
+  const supabase = getServiceClient();
 
   const { data } = await supabase
     .from("store_categories")
