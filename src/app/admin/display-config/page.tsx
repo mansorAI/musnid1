@@ -8,9 +8,10 @@ import {
 
 type DisplayKey =
   | "showImage" | "showPrice" | "showDescription" | "showLocation"
-  | "showContactActions" | "showQtyControls" | "bookingButton";
+  | "showContactActions" | "showQtyControls" | "bookingButton"
+  | "showGridLayout" | "showListLayout";
 
-const DISPLAY_OPTIONS: { key: DisplayKey; label: string }[] = [
+const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" }[] = [
   { key: "showImage",          label: "عرض الصورة" },
   { key: "showPrice",          label: "عرض السعر" },
   { key: "showDescription",    label: "وصف المنتج" },
@@ -18,6 +19,8 @@ const DISPLAY_OPTIONS: { key: DisplayKey; label: string }[] = [
   { key: "showContactActions", label: "مكالمة/واتساب" },
   { key: "showQtyControls",    label: "أزرار الكمية" },
   { key: "bookingButton",      label: "زر الحجز" },
+  { key: "showGridLayout",     label: "كارت مربع ⊞",     group: "layout" },
+  { key: "showListLayout",     label: "كارت مستطيل ☰",  group: "layout" },
 ];
 
 type DisplayConfig = Record<DisplayKey, boolean>;
@@ -41,33 +44,46 @@ function ConfigCheckboxes({
   config: DisplayConfig | null;
   inherited?: DisplayConfig | null;
 }) {
+  const mainOpts   = DISPLAY_OPTIONS.filter((o) => !o.group);
+  const layoutOpts = DISPLAY_OPTIONS.filter((o) => o.group === "layout");
+
+  const renderOpt = (opt: (typeof DISPLAY_OPTIONS)[number]) => {
+    const checked = config != null ? (config[opt.key] ?? false) : (inherited?.[opt.key] ?? true);
+    const fromInherited = config == null && inherited != null;
+    return (
+      <label
+        key={opt.key}
+        className="flex flex-col items-center gap-1.5 rounded-xl border p-2.5 cursor-pointer
+          bg-surface-50 hover:bg-surface-100 dark:bg-surface-800 dark:border-surface-700
+          dark:hover:bg-surface-700 transition-colors text-center select-none"
+      >
+        <input
+          type="checkbox"
+          name={opt.key}
+          defaultChecked={checked}
+          className="w-4 h-4 accent-violet-600"
+        />
+        <span className="text-xs font-medium text-surface-700 dark:text-surface-300 leading-tight">
+          {opt.label}
+        </span>
+        {fromInherited && (
+          <span className="text-[10px] text-surface-400 dark:text-surface-500">من القسم</span>
+        )}
+      </label>
+    );
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-      {DISPLAY_OPTIONS.map((opt) => {
-        const checked = config != null ? (config[opt.key] ?? false) : (inherited?.[opt.key] ?? true);
-        const fromInherited = config == null && inherited != null;
-        return (
-          <label
-            key={opt.key}
-            className="flex flex-col items-center gap-1.5 rounded-xl border p-2.5 cursor-pointer
-              bg-surface-50 hover:bg-surface-100 dark:bg-surface-800 dark:border-surface-700
-              dark:hover:bg-surface-700 transition-colors text-center select-none"
-          >
-            <input
-              type="checkbox"
-              name={opt.key}
-              defaultChecked={checked}
-              className="w-4 h-4 accent-violet-600"
-            />
-            <span className="text-xs font-medium text-surface-700 dark:text-surface-300 leading-tight">
-              {opt.label}
-            </span>
-            {fromInherited && (
-              <span className="text-[10px] text-surface-400 dark:text-surface-500">من القسم</span>
-            )}
-          </label>
-        );
-      })}
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+        {mainOpts.map(renderOpt)}
+      </div>
+      <div className="border-t dark:border-surface-700 pt-3">
+        <p className="text-xs text-surface-400 dark:text-surface-500 mb-2 text-right">شكل الكارت</p>
+        <div className="flex gap-2">
+          {layoutOpts.map(renderOpt)}
+        </div>
+      </div>
     </div>
   );
 }

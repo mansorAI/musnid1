@@ -12,11 +12,14 @@ type DisplayConfigFields = {
   showContactActions: boolean;
   showQtyControls: boolean;
   bookingButton: boolean;
+  showGridLayout: boolean;
+  showListLayout: boolean;
 };
 
 const DISPLAY_KEYS: (keyof DisplayConfigFields)[] = [
   "showImage", "showPrice", "showDescription", "showLocation",
   "showContactActions", "showQtyControls", "bookingButton",
+  "showGridLayout", "showListLayout",
 ];
 
 async function requireAdmin() {
