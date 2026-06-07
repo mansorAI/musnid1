@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { getAdminUser } from "@/lib/admin-data";
@@ -26,19 +27,31 @@ export async function updateBusinessCategory(formData: FormData) {
   const businessId = formData.get("businessId") as string;
   const categoryId = formData.get("categoryId") as string;
 
-  if (!categoryId) {
-    await supabase.from("business_category_mapping").delete().eq("business_id", businessId);
-  } else {
-    // delete existing mapping then insert fresh (avoids onConflict ambiguity)
-    await supabase.from("business_category_mapping").delete().eq("business_id", businessId);
-    await supabase.from("business_category_mapping").insert({
+  // Preserve the current is_public state so zone visibility isn't reset
+  const { data: existing } = await supabase
+    .from("business_category_mapping")
+    .select("is_public")
+    .eq("business_id", businessId)
+    .maybeSingle();
+  const isPublic = existing?.is_public ?? false;
+
+  const { error: delError } = await supabase
+    .from("business_category_mapping")
+    .delete()
+    .eq("business_id", businessId);
+  if (delError) throw new Error(delError.message);
+
+  if (categoryId) {
+    const { error: insError } = await supabase.from("business_category_mapping").insert({
       business_id: businessId,
       category_id: categoryId,
-      is_public: false,
+      is_public: isPublic,
     });
+    if (insError) throw new Error(insError.message);
   }
 
   revalidatePath("/admin/members");
+  redirect("/admin/members?tab=businesses");
 }
 
 export async function toggleBusinessZoneVisibility(formData: FormData) {

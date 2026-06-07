@@ -1,18 +1,18 @@
 import { getPlans } from "@/lib/admin-data";
-import { createPlan, updatePlan, deletePlan, addPlanFeature, removePlanFeature } from "@/app/admin/actions";
+import { createPlan, deletePlan, addPlanFeature, removePlanFeature } from "@/app/admin/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Plus, Trash2, Star } from "lucide-react";
 
 const FEATURE_LABELS: Record<string, string> = {
-  whatsapp_bot: "بوت واتساب",
-  sales: "المبيعات",
-  invoices: "الفواتير",
-  staff: "الموظفون",
-  marketplace: "زون / السوق",
-  bookings: "الحجوزات",
-  medical_records: "السجلات الطبية",
-  analytics: "التحليلات",
-  multi_branch: "فروع متعددة",
+  whatsapp_bot:  "بوت واتساب",
+  sales:         "المبيعات",
+  invoices:      "الفواتير",
+  staff:         "الموظفون",
+  marketplace:   "زون / السوق",
+  bookings:      "الحجوزات",
+  add_business:  "إضافة نشاط",
+  analytics:     "التحليلات",
+  multi_branch:  "فروع متعددة",
 };
 
 export default async function PackagesPage() {

@@ -4,15 +4,15 @@ import { getAllBusinesses } from "@/lib/admin-data";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 const FEATURES = [
-  { key: "whatsapp_bot", label: "بوت واتساب", desc: "ردود ذكية تلقائية على واتساب" },
-  { key: "sales", label: "المبيعات", desc: "إدارة المنتجات وكاشير البيع" },
-  { key: "invoices", label: "الفواتير", desc: "إصدار فواتير ZATCA متوافقة" },
-  { key: "staff", label: "الموظفون", desc: "إدارة فريق العمل والصلاحيات" },
-  { key: "marketplace", label: "زون / السوق", desc: "ظهور المنشأة في سوق الأفراد" },
-  { key: "bookings", label: "الحجوزات", desc: "نظام المواعيد والحجوزات" },
-  { key: "medical_records", label: "السجلات الطبية", desc: "ملفات المرضى والتشخيصات" },
-  { key: "analytics", label: "التحليلات", desc: "تقارير وإحصائيات متقدمة" },
-  { key: "multi_branch", label: "فروع متعددة", desc: "إدارة أكثر من فرع" },
+  { key: "whatsapp_bot",  label: "بوت واتساب",       desc: "ردود ذكية تلقائية على واتساب" },
+  { key: "sales",         label: "المبيعات",           desc: "إدارة المنتجات وكاشير البيع" },
+  { key: "invoices",      label: "الفواتير",            desc: "إصدار فواتير ZATCA متوافقة" },
+  { key: "staff",         label: "الموظفون",            desc: "إدارة فريق العمل والصلاحيات" },
+  { key: "marketplace",   label: "زون / السوق",         desc: "ظهور المنشأة في سوق الأفراد" },
+  { key: "bookings",      label: "الحجوزات",            desc: "نظام المواعيد والحجوزات" },
+  { key: "add_business",  label: "إضافة نشاط",          desc: "إمكانية إضافة نشاط تجاري ثانٍ" },
+  { key: "analytics",     label: "التحليلات",           desc: "تقارير وإحصائيات متقدمة" },
+  { key: "multi_branch",  label: "فروع متعددة",         desc: "إدارة أكثر من فرع" },
 ];
 
 export default async function FeaturesPage() {
