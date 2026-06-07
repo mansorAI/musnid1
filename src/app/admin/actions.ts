@@ -41,6 +41,21 @@ export async function updateBusinessCategory(formData: FormData) {
   revalidatePath("/admin/members");
 }
 
+export async function toggleBusinessZoneVisibility(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceClient();
+
+  const businessId = formData.get("businessId") as string;
+  const isPublic = formData.get("isPublic") === "true";
+
+  await supabase
+    .from("business_category_mapping")
+    .update({ is_public: isPublic })
+    .eq("business_id", businessId);
+
+  revalidatePath("/admin/members");
+}
+
 export async function updateMemberRole(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();

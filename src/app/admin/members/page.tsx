@@ -1,5 +1,5 @@
 import { getAllMembers, getAllBusinesses, getAllCategories } from "@/lib/admin-data";
-import { updateMemberRole, updateBusinessCategory } from "@/app/admin/actions";
+import { updateMemberRole, updateBusinessCategory, toggleBusinessZoneVisibility } from "@/app/admin/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -150,6 +150,7 @@ export default async function MembersPage({
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">المدينة</th>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">النشاط الحالي</th>
                 <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">تغيير النشاط</th>
+                <th className="text-right px-4 py-3 text-surface-500 dark:text-surface-400 font-medium">ظهور في الزون</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
@@ -157,6 +158,7 @@ export default async function MembersPage({
                 const currentMapping = biz.business_category_mapping?.[0];
                 const currentCategoryId = currentMapping?.category_id ?? "";
                 const currentCategoryName = currentMapping?.store_categories?.name ?? "—";
+                const isPublic = currentMapping?.is_public ?? false;
                 return (
                   <tr key={biz.id} className="hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
                     <td className="px-4 py-3 font-medium text-surface-900 dark:text-white">
@@ -193,6 +195,26 @@ export default async function MembersPage({
                           حفظ
                         </SubmitButton>
                       </form>
+                    </td>
+                    <td className="px-4 py-3">
+                      {currentMapping ? (
+                        <form action={toggleBusinessZoneVisibility}>
+                          <input type="hidden" name="businessId" value={biz.id} />
+                          <input type="hidden" name="isPublic" value={isPublic ? "false" : "true"} />
+                          <SubmitButton
+                            pendingText="..."
+                            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                              isPublic
+                                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                : "bg-surface-100 text-surface-500 hover:bg-surface-200 dark:bg-surface-800 dark:text-surface-400"
+                            }`}
+                          >
+                            {isPublic ? "✓ ظاهر" : "مخفي"}
+                          </SubmitButton>
+                        </form>
+                      ) : (
+                        <span className="text-xs text-surface-400">لا يوجد نشاط</span>
+                      )}
                     </td>
                   </tr>
                 );
