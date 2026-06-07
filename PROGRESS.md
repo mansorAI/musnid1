@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-06-07 — إدارة منشآت الأدمن + إصلاح الزون
+
+### 1. عرض جميع المنشآت في تبويب "تفاصيل المنشآت"
+
+**المشكلة**: `getAllBusinesses()` كان يستخدم الـ regular client (مقيّد بـ RLS)، فيظهر فقط منشأة الأدمن.
+**الإصلاح**: تحويل `getAllBusinesses()` و`getAllCategories()` إلى service role client → يتجاوز RLS ويرجع كل المنشآت.
+
+### 2. تغيير نشاط المنشأة من لوحة الأدمن
+
+**الإضافات في `src/app/admin/actions.ts`**:
+- `updateBusinessCategory`: يحذف الـ mapping القديم ويضيف جديداً بالفئة المختارة (أو يحذفه إن كانت القيمة فارغة)
+- `toggleBusinessZoneVisibility`: يُبدّل `is_public` بين `true` و`false`
+
+**الإضافات في `src/app/admin/members/page.tsx`** — تبويب "تفاصيل المنشآت":
+- عمود "النشاط الحالي": يعرض اسم الفئة المرتبطة بالـ badge البنفسجي
+- عمود "تغيير النشاط": قائمة منسدلة بكل الأنشطة من `store_categories` + زر حفظ
+- عمود "ظهور في الزون": زر يُبدّل بين "✓ ظاهر" (أخضر) و"مخفي" (رمادي)
+
+**`src/types/database.ts`**: إضافة جدول `business_category_mapping` (كان مفقوداً)
+
+**`src/lib/admin-data.ts`**: إضافة `getAllCategories()` + تحويل `getAllBusinesses()` لـ service role
+
+### 3. سياسة الظهور في الزون
+
+- المنشآت الجديدة تُسجَّل بـ `is_public = false` تلقائياً
+- الأدمن يفعّلها يدوياً من لوحة التحكم بعد المراجعة
+
+### الملفات المعدّلة
+- `src/app/admin/actions.ts`
+- `src/app/admin/members/page.tsx`
+- `src/lib/admin-data.ts`
+- `src/types/database.ts`
+
+---
+
 ## 2026-06-07 — نظام رفع أيقونات الأنشطة من لوحة الأدمن
 
 ### الويب — لوحة الأدمن
