@@ -9,10 +9,10 @@ export default function IndividualAppPage() {
           <Smartphone className="h-7 w-7" />
         </div>
         <h1 className="text-2xl font-extrabold text-surface-900 dark:text-white">
-          لا يمكن دخول الأفراد من هنا
+          هذا الموقع مخصص للأعمال فقط
         </h1>
         <p className="mt-3 leading-7 text-surface-500 dark:text-surface-400">
-          هذا الموقع مخصص للمنشآت ولوحة التحكم. لدخول حساب الأفراد، حمّل تطبيق مُسند واستخدمه من الجوال.
+          يرجى استخدام التطبيق للوصول إلى حسابك. حمّل تطبيق مُسند من متجر التطبيقات.
         </p>
         <Link href="/sign-in" className="btn-secondary mt-6 inline-flex w-full justify-center">
           العودة لتسجيل الدخول

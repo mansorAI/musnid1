@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-06-08 — ملخص اليوم الكامل في لوحة التحكم وربطها بالموبايل
+
+### 1. إعدادات التاريخ والوقت
+- تحديث صفحة `/admin/display-config` لدعم:
+  - `showDateButton`
+  - `showTimeButton`
+- وضع الخيارين في قسم مستقل باسم **أزرار الحجز**.
+- تحديث `DisplayConfigFields` و`DISPLAY_KEYS` وحفظ القيم داخل `product_display_config`.
+- قيود الأدمن أصبحت تحدد ما إذا كان صاحب المنشأة يستطيع إظهار زر التاريخ أو الوقت في الكاشير وزون.
+
+### 2. التحكم بشكل كارت المنتج
+- إضافة إعدادات شكل الكارت:
+  - `showGridLayout`
+  - `showListLayout`
+- وضعها في قسم مستقل باسم **شكل الكارت**.
+- إعدادات القسم أو النشاط تحدد أشكال الكروت المتاحة لصاحب المنشأة.
+- الموبايل يطبق اختيار صاحب المنشأة على الكاشير وزون مع احترام قيود الأدمن.
+
+### 3. الربط مع مشروع الموبايل
+- إعدادات المواعيد تُحفظ في `businesses.bot_settings.product_display_config`.
+- زون يعرض فقط التواريخ والأوقات التي يحددها صاحب المنشأة.
+- شكل كارت زون يتبع اختيار صاحب المنشأة من الأشكال التي سمح بها الأدمن.
+- إضافة صورة المتجر تمت في الموبايل وتظهر بجانب اسم المنشأة داخل نشاط زون.
+
+### الملفات المعدلة
+- `src/app/admin/display-config/page.tsx`
+- `src/app/admin/display-config/actions.ts`
+- `PROGRESS.md`
+
+### التحقق والنشر
+- التغييرات مرفوعة في:
+  - `73fa47d feat: add showDateButton and showTimeButton to admin display-config panel`
+  - `064cc2e feat: add card layout (grid/list) controls to admin display-config panel`
+- فرع الويب `main` متزامن مع `origin/main` ✅
+
+---
+
 ## 2026-06-08 — ميزة الحجز: showDateButton + showTimeButton في لوحة التحكم
 
 ### `src/app/admin/display-config/page.tsx`
