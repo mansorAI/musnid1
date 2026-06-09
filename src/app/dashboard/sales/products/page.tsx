@@ -4,6 +4,7 @@ import { getBusinessOffers, getSalesProductsData } from "@/lib/dashboard-data";
 import { cn } from "@/lib/utils";
 import { calculateInvoiceTotals } from "@/lib/zatca";
 import { addOffer, addSalesCategory, addSalesProduct, deleteOffer, deleteSalesProduct, issueProductInvoice, toggleOfferVisibility } from "../actions";
+import { ProductGalleryButton } from "./product-gallery";
 
 const sar = new Intl.NumberFormat("ar-SA", { style: "currency", currency: "SAR" });
 
@@ -104,9 +105,12 @@ export default async function SalesProductsPage({ searchParams }: ProductsPagePr
         <div className="divide-y divide-surface-200/50 dark:divide-surface-700/30">
           {filteredProducts.map((product) => (
             <div key={product.id} className="grid items-center gap-3 p-5 md:grid-cols-[1fr_120px_110px_auto]">
-              <div>
+              <div className="flex flex-col gap-1">
                 <p className="font-bold text-surface-900 dark:text-white">{product.name}</p>
                 <p className="text-sm text-surface-500 dark:text-surface-400">{sar.format(product.price)}</p>
+                {data.showImageGallery && product.images?.length ? (
+                  <ProductGalleryButton images={product.images} name={product.name} />
+                ) : null}
               </div>
               <input
                 name={`qty_${product.id}`}
@@ -161,7 +165,7 @@ export default async function SalesProductsPage({ searchParams }: ProductsPagePr
       </form>
 
       <aside className="space-y-4">
-        <form action={addSalesProduct} className="glass-card space-y-4 p-6">
+        <form action={addSalesProduct} encType="multipart/form-data" className="glass-card space-y-4 p-6">
           <h2 className="text-lg font-bold text-surface-900 dark:text-white">إضافة منتج سريع</h2>
           <input name="name" required placeholder="اسم المنتج" className="w-full rounded-xl border border-surface-200 bg-surface-50 px-4 py-3 dark:border-surface-700 dark:bg-surface-800/50" />
           <input name="price" required type="number" min="0" step="0.01" placeholder="السعر" className="w-full rounded-xl border border-surface-200 bg-surface-50 px-4 py-3 dark:border-surface-700 dark:bg-surface-800/50" />
@@ -173,6 +177,18 @@ export default async function SalesProductsPage({ searchParams }: ProductsPagePr
               </option>
             ))}
           </select>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-surface-500 dark:text-surface-400">
+              صور المنتج (اختياري — يمكن اختيار عدة صور)
+            </label>
+            <input
+              name="images"
+              type="file"
+              accept="image/*"
+              multiple
+              className="w-full rounded-xl border border-surface-200 bg-surface-50 px-3 py-2.5 text-sm text-surface-600 file:ml-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-600 dark:border-surface-700 dark:bg-surface-800/50 dark:text-surface-300"
+            />
+          </div>
           <button className="btn-secondary w-full">
             <Plus className="size-4" />
             إضافة

@@ -52,11 +52,11 @@ const demoCategories: MenuCategory[] = [
 ];
 
 const demoItems: MenuItem[] = [
-  { id: "demo-1", business_id: "demo", category_id: "demo-cat-1", name: "قهوة عربية", description: null, price: 15, image_url: null, is_available: true, display_order: 1, preparation_time_minutes: 5, calories: null, is_spicy: false, is_vegetarian: true, created_at: "", updated_at: "" },
-  { id: "demo-2", business_id: "demo", category_id: "demo-cat-1", name: "كابتشينو", description: null, price: 22, image_url: null, is_available: true, display_order: 2, preparation_time_minutes: 7, calories: null, is_spicy: false, is_vegetarian: true, created_at: "", updated_at: "" },
-  { id: "demo-3", business_id: "demo", category_id: "demo-cat-1", name: "لاتيه", description: null, price: 22, image_url: null, is_available: false, display_order: 3, preparation_time_minutes: 7, calories: null, is_spicy: false, is_vegetarian: true, created_at: "", updated_at: "" },
-  { id: "demo-4", business_id: "demo", category_id: "demo-cat-2", name: "برجر لحم", description: null, price: 45, image_url: null, is_available: true, display_order: 4, preparation_time_minutes: 15, calories: null, is_spicy: false, is_vegetarian: false, created_at: "", updated_at: "" },
-  { id: "demo-5", business_id: "demo", category_id: "demo-cat-2", name: "سندويش دجاج", description: null, price: 35, image_url: null, is_available: true, display_order: 5, preparation_time_minutes: 12, calories: null, is_spicy: false, is_vegetarian: false, created_at: "", updated_at: "" },
+  { id: "demo-1", business_id: "demo", category_id: "demo-cat-1", name: "قهوة عربية",  description: null, price: 15, image_url: null, images: null, is_available: true,  display_order: 1, preparation_time_minutes: 5,  calories: null, is_spicy: false, is_vegetarian: true,  created_at: "", updated_at: "" },
+  { id: "demo-2", business_id: "demo", category_id: "demo-cat-1", name: "كابتشينو",    description: null, price: 22, image_url: null, images: null, is_available: true,  display_order: 2, preparation_time_minutes: 7,  calories: null, is_spicy: false, is_vegetarian: true,  created_at: "", updated_at: "" },
+  { id: "demo-3", business_id: "demo", category_id: "demo-cat-1", name: "لاتيه",        description: null, price: 22, image_url: null, images: null, is_available: false, display_order: 3, preparation_time_minutes: 7,  calories: null, is_spicy: false, is_vegetarian: true,  created_at: "", updated_at: "" },
+  { id: "demo-4", business_id: "demo", category_id: "demo-cat-2", name: "برجر لحم",    description: null, price: 45, image_url: null, images: null, is_available: true,  display_order: 4, preparation_time_minutes: 15, calories: null, is_spicy: false, is_vegetarian: false, created_at: "", updated_at: "" },
+  { id: "demo-5", business_id: "demo", category_id: "demo-cat-2", name: "سندويش دجاج", description: null, price: 35, image_url: null, images: null, is_available: true,  display_order: 5, preparation_time_minutes: 12, calories: null, is_spicy: false, is_vegetarian: false, created_at: "", updated_at: "" },
 ];
 
 export function MenuAvailabilityList({ categories: rawCats, items: rawItems }: Props) {

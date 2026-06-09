@@ -24,6 +24,7 @@ export type ProductDisplayConfig = {
   cardLayout:           "grid" | "list";
   showGridLayout:       boolean;
   showListLayout:       boolean;
+  showImageGallery:     boolean;
   bookingTimeSlots:     string[];
   bookingOpenCalendar:  boolean;
   bookingAvailableDays: number[];
@@ -46,6 +47,7 @@ const DEFAULT_DISPLAY_CONFIG: ProductDisplayConfig = {
   cardLayout:           "grid",
   showGridLayout:       true,
   showListLayout:       true,
+  showImageGallery:     false,
   bookingTimeSlots:     [],
   bookingOpenCalendar:  true,
   bookingAvailableDays: [],
@@ -593,13 +595,14 @@ export async function getSalesProductsData() {
         { id: "demo-cat-2", name: "وجبات", display_order: 2 },
       ],
       products: [
-        { id: "demo-p1", name: "قهوة اليوم", price: 18, is_available: true, category_id: "demo-cat-1" },
-        { id: "demo-p2", name: "كيكة تمر", price: 26, is_available: true, category_id: "demo-cat-1" },
-        { id: "demo-p3", name: "ساندويتش دجاج", price: 32, is_available: true, category_id: "demo-cat-2" },
+        { id: "demo-p1", name: "قهوة اليوم",     price: 18, is_available: true, category_id: "demo-cat-1", images: null },
+        { id: "demo-p2", name: "كيكة تمر",        price: 26, is_available: true, category_id: "demo-cat-1", images: null },
+        { id: "demo-p3", name: "ساندويتش دجاج",  price: 32, is_available: true, category_id: "demo-cat-2", images: null },
       ],
       settings: getDefaultInvoiceSettings("مُسند"),
       settingsFallback: true,
       canManageProducts: true,
+      showImageGallery: false,
     };
   }
 
@@ -620,10 +623,14 @@ export async function getSalesProductsData() {
         price: Number(item.price),
         is_available: item.is_available,
         category_id: item.category_id,
+        images: (item as any).images as string[] | null,
       })),
     settings: settingsData.settings,
     settingsFallback: settingsData.fromFallback,
     canManageProducts: true,
+    showImageGallery: ((business.bot_settings as Record<string, unknown>)
+      ?.product_display_config as Partial<{ showImageGallery: boolean }> | null)
+      ?.showImageGallery ?? false,
   };
 }
 

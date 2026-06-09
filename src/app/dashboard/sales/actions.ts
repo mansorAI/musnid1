@@ -76,6 +76,29 @@ export async function saveInvoiceSettings(formData: FormData) {
   redirect("/dashboard/sales/settings?saved=1");
 }
 
+async function uploadProductImages(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  businessId: string,
+  productId: string,
+  files: File[],
+): Promise<string[]> {
+  const urls: string[] = [];
+  for (const file of files) {
+    if (!file.size) continue;
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const path = `${businessId}/products/${productId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const { error } = await supabase.storage.from("menu-images").upload(path, bytes, {
+      contentType: file.type || "image/jpeg",
+      upsert: false,
+    });
+    if (error) continue;
+    const { data } = supabase.storage.from("menu-images").getPublicUrl(path);
+    urls.push(data.publicUrl);
+  }
+  return urls;
+}
+
 export async function addSalesProduct(formData: FormData) {
   const { business, supabase } = await requireBusiness("/dashboard/sales/products");
   const name = String(formData.get("name") ?? "").trim();
@@ -95,16 +118,24 @@ export async function addSalesProduct(formData: FormData) {
     if (!category) redirect("/dashboard/sales/products?error=category");
   }
 
-  const { error } = await supabase.from("menu_items").insert({
+  const { data: inserted, error } = await supabase.from("menu_items").insert({
     business_id: business.id,
     category_id: categoryId,
     name,
     price,
     is_available: true,
     display_order: 0,
-  });
+  }).select("id").single();
 
-  if (error) redirect("/dashboard/sales/products?error=product");
+  if (error || !inserted) redirect("/dashboard/sales/products?error=product");
+
+  const imageFiles = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
+  if (imageFiles.length > 0) {
+    const urls = await uploadProductImages(supabase, business.id, inserted.id, imageFiles);
+    if (urls.length > 0) {
+      await (supabase as any).from("menu_items").update({ images: urls, image_url: urls[0] }).eq("id", inserted.id);
+    }
+  }
 
   revalidatePath("/dashboard/sales/products");
   redirect("/dashboard/sales/products");
@@ -320,6 +351,7 @@ export async function saveProductDisplayConfig(formData: FormData) {
     cardLayout:          (formData.get("cardLayout") as "grid" | "list") ?? "grid",
     showGridLayout:       formData.get("showGridLayout")      === "on",
     showListLayout:       formData.get("showListLayout")      === "on",
+    showImageGallery:     formData.get("showImageGallery")    === "on",
     bookingDateMode:     (formData.get("bookingDateMode") as "open" | "selected" | "range") ?? "open",
     bookingOpenCalendar:  formData.get("bookingDateMode") === "open",
     bookingAvailableDays: [0,1,2,3,4,5,6].filter((d) => formData.get(`day_${d}`) === "on"),

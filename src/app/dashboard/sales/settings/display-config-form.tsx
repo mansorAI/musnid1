@@ -19,6 +19,7 @@ const TOGGLE_OPTIONS: {
   { key: "bookingButton",      label: "زر حجز",           desc: "يستبدل أزرار الكمية بزر حجز واحد" },
   { key: "showDateButton",     label: "زر التاريخ",       desc: "تقويم لاختيار يوم الحجز" },
   { key: "showTimeButton",     label: "زر الوقت",         desc: "منتقي الأوقات المتاحة" },
+  { key: "showImageGallery",   label: "تصفح الصور",       desc: "أيقونة صور على الكارت تفتح معرض الصور" },
 ];
 
 const DAYS = ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];

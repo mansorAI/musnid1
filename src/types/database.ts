@@ -145,6 +145,7 @@ export type Database = {
           description: string | null;
           price: number;
           image_url: string | null;
+          images: string[] | null;
           is_available: boolean;
           display_order: number;
           preparation_time_minutes: number | null;

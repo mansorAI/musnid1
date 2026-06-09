@@ -10,9 +10,10 @@ type DisplayKey =
   | "showImage" | "showPrice" | "showDescription" | "showLocation"
   | "showContactActions" | "showQtyControls" | "bookingButton"
   | "showDateButton" | "showTimeButton"
-  | "showGridLayout" | "showListLayout";
+  | "showGridLayout" | "showListLayout"
+  | "showImageGallery";
 
-const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" | "booking" }[] = [
+const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" | "booking" | "gallery" }[] = [
   { key: "showImage",          label: "عرض الصورة" },
   { key: "showPrice",          label: "عرض السعر" },
   { key: "showDescription",    label: "وصف المنتج" },
@@ -20,10 +21,11 @@ const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" | "boo
   { key: "showContactActions", label: "مكالمة/واتساب" },
   { key: "showQtyControls",    label: "أزرار الكمية" },
   { key: "bookingButton",      label: "زر الحجز" },
-  { key: "showDateButton",     label: "زر التاريخ 📅",  group: "booking" },
-  { key: "showTimeButton",     label: "زر الوقت 🕐",    group: "booking" },
-  { key: "showGridLayout",     label: "كارت مربع ⊞",    group: "layout" },
-  { key: "showListLayout",     label: "كارت مستطيل ☰", group: "layout" },
+  { key: "showDateButton",     label: "زر التاريخ 📅",    group: "booking" },
+  { key: "showTimeButton",     label: "زر الوقت 🕐",      group: "booking" },
+  { key: "showGridLayout",     label: "كارت مربع ⊞",      group: "layout" },
+  { key: "showListLayout",     label: "كارت مستطيل ☰",   group: "layout" },
+  { key: "showImageGallery",   label: "تصفح الصور 🖼",    group: "gallery" },
 ];
 
 type DisplayConfig = Record<DisplayKey, boolean>;
@@ -50,6 +52,7 @@ function ConfigCheckboxes({
   const mainOpts    = DISPLAY_OPTIONS.filter((o) => !o.group);
   const bookingOpts = DISPLAY_OPTIONS.filter((o) => o.group === "booking");
   const layoutOpts  = DISPLAY_OPTIONS.filter((o) => o.group === "layout");
+  const galleryOpts = DISPLAY_OPTIONS.filter((o) => o.group === "gallery");
 
   const renderOpt = (opt: (typeof DISPLAY_OPTIONS)[number]) => {
     const checked = config != null ? (config[opt.key] ?? false) : (inherited?.[opt.key] ?? true);
@@ -92,6 +95,12 @@ function ConfigCheckboxes({
         <p className="text-xs text-surface-400 dark:text-surface-500 mb-2 text-right">شكل الكارت</p>
         <div className="flex gap-2">
           {layoutOpts.map(renderOpt)}
+        </div>
+      </div>
+      <div className="border-t dark:border-surface-700 pt-3">
+        <p className="text-xs text-surface-400 dark:text-surface-500 mb-2 text-right">معرض الصور</p>
+        <div className="flex gap-2">
+          {galleryOpts.map(renderOpt)}
         </div>
       </div>
     </div>
