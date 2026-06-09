@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { businessTypeLabels } from "@/lib/demo-data";
-import { getCurrentBusiness, getAllBusinesses, getMarketplaceVisibility } from "@/lib/dashboard-data";
+import { getCurrentBusiness, getAllBusinesses, getMarketplaceVisibility, getBusinessFeatures } from "@/lib/dashboard-data";
 import type { BusinessType } from "@/types";
 
 const businessTypes = Object.entries(businessTypeLabels) as [BusinessType, string][];
@@ -31,11 +31,17 @@ type SettingsPageProps = {
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const params = await searchParams;
-  const [business, businesses, marketplace] = await Promise.all([
+  const [business, businesses, marketplace, features] = await Promise.all([
     getCurrentBusiness(),
     getAllBusinesses(),
     getMarketplaceVisibility(),
+    getBusinessFeatures(),
   ]);
+
+  const noRestriction  = features.size === 0;
+  const hasSales       = noRestriction || features.has("sales") || features.has("invoices");
+  const hasMarketplace = noRestriction || features.has("marketplace");
+  const hasAddBiz      = noRestriction || features.has("add_business");
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
@@ -93,14 +99,16 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               );
             })}
 
-            {/* بطاقة إضافة نشاط جديد */}
-            <a
-              href="#add-business"
-              className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-surface-300 dark:border-surface-600 p-4 text-surface-400 dark:text-surface-500 hover:border-primary-400 hover:text-primary-500 dark:hover:border-primary-500 dark:hover:text-primary-400 transition-colors min-h-[80px]"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="text-sm font-semibold">إضافة نشاط</span>
-            </a>
+            {/* بطاقة إضافة نشاط جديد — تظهر فقط مع خاصية add_business */}
+            {hasAddBiz ? (
+              <a
+                href="#add-business"
+                className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-surface-300 dark:border-surface-600 p-4 text-surface-400 dark:text-surface-500 hover:border-primary-400 hover:text-primary-500 dark:hover:border-primary-500 dark:hover:text-primary-400 transition-colors min-h-[80px]"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="text-sm font-semibold">إضافة نشاط</span>
+              </a>
+            ) : null}
           </div>
         </div>
       </div>
@@ -153,21 +161,24 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </div>
       </div>
 
-      <Link
-        href="/dashboard/sales"
-        className="glass-card flex items-center justify-between gap-4 p-6 transition-colors hover:bg-surface-50 dark:hover:bg-surface-800/30"
-      >
-        <div>
-          <h2 className="text-lg font-bold text-surface-900 dark:text-white">المبيعات والفوترة</h2>
-          <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
-            كاشير المنتجات، الفواتير، إعدادات VAT وZATCA Phase 1.
-          </p>
-        </div>
-        <div className="flex size-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
-          <ReceiptText className="size-5" />
-        </div>
-      </Link>
+      {hasSales ? (
+        <Link
+          href="/dashboard/sales"
+          className="glass-card flex items-center justify-between gap-4 p-6 transition-colors hover:bg-surface-50 dark:hover:bg-surface-800/30"
+        >
+          <div>
+            <h2 className="text-lg font-bold text-surface-900 dark:text-white">المبيعات والفوترة</h2>
+            <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+              كاشير المنتجات، الفواتير، إعدادات VAT وZATCA Phase 1.
+            </p>
+          </div>
+          <div className="flex size-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
+            <ReceiptText className="size-5" />
+          </div>
+        </Link>
+      ) : null}
 
+      {hasMarketplace ? (
       <div className="glass-card overflow-hidden">
         <div className="flex items-center justify-between gap-4 border-b border-surface-200/50 p-6 dark:border-surface-700/30">
           <div className="text-right">
@@ -227,6 +238,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           </form>
         </div>
       </div>
+      ) : null}
 
       <div className="glass-card overflow-hidden">
         <div className="p-6 border-b border-surface-200/50 dark:border-surface-700/30">
@@ -240,48 +252,50 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </div>
       </div>
 
-      <div id="add-business" className="glass-card overflow-hidden">
-        <div className="p-6 border-b border-surface-200/50 dark:border-surface-700/30">
-          <h2 className="text-lg font-bold text-surface-900 dark:text-white">إضافة نشاط جديد</h2>
+      {hasAddBiz ? (
+        <div id="add-business" className="glass-card overflow-hidden">
+          <div className="p-6 border-b border-surface-200/50 dark:border-surface-700/30">
+            <h2 className="text-lg font-bold text-surface-900 dark:text-white">إضافة نشاط جديد</h2>
+          </div>
+          <div className="p-6">
+            {params?.error ? (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-7 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                تعذر حفظ النشاط. تأكد من تسجيل الدخول وتطبيق قاعدة البيانات الجديدة.
+              </div>
+            ) : null}
+            <form action={createBusiness} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-surface-700 dark:text-surface-300">اسم النشاط</Label>
+                <Input id="name" name="name" placeholder="مثال: عيادة النخبة" className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="business_type" className="text-surface-700 dark:text-surface-300">نوع النشاط</Label>
+                <Select name="business_type" defaultValue="services">
+                  <SelectTrigger id="business_type" className="w-full rounded-xl">
+                    <SelectValue placeholder="اختر نوع النشاط" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {businessTypes.map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="city" className="text-surface-700 dark:text-surface-300">المدينة</Label>
+                <Input id="city" name="city" placeholder="الرياض" className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="whatsapp_number" className="text-surface-700 dark:text-surface-300">رقم WhatsApp</Label>
+                <Input id="whatsapp_number" name="whatsapp_number" dir="ltr" placeholder="+9665..." className={inputClass} />
+              </div>
+              <SubmitButton pendingText="جاري الحفظ..." className="btn-primary w-full mt-2">
+                حفظ النشاط
+              </SubmitButton>
+            </form>
+          </div>
         </div>
-        <div className="p-6">
-          {params?.error ? (
-            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-7 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-              تعذر حفظ النشاط. تأكد من تسجيل الدخول وتطبيق قاعدة البيانات الجديدة.
-            </div>
-          ) : null}
-          <form action={createBusiness} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-surface-700 dark:text-surface-300">اسم النشاط</Label>
-              <Input id="name" name="name" placeholder="مثال: عيادة النخبة" className={inputClass} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="business_type" className="text-surface-700 dark:text-surface-300">نوع النشاط</Label>
-              <Select name="business_type" defaultValue="services">
-                <SelectTrigger id="business_type" className="w-full rounded-xl">
-                  <SelectValue placeholder="اختر نوع النشاط" />
-                </SelectTrigger>
-                <SelectContent>
-                  {businessTypes.map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="city" className="text-surface-700 dark:text-surface-300">المدينة</Label>
-              <Input id="city" name="city" placeholder="الرياض" className={inputClass} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="whatsapp_number" className="text-surface-700 dark:text-surface-300">رقم WhatsApp</Label>
-              <Input id="whatsapp_number" name="whatsapp_number" dir="ltr" placeholder="+9665..." className={inputClass} />
-            </div>
-            <SubmitButton pendingText="جاري الحفظ..." className="btn-primary w-full mt-2">
-              حفظ النشاط
-            </SubmitButton>
-          </form>
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }

@@ -16,10 +16,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ]);
 
   const noRestriction = features.size === 0;
-  const hasBot      = noRestriction || features.has("whatsapp_bot");
-  const hasSales    = noRestriction || features.has("sales");
-  const hasStaff    = noRestriction || features.has("staff");
-  const hasCustomers = hasBot || features.has("marketplace");
+  const hasBot        = noRestriction || features.has("whatsapp_bot");
+  const hasSales      = noRestriction || features.has("sales") || features.has("invoices");
+  const hasStaff      = noRestriction || features.has("staff");
+  const hasServices   = noRestriction || features.has("whatsapp_bot") || features.has("marketplace") || features.has("bookings");
+  const hasMarketplace = noRestriction || features.has("marketplace");
+  const hasCustomers  = hasBot || hasSales || hasMarketplace;
 
   const coreNav = [
     { href: "/dashboard",               label: "الرئيسية",  icon: LayoutDashboard,    show: true },
@@ -36,7 +38,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       : business?.type === "clinic" || business?.type === "salon"
         ? [
             { href: "/dashboard/staff",    label: "الفريق",    icon: UserCheck,        show: hasStaff },
-            { href: "/dashboard/services", label: "الخدمات",   icon: Wrench,           show: hasStaff },
+            { href: "/dashboard/services", label: "الخدمات",   icon: Wrench,           show: hasServices },
           ]
         : [];
 
