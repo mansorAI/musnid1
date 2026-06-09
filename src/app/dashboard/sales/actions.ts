@@ -304,6 +304,51 @@ export async function toggleOfferVisibility(formData: FormData) {
   revalidatePath("/dashboard/sales/products");
 }
 
+export async function saveProductDisplayConfig(formData: FormData) {
+  const { business, supabase } = await requireBusiness("/dashboard/sales/settings");
+
+  const cfg = {
+    showImage:            formData.get("showImage")          === "on",
+    showPrice:            formData.get("showPrice")          === "on",
+    showDescription:      formData.get("showDescription")    === "on",
+    showLocation:         formData.get("showLocation")       === "on",
+    showContactActions:   formData.get("showContactActions") === "on",
+    showQtyControls:      formData.get("showQtyControls")    === "on",
+    bookingButton:        formData.get("bookingButton")       === "on",
+    showDateButton:       formData.get("showDateButton")      === "on",
+    showTimeButton:       formData.get("showTimeButton")      === "on",
+    cardLayout:          (formData.get("cardLayout") as "grid" | "list") ?? "grid",
+    showGridLayout:       formData.get("showGridLayout")      === "on",
+    showListLayout:       formData.get("showListLayout")      === "on",
+    bookingDateMode:     (formData.get("bookingDateMode") as "open" | "selected" | "range") ?? "open",
+    bookingOpenCalendar:  formData.get("bookingDateMode") === "open",
+    bookingAvailableDays: [0,1,2,3,4,5,6].filter((d) => formData.get(`day_${d}`) === "on"),
+    bookingSelectedDates: String(formData.get("bookingSelectedDates") ?? "")
+      .split("\n").map((s) => s.trim()).filter(Boolean),
+    bookingRangeStart: String(formData.get("bookingRangeStart") ?? "").trim() || null,
+    bookingRangeEnd:   String(formData.get("bookingRangeEnd")   ?? "").trim() || null,
+    bookingTimeSlots:  String(formData.get("bookingTimeSlots")  ?? "")
+      .split("\n").map((s) => s.trim()).filter(Boolean),
+  };
+
+  const botSettings = (business.bot_settings as Record<string, unknown>) ?? {};
+
+  const rpcResult = await (supabase as any).rpc("set_product_display_config", {
+    p_business_id: business.id,
+    p_config: cfg,
+  });
+
+  if (rpcResult.error) {
+    await supabase.from("businesses").update({
+      bot_settings: { ...botSettings, product_display_config: cfg },
+    }).eq("id", business.id);
+  }
+
+  revalidatePath("/dashboard/sales/settings");
+  revalidatePath("/dashboard/sales/products");
+  redirect("/dashboard/sales/settings?tab=display&saved=1");
+}
+
 export async function deleteOffer(formData: FormData) {
   const { business, supabase } = await requireBusiness("/dashboard/sales/products");
   const offerId = String(formData.get("offer_id") ?? "").trim();

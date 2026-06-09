@@ -11,6 +11,78 @@ export type FeatureKey =
   | "whatsapp_bot" | "sales" | "invoices" | "marketplace"
   | "bookings" | "staff" | "add_business";
 
+export type ProductDisplayConfig = {
+  showImage:            boolean;
+  showPrice:            boolean;
+  showDescription:      boolean;
+  showLocation:         boolean;
+  showContactActions:   boolean;
+  showQtyControls:      boolean;
+  bookingButton:        boolean;
+  showDateButton:       boolean;
+  showTimeButton:       boolean;
+  cardLayout:           "grid" | "list";
+  showGridLayout:       boolean;
+  showListLayout:       boolean;
+  bookingTimeSlots:     string[];
+  bookingOpenCalendar:  boolean;
+  bookingAvailableDays: number[];
+  bookingDateMode:      "open" | "selected" | "range";
+  bookingSelectedDates: string[];
+  bookingRangeStart:    string | null;
+  bookingRangeEnd:      string | null;
+};
+
+const DEFAULT_DISPLAY_CONFIG: ProductDisplayConfig = {
+  showImage:            true,
+  showPrice:            true,
+  showDescription:      false,
+  showLocation:         false,
+  showContactActions:   true,
+  showQtyControls:      true,
+  bookingButton:        false,
+  showDateButton:       false,
+  showTimeButton:       false,
+  cardLayout:           "grid",
+  showGridLayout:       true,
+  showListLayout:       true,
+  bookingTimeSlots:     [],
+  bookingOpenCalendar:  true,
+  bookingAvailableDays: [],
+  bookingDateMode:      "open",
+  bookingSelectedDates: [],
+  bookingRangeStart:    null,
+  bookingRangeEnd:      null,
+};
+
+export async function getProductDisplayData(): Promise<{
+  config: ProductDisplayConfig;
+  constraints: Partial<ProductDisplayConfig> | null;
+}> {
+  if (!hasSupabaseEnv()) return { config: { ...DEFAULT_DISPLAY_CONFIG }, constraints: null };
+  const business = await getCurrentBusiness();
+  if (!business) return { config: { ...DEFAULT_DISPLAY_CONFIG }, constraints: null };
+
+  const supabase = await createClient();
+  const botSettings = (business.bot_settings as Record<string, unknown>) ?? {};
+  const saved = (botSettings.product_display_config as Partial<ProductDisplayConfig> | null) ?? null;
+  const config: ProductDisplayConfig = { ...DEFAULT_DISPLAY_CONFIG, ...(saved ?? {}) };
+
+  const db = supabase as any;
+  const { data: mapping } = await db
+    .from("business_category_mapping")
+    .select("store_categories:category_id (product_display_config)")
+    .eq("business_id", business.id)
+    .maybeSingle();
+
+  const cat = mapping
+    ? (Array.isArray(mapping.store_categories) ? mapping.store_categories[0] : mapping.store_categories)
+    : null;
+  const constraints = (cat?.product_display_config ?? null) as Partial<ProductDisplayConfig> | null;
+
+  return { config, constraints };
+}
+
 export async function getBusinessFeatures(): Promise<Set<FeatureKey>> {
   if (!hasSupabaseEnv()) return new Set();
 
