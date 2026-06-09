@@ -143,6 +143,68 @@ export async function updateWhatsappNumber(formData: FormData) {
   redirect("/dashboard/settings?whatsapp=updated");
 }
 
+export async function updateBusinessInfo(formData: FormData) {
+  const { supabase, userId } = await getUserId();
+
+  const cookieStore = await cookies();
+  const bizId = cookieStore.get(BIZ_COOKIE)?.value;
+  let targetBizId = bizId;
+  if (!targetBizId) {
+    const { data: first } = await supabase.from("businesses").select("id").eq("owner_id", userId).order("created_at", { ascending: true }).limit(1).maybeSingle();
+    targetBizId = first?.id;
+  }
+  if (!targetBizId) redirect("/dashboard/settings?tab=info&error=biz");
+
+  const { data: biz } = await supabase.from("businesses").select("bot_settings").eq("id", targetBizId).single();
+  const currentBot = (biz?.bot_settings ?? {}) as Record<string, unknown>;
+
+  const g = (key: string) => String(formData.get(key) ?? "").trim() || null;
+
+  const botSettings = {
+    ...currentBot,
+    contact_whatsapp: g("contact_whatsapp"),
+    public_location_url: g("address"),
+    bot_name:    g("bot_name"),
+    personality: g("personality"),
+    dialect:     g("dialect"),
+  };
+
+  const adminSupabase = createAdminClient();
+  const { error } = await adminSupabase.from("businesses").update({
+    name:          String(formData.get("name") ?? "").trim() || undefined,
+    city:          g("city"),
+    address:       g("address"),
+    contact_phone: g("contact_phone"),
+    contact_email: g("contact_email"),
+    description:   g("description"),
+    whatsapp_number: g("whatsapp_number"),
+    bot_settings:  botSettings as never,
+  }).eq("id", targetBizId).eq("owner_id", userId);
+
+  if (error) {
+    console.error("updateBusinessInfo error:", error);
+    redirect("/dashboard/settings?tab=info&error=save");
+  }
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard/settings?tab=info&saved=1");
+}
+
+export async function setStaffZoneVisibility(formData: FormData) {
+  const { supabase, userId } = await getUserId();
+  const visible = String(formData.get("visible") ?? "") === "1";
+
+  const { data: business } = await supabase.from("businesses").select("id").eq("owner_id", userId).order("created_at", { ascending: true }).limit(1).maybeSingle();
+  if (!business) redirect("/dashboard/settings?tab=info&error=biz");
+
+  const db = supabase as any;
+  const { error } = await db.from("business_category_mapping").update({ show_staff: visible }).eq("business_id", business.id);
+  if (error) redirect("/dashboard/settings?tab=info&error=staff_zone");
+
+  revalidatePath("/dashboard/settings");
+  redirect(`/dashboard/settings?tab=info&staff_zone=${visible ? "shown" : "hidden"}`);
+}
+
 export async function setMarketplaceVisibility(formData: FormData) {
   const { supabase, userId } = await getUserId();
   const enabled = String(formData.get("enabled") ?? "") === "1";

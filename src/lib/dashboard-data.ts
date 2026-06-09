@@ -303,6 +303,21 @@ export async function getStaffData() {
   return { staff: data ?? [], businessId: business.id };
 }
 
+export async function getZoneMappingData() {
+  const business = await getCurrentBusiness();
+  if (!business) return { isPublic: false, showStaff: false };
+
+  const supabase = await createClient();
+  const db = supabase as any;
+  const { data } = await db
+    .from("business_category_mapping")
+    .select("is_public, show_staff")
+    .eq("business_id", business.id)
+    .maybeSingle();
+
+  return { isPublic: data?.is_public ?? false, showStaff: data?.show_staff ?? false };
+}
+
 export async function getUpcomingAppointments() {
   const business = await getCurrentBusiness();
   if (!business) return [];
