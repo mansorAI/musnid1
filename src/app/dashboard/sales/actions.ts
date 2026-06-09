@@ -129,12 +129,24 @@ export async function addSalesProduct(formData: FormData) {
 
   if (error || !inserted) redirect("/dashboard/sales/products?error=product");
 
-  const imageFiles = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
-  if (imageFiles.length > 0) {
-    const urls = await uploadProductImages(supabase, business.id, inserted.id, imageFiles);
-    if (urls.length > 0) {
-      await (supabase as any).from("menu_items").update({ images: urls, image_url: urls[0] }).eq("id", inserted.id);
-    }
+  const mainImageFile = formData.get("image");
+  const galleryFiles = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
+
+  let imageUrlValue: string | null = null;
+  if (mainImageFile instanceof File && mainImageFile.size > 0) {
+    const urls = await uploadProductImages(supabase, business.id, inserted.id, [mainImageFile]);
+    if (urls.length > 0) imageUrlValue = urls[0];
+  }
+
+  const galleryUrls = galleryFiles.length > 0
+    ? await uploadProductImages(supabase, business.id, inserted.id, galleryFiles)
+    : [];
+
+  if (imageUrlValue || galleryUrls.length > 0) {
+    await (supabase as any).from("menu_items").update({
+      ...(imageUrlValue ? { image_url: imageUrlValue } : {}),
+      ...(galleryUrls.length > 0 ? { images: galleryUrls } : {}),
+    }).eq("id", inserted.id);
   }
 
   revalidatePath("/dashboard/sales/products");

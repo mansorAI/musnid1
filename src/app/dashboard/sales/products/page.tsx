@@ -179,7 +179,18 @@ export default async function SalesProductsPage({ searchParams }: ProductsPagePr
           </select>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-surface-500 dark:text-surface-400">
-              صور المنتج (اختياري — يمكن اختيار عدة صور)
+              صورة المنتج (اختياري)
+            </label>
+            <input
+              name="image"
+              type="file"
+              accept="image/*"
+              className="w-full rounded-xl border border-surface-200 bg-surface-50 px-3 py-2.5 text-sm text-surface-600 file:ml-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-600 dark:border-surface-700 dark:bg-surface-800/50 dark:text-surface-300"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-surface-500 dark:text-surface-400">
+              تصفح الصور (اختياري — عدة صور للمعرض)
             </label>
             <input
               name="images"
