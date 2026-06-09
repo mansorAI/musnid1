@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, Eye, EyeOff, FolderPlus, Plus, ReceiptText, Tag, Trash2 } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, FolderPlus, Plus, ReceiptText, Settings2, Tag, Trash2 } from "lucide-react";
 import { getBusinessOffers, getSalesProductsData } from "@/lib/dashboard-data";
 import { cn } from "@/lib/utils";
 import { calculateInvoiceTotals } from "@/lib/zatca";
@@ -25,9 +25,18 @@ export default async function SalesProductsPage({ searchParams }: ProductsPagePr
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <section className="lg:col-span-2">
-        <p className="text-sm text-surface-500 dark:text-surface-400">كاشير المنتجات</p>
-        <h1 className="text-2xl font-extrabold text-surface-900 dark:text-white">إصدار فاتورة من المنتجات</h1>
+      <section className="flex items-start justify-between lg:col-span-2">
+        <Link
+          href="/dashboard/sales/settings?tab=display"
+          className="flex items-center gap-2 rounded-xl border border-surface-200 bg-white px-4 py-2.5 text-sm font-medium text-surface-600 transition-colors hover:border-primary-300 hover:text-primary-600 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-300 dark:hover:border-primary-700 dark:hover:text-primary-400"
+        >
+          <Settings2 className="size-4" />
+          إعداد العرض
+        </Link>
+        <div className="text-right">
+          <p className="text-sm text-surface-500 dark:text-surface-400">كاشير المنتجات</p>
+          <h1 className="text-2xl font-extrabold text-surface-900 dark:text-white">إصدار فاتورة من المنتجات</h1>
+        </div>
       </section>
 
       <section className="glass-card space-y-4 p-5 lg:col-span-2">
