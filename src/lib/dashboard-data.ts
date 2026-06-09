@@ -2,12 +2,49 @@
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { automationRules, recentConversations } from "@/lib/demo-data";
-import { scoreTasks, type PersonalTaskLike } from "@/lib/task-engine";
 import { getDefaultInvoiceSettings, parseInvoiceSettings } from "@/lib/zatca";
-import type { TaskContextTag } from "@/types";
 import type { Database } from "@/types/database";
 
 type BusinessType = Database["public"]["Enums"]["business_type"];
+
+export type FeatureKey =
+  | "whatsapp_bot" | "sales" | "invoices" | "marketplace"
+  | "bookings" | "staff" | "add_business";
+
+export async function getBusinessFeatures(): Promise<Set<FeatureKey>> {
+  if (!hasSupabaseEnv()) return new Set();
+
+  const business = await getCurrentBusiness();
+  if (!business) return new Set();
+
+  const supabase = await createClient();
+  const [subResult, directResult] = await Promise.all([
+    supabase
+      .from("business_subscriptions")
+      .select("plan_id")
+      .eq("business_id", business.id)
+      .in("status", ["active", "trial"])
+      .maybeSingle(),
+    supabase
+      .from("business_features")
+      .select("feature_key")
+      .eq("business_id", business.id),
+  ]);
+
+  const features = new Set<FeatureKey>();
+
+  if (subResult.data?.plan_id) {
+    const { data: planFeats } = await supabase
+      .from("plan_features")
+      .select("feature_key")
+      .eq("plan_id", subResult.data.plan_id);
+    (planFeats ?? []).forEach(({ feature_key }) => features.add(feature_key as FeatureKey));
+  }
+
+  (directResult.data ?? []).forEach(({ feature_key }) => features.add(feature_key as FeatureKey));
+
+  return features;
+}
 
 const MARKETPLACE_CATEGORY_BY_TYPE: Partial<Record<BusinessType, string>> = {
   restaurant: "مطاعم",
@@ -345,116 +382,6 @@ export async function getConversations() {
   });
 }
 
-export async function getTasksData() {
-  if (!hasSupabaseEnv()) {
-    const demoTasks: PersonalTaskLike[] = [
-      {
-        id: "demo-task-1",
-        title: "اتصل على مورد القهوة لتأكيد الطلب",
-        context_tag: "calls",
-        base_weight: 1.1,
-        energy_required: 0.55,
-        days_delayed: 2,
-        suppression_factor: 1,
-        time_windows: [{ start_time: "09:00:00", end_time: "13:00:00" }],
-      },
-      {
-        id: "demo-task-2",
-        title: "راجع رسائل العملاء التي تحتاج تصعيد",
-        context_tag: "mail",
-        base_weight: 0.9,
-        energy_required: 0.45,
-        days_delayed: 0,
-        suppression_factor: 1,
-      },
-      {
-        id: "demo-task-3",
-        title: "مر على البنك لتحديث بيانات الحساب",
-        context_tag: "errands",
-        base_weight: 1.2,
-        energy_required: 0.7,
-        days_delayed: 3,
-        suppression_factor: 0.9,
-        time_windows: [{ start_time: "10:00:00", end_time: "15:00:00" }],
-      },
-    ];
-
-    const scored = scoreTasks(demoTasks, {
-      currentHour: new Date().getHours(),
-      currentEnergy: 0.55,
-    });
-
-    return { ...scored, currentEnergy: 0.55, businessId: null, userId: null, demo: true };
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { surfacing: [], hidden: [], currentEnergy: 0.5, businessId: null, userId: null, demo: false };
-
-  const currentHour = new Date().getHours();
-  const [tasksResult, energyResult, lastResult] = await Promise.all([
-    supabase
-      .from("personal_tasks")
-      .select("*, task_time_windows(start_time,end_time), task_suppression_factors(factor)")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("user_energy_map")
-      .select("energy_level,sample_count")
-      .eq("user_id", user.id)
-      .eq("hour", currentHour)
-      .maybeSingle(),
-    supabase
-      .from("task_surface_log")
-      .select("context_tag,created_at")
-      .eq("user_id", user.id)
-      .eq("outcome", "done")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  const currentEnergy =
-    energyResult.data && energyResult.data.sample_count >= 5
-      ? Number(energyResult.data.energy_level)
-      : 0.5;
-
-  type TaskJoinRow = {
-    id: string;
-    title: string;
-    context_tag: TaskContextTag;
-    base_weight: number;
-    energy_required: number;
-    days_delayed: number;
-    task_time_windows?: { start_time: string; end_time: string }[] | null;
-    task_suppression_factors?: { factor: number }[] | null;
-  };
-
-  const rows = (tasksResult.data ?? []) as TaskJoinRow[];
-  const tasks: PersonalTaskLike[] = rows.map((task) => ({
-    id: task.id,
-    title: task.title,
-    context_tag: task.context_tag,
-    base_weight: Number(task.base_weight),
-    energy_required: Number(task.energy_required),
-    days_delayed: task.days_delayed,
-    suppression_factor: task.task_suppression_factors?.[0]?.factor ?? 1,
-    time_windows: task.task_time_windows ?? [],
-  }));
-
-  const scored = scoreTasks(tasks, {
-    currentHour,
-    currentEnergy,
-    lastCompletedTag: lastResult.data?.context_tag as TaskContextTag | undefined,
-    lastCompletedAt: lastResult.data?.created_at ? new Date(lastResult.data.created_at) : null,
-  });
-
-  return { ...scored, currentEnergy, businessId: null, userId: user.id, demo: false };
-}
 
 export async function getInvoiceSettingsData() {
   const business = await getCurrentBusiness();

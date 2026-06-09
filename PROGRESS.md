@@ -2,6 +2,30 @@
 
 ---
 
+## 2026-06-09 — مزامنة صلاحيات الأعمال: feature gating في لوحة التحكم
+
+### ما تم
+- **`src/lib/dashboard-data.ts`**: إضافة `FeatureKey` type + `getBusinessFeatures()` function.
+  - تجمع ميزات الخطة عبر `business_subscriptions` → `plan_features`.
+  - تدمج مع الميزات المباشرة `business_features`.
+  - ترجع `Set<FeatureKey>` — فارغة إذا لم يكن هناك بيانات Supabase.
+- **`src/app/dashboard/layout.tsx`**: تحديث شريط التنقل بنفس منطق الموبايل:
+  - `noRestriction = features.size === 0` → يُظهر كل شيء (backward compatible).
+  - `hasBot` = whatsapp_bot → يُظهر: المحادثات، المواعيد، التقويم، المعرفة، الأتمتة.
+  - `hasSales` = sales → يُظهر: المبيعات.
+  - `hasCustomers` = hasBot || marketplace → يُظهر: العملاء.
+  - `hasStaff` = staff → يُظهر: الفريق والخدمات (clinic/salon).
+- **`src/app/dashboard/appointments/page.tsx`**: صفحة جديدة للمواعيد القادمة.
+  - مجمّعة بالتاريخ: اليوم، غداً، هذا الأسبوع، لاحقاً.
+  - تستخدم `getUpcomingAppointments()` الموجودة.
+  - تُعرض في شريط التنقل عند وجود `hasBot`.
+
+### القرارات التقنية
+- لا migration جديد — الجداول (`business_subscriptions`, `plan_features`, `business_features`) موجودة.
+- الـ nav items مبنية كـ array مع `show: boolean` ثم تُفلتر — أنظف من الـ conditional ternaries.
+
+---
+
 ## 2026-06-08 — ملخص اليوم الكامل في لوحة التحكم وربطها بالموبايل
 
 ### 1. إعدادات التاريخ والوقت

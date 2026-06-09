@@ -1,42 +1,52 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import {
-  Bot, BookOpenText, CalendarDays, CheckSquare, LayoutDashboard, MessageCircle,
-  MessageSquareText, ReceiptText, Settings, UserCheck, UtensilsCrossed, Users, Wrench,
+  Bot, BookOpenText, CalendarCheck, CalendarDays, LayoutDashboard,
+  MessageCircle, MessageSquareText, ReceiptText, Settings, UserCheck,
+  UtensilsCrossed, Users, Wrench,
 } from "lucide-react";
 import { signOut } from "@/app/sign-in/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { getCurrentBusiness } from "@/lib/dashboard-data";
+import { getCurrentBusiness, getBusinessFeatures } from "@/lib/dashboard-data";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-const coreNavItems = [
-  { href: "/dashboard", label: "الرئيسية", icon: LayoutDashboard },
-  { href: "/dashboard/conversations", label: "المحادثات", icon: MessageSquareText },
-  { href: "/dashboard/customers", label: "العملاء", icon: Users },
-  { href: "/dashboard/calendar", label: "التقويم", icon: CalendarDays },
-  { href: "/dashboard/sales", label: "المبيعات", icon: ReceiptText },
-  { href: "/dashboard/tasks", label: "المهام", icon: CheckSquare },
-  { href: "/dashboard/knowledge", label: "المعرفة", icon: BookOpenText },
-  { href: "/dashboard/automations", label: "الأتمتة", icon: Bot },
-  { href: "/dashboard/settings", label: "الإعداد", icon: Settings },
-];
-
-const menuNavItem = { href: "/dashboard/menu", label: "المنيو", icon: UtensilsCrossed };
-const staffNavItems = [
-  { href: "/dashboard/staff", label: "الفريق", icon: UserCheck },
-  { href: "/dashboard/services", label: "الخدمات", icon: Wrench },
-];
-
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const business = await getCurrentBusiness();
+  const [business, features] = await Promise.all([
+    getCurrentBusiness(),
+    getBusinessFeatures(),
+  ]);
 
-  const extraNav =
+  const noRestriction = features.size === 0;
+  const hasBot      = noRestriction || features.has("whatsapp_bot");
+  const hasSales    = noRestriction || features.has("sales");
+  const hasStaff    = noRestriction || features.has("staff");
+  const hasCustomers = hasBot || features.has("marketplace");
+
+  const coreNav = [
+    { href: "/dashboard",               label: "الرئيسية",  icon: LayoutDashboard,    show: true },
+    { href: "/dashboard/conversations", label: "المحادثات", icon: MessageSquareText,   show: hasBot },
+    { href: "/dashboard/customers",     label: "العملاء",   icon: Users,              show: hasCustomers },
+    { href: "/dashboard/appointments",  label: "المواعيد",  icon: CalendarCheck,      show: hasBot },
+    { href: "/dashboard/calendar",      label: "التقويم",   icon: CalendarDays,       show: hasBot },
+    { href: "/dashboard/sales",         label: "المبيعات",  icon: ReceiptText,        show: hasSales },
+  ];
+
+  const typeExtras =
     business?.type === "restaurant" || business?.type === "cafe"
-      ? [menuNavItem]
+      ? [{ href: "/dashboard/menu",     label: "المنيو",    icon: UtensilsCrossed,    show: true }]
       : business?.type === "clinic" || business?.type === "salon"
-        ? staffNavItems
+        ? [
+            { href: "/dashboard/staff",    label: "الفريق",    icon: UserCheck,        show: hasStaff },
+            { href: "/dashboard/services", label: "الخدمات",   icon: Wrench,           show: hasStaff },
+          ]
         : [];
 
-  const navItems = [...coreNavItems.slice(0, 5), ...extraNav, ...coreNavItems.slice(5)];
+  const tailNav = [
+    { href: "/dashboard/knowledge",  label: "المعرفة",  icon: BookOpenText, show: hasBot },
+    { href: "/dashboard/automations",label: "الأتمتة",  icon: Bot,          show: hasBot },
+    { href: "/dashboard/settings",   label: "الإعداد",  icon: Settings,     show: true },
+  ];
+
+  const navItems = [...coreNav, ...typeExtras, ...tailNav].filter((item) => item.show);
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
