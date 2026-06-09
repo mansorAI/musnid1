@@ -2,27 +2,28 @@
 
 ---
 
-## 2026-06-09 — مزامنة صلاحيات الأعمال: feature gating في لوحة التحكم
+## 2026-06-09 — مزامنة كاملة مع الموبايل: feature gating صارم + تاب معلومات المنشأة
 
 ### ما تم
-- **`src/lib/dashboard-data.ts`**: إضافة `FeatureKey` type + `getBusinessFeatures()` function.
-  - تجمع ميزات الخطة عبر `business_subscriptions` → `plan_features`.
-  - تدمج مع الميزات المباشرة `business_features`.
-  - ترجع `Set<FeatureKey>` — فارغة إذا لم يكن هناك بيانات Supabase.
-- **`src/app/dashboard/layout.tsx`**: تحديث شريط التنقل بنفس منطق الموبايل:
-  - `noRestriction = features.size === 0` → يُظهر كل شيء (backward compatible).
-  - `hasBot` = whatsapp_bot → يُظهر: المحادثات، المواعيد، التقويم، المعرفة، الأتمتة.
-  - `hasSales` = sales → يُظهر: المبيعات.
-  - `hasCustomers` = hasBot || marketplace → يُظهر: العملاء.
-  - `hasStaff` = staff → يُظهر: الفريق والخدمات (clinic/salon).
-- **`src/app/dashboard/appointments/page.tsx`**: صفحة جديدة للمواعيد القادمة.
-  - مجمّعة بالتاريخ: اليوم، غداً، هذا الأسبوع، لاحقاً.
-  - تستخدم `getUpcomingAppointments()` الموجودة.
-  - تُعرض في شريط التنقل عند وجود `hasBot`.
+- **`src/lib/dashboard-data.ts`**: إضافة `FeatureKey` + `getBusinessFeatures()` — تجمع `plan_features` + `business_features` في `Set<FeatureKey>`. إضافة `getZoneMappingData()`.
+- **`src/app/dashboard/layout.tsx`**: شريط تنقل مُقيَّد بالكامل. **إزالة `noRestriction = features.size === 0`** — عناصر التنقل تظهر فقط عند إسناد الميزة صراحةً.
+  - `hasBot` → المحادثات، المواعيد، التقويم، المعرفة، الأتمتة.
+  - `hasSales` (sales | invoices) → المبيعات.
+  - `hasStaff` → الفريق والخدمات (clinic/salon).
+  - `hasMarketplace` → يُحسب في `hasCustomers` و`hasServices`.
+- **`src/app/dashboard/page.tsx`**: إزالة `noRestriction` — إحصائيات واتساب عند `hasBot` فقط، إحصائيات المبيعات عند `hasSales` فقط، إجراءات سريعة مُفلتَرة.
+- **`src/app/dashboard/appointments/page.tsx`**: صفحة جديدة — مواعيد قادمة مجمّعة بالتاريخ (اليوم / غداً / الأسبوع / لاحقاً).
+- **`src/app/dashboard/settings/page.tsx`**: إعادة كتابة كاملة بتابَّين عبر URL:
+  - `/dashboard/settings` → تاب "الإعداد": المنشآت + ثيم + إضافة منشأة (`hasAddBiz`).
+  - `?tab=info` → تاب "معلومات المنشأة": المنشأة (دائماً) + واتساب والمساعد (`hasBot`) + زون (`hasMarketplace`). مطابق لشاشة `business-info.tsx` في الموبايل.
+- **`src/app/dashboard/actions.ts`**: إضافة `updateBusinessInfo()` (يحدّث `businesses` + `bot_settings` JSON) و`setStaffZoneVisibility()` (يحدّث `business_category_mapping.show_staff`).
+- **حذف** `src/app/dashboard/tasks/page.tsx`, `tasks/actions.ts`, `src/lib/task-engine.ts` — المهام الشخصية ليست جزءاً من النظام.
 
-### القرارات التقنية
-- لا migration جديد — الجداول (`business_subscriptions`, `plan_features`, `business_features`) موجودة.
-- الـ nav items مبنية كـ array مع `show: boolean` ثم تُفلتر — أنظف من الـ conditional ternaries.
+### القرار التقني المحوري
+إزالة `noRestriction = features.size === 0` — كان يعني "لا اشتراك = كل شيء مرئي" وهو سلوك معكوس. الآن الميزات تظهر فقط عند الإسناد الصريح من لوحة الأدمن.
+
+### النشر
+- مرفوع على GitHub → Vercel (`ff749bb`) ✅
 
 ---
 
