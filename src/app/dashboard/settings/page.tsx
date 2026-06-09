@@ -62,10 +62,9 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
     getZoneMappingData(),
   ]);
 
-  const noRestriction  = features.size === 0;
-  const hasBot         = noRestriction || features.has("whatsapp_bot");
-  const hasMarketplace = noRestriction || features.has("marketplace");
-  const hasAddBiz      = noRestriction || features.has("add_business");
+  const hasBot         = features.has("whatsapp_bot");
+  const hasMarketplace = features.has("marketplace");
+  const hasAddBiz      = features.has("add_business");
 
   const botSettings = (business?.bot_settings ?? {}) as BotSettings;
 

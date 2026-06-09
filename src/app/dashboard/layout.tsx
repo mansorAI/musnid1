@@ -15,13 +15,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
     getBusinessFeatures(),
   ]);
 
-  const noRestriction = features.size === 0;
-  const hasBot        = noRestriction || features.has("whatsapp_bot");
-  const hasSales      = noRestriction || features.has("sales") || features.has("invoices");
-  const hasStaff      = noRestriction || features.has("staff");
-  const hasServices   = noRestriction || features.has("whatsapp_bot") || features.has("marketplace") || features.has("bookings");
-  const hasMarketplace = noRestriction || features.has("marketplace");
-  const hasCustomers  = hasBot || hasSales || hasMarketplace;
+  const hasBot         = features.has("whatsapp_bot");
+  const hasSales       = features.has("sales") || features.has("invoices");
+  const hasStaff       = features.has("staff");
+  const hasServices    = features.has("whatsapp_bot") || features.has("marketplace") || features.has("bookings");
+  const hasMarketplace = features.has("marketplace");
+  const hasCustomers   = hasBot || hasSales || hasMarketplace;
 
   const coreNav = [
     { href: "/dashboard",               label: "الرئيسية",  icon: LayoutDashboard,    show: true },

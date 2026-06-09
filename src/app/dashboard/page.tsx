@@ -22,9 +22,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   if (hasSupabaseEnv() && !business) redirect("/onboarding");
 
-  const noRestriction = features.size === 0;
-  const hasBot   = noRestriction || features.has("whatsapp_bot");
-  const hasSales = noRestriction || features.has("sales");
+  const hasBot   = features.has("whatsapp_bot");
+  const hasSales = features.has("sales") || features.has("invoices");
 
   const params = await searchParams;
 
