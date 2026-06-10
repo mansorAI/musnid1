@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const addRes = await fetch(`${GRAPH}/${wabaId}/phone_numbers`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ cc, phone_number: num, migrate_whatsapp: false }),
+    body: JSON.stringify({ cc, phone_number: num, verified_name: business.name, migrate_whatsapp: false }),
   });
 
   const addData = await addRes.json() as { id?: string; error?: { message: string } };
