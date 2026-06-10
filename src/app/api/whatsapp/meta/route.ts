@@ -87,17 +87,17 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // 1. Find business by whatsapp_number
+  // 1. Find business by meta_phone_number_id (primary) or whatsapp_number (fallback)
   const { data: bizList } = await supabase
     .from("businesses")
     .select("*")
-    .eq("whatsapp_number", toE164)
+    .or(`meta_phone_number_id.eq.${phoneNumberId},whatsapp_number.eq.${toE164}`)
     .limit(1);
 
   const business = bizList?.[0] ?? null;
 
   if (!business) {
-    console.error(`[meta-webhook] No business for number: ${toE164} (raw: ${displayPhone})`);
+    console.error(`[meta-webhook] No business for phone_number_id: ${phoneNumberId} / ${toE164}`);
     return new NextResponse("OK", { status: 200 });
   }
 

@@ -1,5 +1,3 @@
-"use server";
-
 import Link from "next/link";
 import {
   Building2, Check, Compass, Eye, EyeOff, Plus, Settings, Users,
@@ -21,6 +19,7 @@ import {
   getBusinessFeatures, getZoneMappingData,
 } from "@/lib/dashboard-data";
 import type { BusinessType } from "@/types";
+import { WhatsAppConnectWidget } from "@/components/dashboard/WhatsAppConnectWidget";
 
 type BotSettings = Record<string, unknown>;
 
@@ -284,8 +283,12 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                   </div>
                   <div className="p-6 space-y-4">
                     <div className="space-y-1.5">
-                      <Label>رقم واتساب الذكي</Label>
-                      <Input name="whatsapp_number" dir="ltr" defaultValue={business?.whatsapp_number ?? ""} placeholder="+966 5x xxx xxxx" className={inputClass} />
+                      <Label>ربط رقم واتساب الذكي</Label>
+                      <WhatsAppConnectWidget
+                        initialStatus={(business as any)?.meta_waba_status ?? null}
+                        initialPhone={business?.whatsapp_number ?? null}
+                        initialPhoneNumberId={(business as any)?.meta_phone_number_id ?? null}
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <Label>اسم المساعد</Label>

@@ -57,6 +57,8 @@ export type Database = {
           working_hours: Json;
           bot_settings: Json;
           whatsapp_number: string | null;
+          meta_phone_number_id: string | null;
+          meta_waba_status: "pending_otp" | "active" | "error" | null;
           twilio_sender_id: string | null;
           twilio_subaccount_sid: string | null;
           whatsapp_status: string | null;
@@ -86,6 +88,8 @@ export type Database = {
           working_hours?: Json;
           bot_settings?: Json;
           whatsapp_number?: string | null;
+          meta_phone_number_id?: string | null;
+          meta_waba_status?: "pending_otp" | "active" | "error" | null;
           twilio_sender_id?: string | null;
           twilio_subaccount_sid?: string | null;
           whatsapp_status?: string | null;
