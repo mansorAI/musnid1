@@ -17,11 +17,17 @@ export async function POST(req: NextRequest) {
   const wabaId = process.env.META_WABA_ID!;
   const token  = process.env.META_ACCESS_TOKEN!;
 
+  // فصل رمز الدولة عن الرقم (Meta تتطلب cc منفصل)
+  const normalized = phone_number.replace(/\s|-/g, "");
+  const e164 = normalized.startsWith("+") ? normalized : `+966${normalized.replace(/^0/, "")}`;
+  const cc   = e164.slice(1, e164.length - 9);   // رمز الدولة بدون +
+  const num  = e164.slice(1 + cc.length);         // الرقم بدون رمز الدولة
+
   // 1. تسجيل الرقم في WABA
   const addRes = await fetch(`${GRAPH}/${wabaId}/phone_numbers`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ phone_number, migrate_whatsapp: false }),
+    body: JSON.stringify({ cc, phone_number: num, migrate_whatsapp: false }),
   });
 
   const addData = await addRes.json() as { id?: string; error?: { message: string } };
