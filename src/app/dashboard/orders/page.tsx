@@ -8,6 +8,7 @@ export default async function OrdersPage() {
   const supabase = await createClient() as any;
   await supabase.rpc("expire_overdue_zone_orders");
   const { data: orders = [] } = await supabase.from("customer_interactions").select("*,interaction_items(*),order_messages(*)").eq("business_id", business.id).eq("type", "order").eq("status", "pending_payment").order("created_at", { ascending: false });
+  const { data: history = [] } = await supabase.from("customer_interactions").select("*,interaction_items(*),order_messages(*)").eq("business_id", business.id).eq("type", "order").in("status", ["accepted", "rejected", "expired", "cancelled"]).order("updated_at", { ascending: false }).limit(10);
 
   return (
     <main className="space-y-6" dir="rtl">
@@ -47,6 +48,44 @@ export default async function OrdersPage() {
               </div>
             </section>
           ))}
+        </div>
+      )}
+
+      {history.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-lg font-bold text-surface-700 dark:text-surface-300">سجل الطلبات</h2>
+          <div className="grid gap-3">
+            {history.map((order: any) => {
+              const statusLabel = order.status === "accepted" ? "مقبول" : order.status === "rejected" ? "مرفوض" : order.status === "expired" ? "منتهي" : "ملغي";
+              const statusClass = order.status === "accepted" ? "text-teal-600 bg-teal-50" : order.status === "rejected" ? "text-red-600 bg-red-50" : "text-amber-600 bg-amber-50";
+              const msgs: any[] = order.order_messages ?? [];
+              return (
+                <section key={order.id} className="glass-card space-y-3 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded-lg px-2 py-0.5 text-xs font-bold ${statusClass}`}>{statusLabel}</span>
+                      <span className="font-bold text-surface-900 dark:text-white">{order.metadata?.customer_name ?? "عميل زون"}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-surface-400">{new Date(order.updated_at).toLocaleString("ar-SA")}</span>
+                      <span className="font-extrabold text-primary-600">{Number(order.total_amount).toFixed(2)} ر.س</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-surface-500">{(order.interaction_items ?? []).map((i: any) => `${Number(i.qty)}× ${i.name}`).join("، ")}</p>
+                  {msgs.length > 0 && (
+                    <details className="rounded-xl border border-surface-200 dark:border-surface-700">
+                      <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-surface-500">عرض المحادثة ({msgs.length} رسالة)</summary>
+                      <div className="max-h-48 space-y-2 overflow-y-auto p-3">
+                        {msgs.map((msg: any) => (
+                          <p key={msg.id} className={`rounded-lg p-2 text-sm ${msg.sender_role === "business" ? "bg-primary-50 text-primary-800" : "bg-surface-100 dark:bg-surface-800"}`}>{msg.message}</p>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </section>
+              );
+            })}
+          </div>
         </div>
       )}
     </main>
