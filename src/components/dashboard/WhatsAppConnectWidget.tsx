@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Status = "idle" | "loading" | "pending_otp" | "active" | "error";
 
@@ -18,8 +18,7 @@ export function WhatsAppConnectWidget({ initialStatus, initialPhone, initialPhon
   const [error,         setError]         = useState("");
   const [loading,       setLoading]       = useState(false);
 
-  // استدعاء يُسجَّل لدى Meta لإكمال اختبار whatsapp_business_management
-  useState(() => { fetch("/api/whatsapp/status").catch(() => null); });
+  useEffect(() => { fetch("/api/whatsapp/status").catch(() => null); }, []);
 
   async function handleRegister() {
     if (!phone.trim()) return;
