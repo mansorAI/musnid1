@@ -9,11 +9,12 @@ type DisplayConfigFields = {
   showPrice: boolean;
   showDescription: boolean;
   showLocation: boolean;
-  showContactActions: boolean;
   showQtyControls: boolean;
   bookingButton: boolean;
   showDateButton: boolean;
   showTimeButton: boolean;
+  allowRepeatedDateBookings: boolean;
+  allowRepeatedTimeBookings: boolean;
   showGridLayout: boolean;
   showListLayout: boolean;
   showImageGallery: boolean;
@@ -21,8 +22,9 @@ type DisplayConfigFields = {
 
 const DISPLAY_KEYS: (keyof DisplayConfigFields)[] = [
   "showImage", "showPrice", "showDescription", "showLocation",
-  "showContactActions", "showQtyControls", "bookingButton",
+  "showQtyControls", "bookingButton",
   "showDateButton", "showTimeButton",
+  "allowRepeatedDateBookings", "allowRepeatedTimeBookings",
   "showGridLayout", "showListLayout",
   "showImageGallery",
 ];

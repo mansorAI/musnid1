@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Bot, BookOpenText, CalendarCheck, CalendarDays, LayoutDashboard,
-  MessageCircle, MessageSquareText, ReceiptText, Settings, UserCheck,
+  MessageCircle, MessageSquareText, ReceiptText, Settings, UserCheck, ClipboardList,
   UtensilsCrossed, Users, Wrench,
 } from "lucide-react";
 import { signOut } from "@/app/sign-in/actions";
@@ -29,6 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { href: "/dashboard/appointments",  label: "المواعيد",  icon: CalendarCheck,      show: hasBot },
     { href: "/dashboard/calendar",      label: "التقويم",   icon: CalendarDays,       show: hasBot },
     { href: "/dashboard/sales",         label: "المبيعات",  icon: ReceiptText,        show: hasSales },
+    { href: "/dashboard/orders",        label: "الطلبات",   icon: ClipboardList,      show: hasSales },
   ];
 
   const typeExtras =

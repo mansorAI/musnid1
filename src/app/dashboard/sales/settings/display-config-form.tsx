@@ -12,9 +12,8 @@ const TOGGLE_OPTIONS: {
 }[] = [
   { key: "showImage",          label: "عرض الصورة",       desc: "صورة المنتج في الكارت" },
   { key: "showPrice",          label: "عرض السعر",        desc: "سعر المنتج والتسعيرة" },
-  { key: "showDescription",    label: "وصف المنتج",       desc: "يُعطّل رابط الموقع وأزرار التواصل", exclusive: true },
+  { key: "showDescription",    label: "وصف المنتج",       desc: "يُعطّل رابط الموقع عند تفعيله", exclusive: true },
   { key: "showLocation",       label: "رابط الموقع",      desc: "رابط الخريطة — يُعطَّل عند تفعيل الوصف" },
-  { key: "showContactActions", label: "مكالمة وواتساب",   desc: "أزرار التواصل — تُعطَّل عند تفعيل الوصف" },
   { key: "showQtyControls",    label: "أزرار الكمية",     desc: "إضافة وإزالة الكمية + و −" },
   { key: "bookingButton",      label: "زر حجز",           desc: "يستبدل أزرار الكمية بزر حجز واحد" },
   { key: "showDateButton",     label: "زر التاريخ",       desc: "تقويم لاختيار يوم الحجز" },
@@ -48,7 +47,6 @@ export function DisplayConfigForm({
       const next = { ...prev, [key]: !(prev[key] as boolean) };
       if (key === "showDescription" && next.showDescription) {
         next.showLocation = false;
-        next.showContactActions = false;
       }
       return next;
     });
@@ -56,7 +54,7 @@ export function DisplayConfigForm({
 
   function isDisabled(key: string): boolean {
     if (constraints && key in constraints && constraints[key as keyof typeof constraints] === false) return true;
-    if ((key === "showLocation" || key === "showContactActions") && cfg.showDescription) return true;
+    if (key === "showLocation" && cfg.showDescription) return true;
     return false;
   }
 
@@ -84,6 +82,9 @@ export function DisplayConfigForm({
       <input type="hidden" name="showGridLayout" value={cfg.showGridLayout ? "on" : ""} />
       <input type="hidden" name="showListLayout" value={cfg.showListLayout ? "on" : ""} />
       <input type="hidden" name="bookingDateMode" value={cfg.bookingDateMode} />
+      <input type="hidden" name="allowRepeatedDateBookings" value={cfg.allowRepeatedDateBookings ? "on" : ""} />
+      <input type="hidden" name="allowRepeatedTimeBookings" value={cfg.allowRepeatedTimeBookings ? "on" : ""} />
+      <input type="hidden" name="paymentTimeoutMinutes" value={cfg.paymentTimeoutMinutes} />
       {[0,1,2,3,4,5,6].map((i) => (
         <input key={i} type="hidden" name={`day_${i}`} value={cfg.bookingAvailableDays.includes(i) ? "on" : ""} />
       ))}
@@ -168,7 +169,24 @@ export function DisplayConfigForm({
 
           {/* طريقة التواريخ */}
           <div>
-            <p className="mb-2 text-xs text-surface-500 dark:text-surface-400">طريقة إتاحة التواريخ</p>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              {constraints?.allowRepeatedDateBookings !== false && (
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={cfg.allowRepeatedDateBookings}
+                  onClick={() => toggleBool("allowRepeatedDateBookings")}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ${
+                    cfg.allowRepeatedDateBookings
+                      ? "border-teal-500 bg-teal-500 text-white"
+                      : "border-surface-200 text-surface-500 dark:border-surface-700 dark:text-surface-400"
+                  }`}
+                >
+                  حجز متكرر
+                </button>
+              )}
+              <p className="text-xs text-surface-500 dark:text-surface-400">طريقة إتاحة التواريخ</p>
+            </div>
             <div className="flex gap-2">
               {([
                 ["open",     "مفتوح"],
@@ -259,7 +277,24 @@ export function DisplayConfigForm({
       {/* ── أوقات الحجز ── */}
       {cfg.showTimeButton && (
         <div className="glass-card space-y-3 p-5">
-          <h3 className="text-sm font-bold text-surface-900 dark:text-white">أوقات الحجز المتاحة</h3>
+          <div className="flex items-center justify-between gap-3">
+            {constraints?.allowRepeatedTimeBookings !== false && (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={cfg.allowRepeatedTimeBookings}
+                onClick={() => toggleBool("allowRepeatedTimeBookings")}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ${
+                  cfg.allowRepeatedTimeBookings
+                    ? "border-teal-500 bg-teal-500 text-white"
+                    : "border-surface-200 text-surface-500 dark:border-surface-700 dark:text-surface-400"
+                }`}
+              >
+                حجز متكرر
+              </button>
+            )}
+            <h3 className="text-sm font-bold text-surface-900 dark:text-white">أوقات الحجز المتاحة</h3>
+          </div>
           <p className="text-xs text-surface-500 dark:text-surface-400">كل سطر وقت بصيغة 24 ساعة — مثال: 09:00</p>
           <textarea
             name="bookingTimeSlots"
@@ -271,6 +306,27 @@ export function DisplayConfigForm({
           />
         </div>
       )}
+
+      <div className="glass-card space-y-3 p-5">
+        <h3 className="text-sm font-bold text-surface-900 dark:text-white">مهلة دفع الطلب</h3>
+        <p className="text-xs text-surface-500 dark:text-surface-400">بعد انتهاء المهلة يُلغى الطلب ويُحرر الموعد تلقائياً.</p>
+        <div className="flex flex-wrap gap-2">
+          {[15, 30, 60, 120].map((minutes) => (
+            <button
+              key={minutes}
+              type="button"
+              onClick={() => setCfg((prev) => ({ ...prev, paymentTimeoutMinutes: minutes }))}
+              className={`rounded-xl border px-4 py-2 text-xs font-bold ${
+                cfg.paymentTimeoutMinutes === minutes
+                  ? "border-primary-500 bg-primary-500 text-white"
+                  : "border-surface-200 text-surface-500 dark:border-surface-700 dark:text-surface-400"
+              }`}
+            >
+              {minutes >= 60 ? `${minutes / 60} ساعة` : `${minutes} دقيقة`}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <button type="submit" className="btn-primary w-full">
         حفظ إعدادات العرض

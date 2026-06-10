@@ -16,7 +16,6 @@ export type ProductDisplayConfig = {
   showPrice:            boolean;
   showDescription:      boolean;
   showLocation:         boolean;
-  showContactActions:   boolean;
   showQtyControls:      boolean;
   bookingButton:        boolean;
   showDateButton:       boolean;
@@ -32,6 +31,9 @@ export type ProductDisplayConfig = {
   bookingSelectedDates: string[];
   bookingRangeStart:    string | null;
   bookingRangeEnd:      string | null;
+  allowRepeatedDateBookings: boolean;
+  allowRepeatedTimeBookings: boolean;
+  paymentTimeoutMinutes: number;
 };
 
 const DEFAULT_DISPLAY_CONFIG: ProductDisplayConfig = {
@@ -39,7 +41,6 @@ const DEFAULT_DISPLAY_CONFIG: ProductDisplayConfig = {
   showPrice:            true,
   showDescription:      false,
   showLocation:         false,
-  showContactActions:   true,
   showQtyControls:      true,
   bookingButton:        false,
   showDateButton:       false,
@@ -55,6 +56,9 @@ const DEFAULT_DISPLAY_CONFIG: ProductDisplayConfig = {
   bookingSelectedDates: [],
   bookingRangeStart:    null,
   bookingRangeEnd:      null,
+  allowRepeatedDateBookings: false,
+  allowRepeatedTimeBookings: false,
+  paymentTimeoutMinutes: 30,
 };
 
 export async function getProductDisplayData(): Promise<{

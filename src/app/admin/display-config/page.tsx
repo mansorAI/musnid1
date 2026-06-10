@@ -8,8 +8,9 @@ import {
 
 type DisplayKey =
   | "showImage" | "showPrice" | "showDescription" | "showLocation"
-  | "showContactActions" | "showQtyControls" | "bookingButton"
+  | "showQtyControls" | "bookingButton"
   | "showDateButton" | "showTimeButton"
+  | "allowRepeatedDateBookings" | "allowRepeatedTimeBookings"
   | "showGridLayout" | "showListLayout"
   | "showImageGallery";
 
@@ -18,11 +19,12 @@ const DISPLAY_OPTIONS: { key: DisplayKey; label: string; group?: "layout" | "boo
   { key: "showPrice",          label: "عرض السعر" },
   { key: "showDescription",    label: "وصف المنتج" },
   { key: "showLocation",       label: "رابط الموقع" },
-  { key: "showContactActions", label: "مكالمة/واتساب" },
   { key: "showQtyControls",    label: "أزرار الكمية" },
   { key: "bookingButton",      label: "زر الحجز" },
   { key: "showDateButton",     label: "زر التاريخ 📅",    group: "booking" },
   { key: "showTimeButton",     label: "زر الوقت 🕐",      group: "booking" },
+  { key: "allowRepeatedDateBookings", label: "تكرار التاريخ", group: "booking" },
+  { key: "allowRepeatedTimeBookings", label: "تكرار الوقت", group: "booking" },
   { key: "showGridLayout",     label: "كارت مربع ⊞",      group: "layout" },
   { key: "showListLayout",     label: "كارت مستطيل ☰",   group: "layout" },
   { key: "showImageGallery",   label: "تصفح الصور 🖼",    group: "gallery" },

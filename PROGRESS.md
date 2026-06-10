@@ -2,6 +2,161 @@
 
 ---
 
+## 2026-06-09 — ملخص اليوم الكامل: إدارة الحجز والدفع والطلبات
+
+### ما تم في الويب
+- إضافة إعدادَي «حجز متكرر» للتاريخ والوقت في إعدادات عرض المنتج لصاحب المنشأة.
+- ربط إعدادات الحجز المتكرر بقيود لوحة الأدمن، بحيث لا يعدل صاحب المنشأة إلا الخيارات التي سمح بها الأدمن.
+- إضافة إعداد مهلة الدفع: 15 أو 30 أو 60 أو 120 دقيقة.
+- إضافة صفحة `/dashboard/orders` لإدارة طلبات زون المنتظرة للدفع.
+- يستطيع البائع من الصفحة إرسال بيانات التحويل للعميل، متابعة المحادثة، رفض الطلب، أو إصدار الفاتورة واختيار وسيلة الدفع.
+- إضافة رابط «الطلبات» إلى تنقل لوحة التحكم.
+- مزامنة أنواع `business_booking_dates` و`order_messages` وحقول الدفع وRPCs المشتركة مع الموبايل.
+
+### قاعدة البيانات المشتركة
+- ✅ طُبّقت Migrations الحجوزات والدفع `20260609000002` و`20260609000003` و`20260609000004` على Supabase.
+- منع التعارض، الحجز المتكرر، انتظار الدفع، انتهاء المهلة، تحرير الموعد، ومحادثة الطلب أصبحت متاحة للموبايل والويب.
+
+### التحقق
+- ✅ نجح `npx.cmd tsc --noEmit`.
+- ✅ نجح `git diff --check` مع تحذيرات نهايات الأسطر فقط.
+
+---
+
+## 2026-06-09 — طلبات انتظار الدفع ومحادثة العميل
+
+### ما تم
+- إضافة صفحة `/dashboard/orders` لطلبات زون المنتظرة للدفع.
+- يمكن للبائع إرسال تعليمات التحويل للعميل، رفض الطلب، أو اختيار وسيلة الدفع وإصدار الفاتورة لإتمام الطلب.
+- إضافة إعداد مهلة الدفع داخل إعداد عرض المنتج.
+- إضافة رابط "الطلبات" إلى تنقل لوحة التحكم.
+- مزامنة أنواع `order_messages` ودالة انتهاء الطلبات.
+
+### الملفات المعدّلة
+- `src/app/dashboard/orders/page.tsx` (جديد)
+- `src/app/dashboard/orders/actions.ts` (جديد)
+- `src/app/dashboard/layout.tsx`
+- `src/app/dashboard/sales/settings/display-config-form.tsx`
+- `src/app/dashboard/sales/actions.ts`
+- `src/lib/dashboard-data.ts`
+- `src/types/database.ts`
+
+---
+
+## 2026-06-09 — إعدادات الحجز المتكرر للتاريخ والوقت
+
+### ما تم
+- إضافة زرَي "حجز متكرر" للتاريخ والوقت في إعداد عرض المنتج لصاحب المنشأة.
+- إضافة `allowRepeatedDateBookings` و`allowRepeatedTimeBookings` إلى الحفظ والأنواع والقيم الافتراضية.
+- إضافة الخيارين إلى لوحة الأدمن ضمن قيود أزرار الحجز.
+- تحديث أنواع جدول حجوزات زون وRPC جلب المواعيد المحجوزة.
+
+### الملفات المعدّلة
+- `src/lib/dashboard-data.ts`
+- `src/app/dashboard/sales/actions.ts`
+- `src/app/dashboard/sales/settings/display-config-form.tsx`
+- `src/app/admin/display-config/page.tsx`
+- `src/app/admin/display-config/actions.ts`
+- `src/types/database.ts`
+
+---
+
+## 2026-06-09 — مزامنة أنواع منع تعارض حجوزات زون
+
+### ما تم
+- إضافة نوع جدول `business_booking_dates`.
+- إضافة أنواع RPCs: `get_booked_business_dates` و`create_zone_order_with_booking`.
+
+### الملف المعدّل
+- `src/types/database.ts`
+
+---
+
+## 2026-06-09 — معرض صور المنتج + إزالة مكالمة/واتساب + تطابق شاشة الفرد
+
+### ما تم
+
+#### 1. إزالة `showContactActions` كلياً
+
+**`src/lib/dashboard-data.ts`**
+- حُذف `showContactActions: boolean` من نوع `ProductDisplayConfig`
+- حُذف `showContactActions: true` من `DEFAULT_DISPLAY_CONFIG`
+
+**`src/app/dashboard/sales/actions.ts`**
+- حُذف `showContactActions: formData.get("showContactActions") === "on"` من `saveProductDisplayConfig`
+
+**`src/app/dashboard/sales/settings/display-config-form.tsx`** (Client Component)
+- حُذف `{ key: "showContactActions", ... }` من `TOGGLE_OPTIONS`
+- حُذف `next.showContactActions = false` من `toggleBool`
+- إصلاح `isDisabled`: `key === "showLocation" && cfg.showDescription` فقط
+
+**`src/app/admin/display-config/actions.ts`**
+- حُذف `showContactActions: boolean` من `DisplayConfigFields`
+- حُذف `"showContactActions"` من `DISPLAY_KEYS`
+
+**`src/app/admin/display-config/page.tsx`**
+- حُذف `"showContactActions"` من `DisplayKey` union type
+- حُذف `{ key: "showContactActions", label: "مكالمة/واتساب" }` من `DISPLAY_OPTIONS`
+
+#### 2. إضافة `showImageGallery` ومعرض الصور
+
+**`src/lib/dashboard-data.ts`**
+- إضافة `showImageGallery: boolean` لنوع `ProductDisplayConfig` و`DEFAULT_DISPLAY_CONFIG`
+- تحديث `getSalesProductsData()` ليشمل حقل `images` من `menu_items`
+- إضافة `getProductDisplayData()` تجلب إعدادات العرض الحالية للمنشأة
+
+**`src/app/dashboard/sales/settings/display-config-form.tsx`** (جديد — Client Component)
+- نموذج تفاعلي كامل لإعدادات عرض المنتج
+- 9 خيارات toggle (بما فيها showImageGallery، بدون showContactActions)
+- إعدادات شكل الكارت (grid / list)
+- إعدادات التواريخ والأوقات (مع أيام الأسبوع والوضع المفتوح/المحدد/النطاق)
+
+**`src/app/dashboard/sales/settings/page.tsx`**
+- تاب ثانٍ "إعداد عرض المنتج" عبر `?tab=display`
+- يُحمَّل `DisplayConfigForm` مع الإعدادات الحالية والقيود من الأدمن
+
+**`src/app/dashboard/sales/actions.ts`**
+- `saveProductDisplayConfig()` (بدون showContactActions، مع showImageGallery)
+- `uploadProductImages()` — رفع صور متعددة لـ `menu-images` bucket
+- تحديث `addSalesProduct()` لرفع صورة منتج (`name="image"`) وصور معرض (`name="images"`) منفصلَين
+
+**`src/app/dashboard/sales/products/product-gallery.tsx`** (جديد)
+- `ProductGalleryButton` — زر "صور (N)"
+- Modal عرض الصور بسهام تنقل وعداد نقاط
+
+**`src/app/dashboard/sales/products/page.tsx`**
+- زر "إعداد العرض" → `/dashboard/sales/settings?tab=display`
+- حقلا رفع منفصلان: "صورة المنتج" (image) + "تصفح الصور" (images)
+- `ProductGalleryButton` يظهر على المنتج عند تفعيل `showImageGallery`
+
+**`src/app/admin/display-config/page.tsx` + `actions.ts`**
+- إضافة `showImageGallery` لـ `DisplayKey` و`DISPLAY_KEYS` و`DISPLAY_OPTIONS`
+- يظهر في قسم "معرض الصور" المستقل
+
+#### 3. قاعدة البيانات
+
+**`src/types/database.ts`**
+- إضافة `images: string[] | null` إلى `menu_items.Row` و Insert
+
+### القرارات التقنية
+- `showContactActions` أُزيل كلياً من النظام — القرار: الاتصال/واتساب ليس جزءاً من نظام الكاشير.
+- `image_url` (صورة واحدة، البطاقة) و`images[]` (معرض متعدد) حقلان منفصلان تماماً.
+- صور المعرض تُرفع لـ bucket `menu-images` مسار `{bizId}/products/{productId}/`.
+- `showImageGallery` مقيّد بـ admin panel — لا يظهر للمنشأة إلا إذا سمح به الأدمن.
+
+### الملفات المعدّلة
+- `src/lib/dashboard-data.ts`
+- `src/app/dashboard/sales/actions.ts`
+- `src/app/dashboard/sales/settings/page.tsx`
+- `src/app/dashboard/sales/settings/display-config-form.tsx` (جديد)
+- `src/app/dashboard/sales/products/page.tsx`
+- `src/app/dashboard/sales/products/product-gallery.tsx` (جديد)
+- `src/app/admin/display-config/page.tsx`
+- `src/app/admin/display-config/actions.ts`
+- `src/types/database.ts`
+
+---
+
 ## 2026-06-09 — مزامنة كاملة مع الموبايل: feature gating صارم + تاب معلومات المنشأة
 
 ### ما تم

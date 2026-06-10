@@ -1109,6 +1109,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["employee_audit_log"]["Insert"]>;
         Relationships: [];
       };
+      business_booking_dates: {
+        Row: { id: string; business_id: string; booking_date: string | null; booking_time: string | null; booking_key: string; interaction_id: string; created_at: string };
+        Insert: { id?: string; business_id: string; booking_date?: string | null; booking_time?: string | null; booking_key: string; interaction_id: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["business_booking_dates"]["Insert"]>;
+        Relationships: [];
+      };
+      order_messages: {
+        Row: { id: string; interaction_id: string; business_id: string; sender_id: string | null; sender_role: "customer" | "business" | "system"; message: string; created_at: string };
+        Insert: { id?: string; interaction_id: string; business_id: string; sender_id?: string | null; sender_role: "customer" | "business" | "system"; message: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["order_messages"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -1119,6 +1131,22 @@ export type Database = {
       user_is_admin: {
         Args: Record<string, never>;
         Returns: boolean;
+      };
+      get_booked_business_dates: {
+        Args: { p_business_id: string };
+        Returns: { booking_date: string }[];
+      };
+      get_booked_business_slots: {
+        Args: { p_business_id: string };
+        Returns: { booking_date: string | null; booking_time: string | null }[];
+      };
+      expire_overdue_zone_orders: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      create_zone_order_with_booking: {
+        Args: { p_business_id: string; p_total_amount: number; p_metadata: Json; p_items: Json };
+        Returns: string;
       };
     };
     Enums: {
