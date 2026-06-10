@@ -30,11 +30,13 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({ cc, phone_number: num, verified_name: business.name, migrate_whatsapp: false }),
   });
 
-  const addData = await addRes.json() as { id?: string; error?: { message: string } };
+  const addData = await addRes.json() as { id?: string; error?: { message: string; code: number; error_subcode?: number; fbtrace_id?: string } };
+  console.log("[whatsapp/register] sent:", { cc, phone_number: num, verified_name: business.name });
+  console.log("[whatsapp/register] meta response:", JSON.stringify(addData));
 
   if (!addRes.ok || !addData.id) {
     const msg = addData.error?.message ?? "فشل تسجيل الرقم في Meta";
-    return NextResponse.json({ error: msg }, { status: 400 });
+    return NextResponse.json({ error: msg, debug: addData.error }, { status: 400 });
   }
 
   const phoneNumberId = addData.id;
