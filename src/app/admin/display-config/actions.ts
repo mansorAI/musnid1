@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminUser } from "@/lib/admin-data";
 
 type DisplayConfigFields = {
@@ -97,6 +98,51 @@ export async function clearCategoryDisplayConfig(formData: FormData) {
     .from("store_categories")
     .update({ product_display_config: null, updated_at: new Date().toISOString() })
     .eq("id", category_id);
+
+  revalidatePath("/admin/display-config");
+}
+
+export async function setBusinessDisplayConfig(formData: FormData) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  const business_id = formData.get("business_id") as string;
+  const config = parseConfig(formData);
+
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("bot_settings")
+    .eq("id", business_id)
+    .single();
+
+  const current = (biz?.bot_settings ?? {}) as Record<string, unknown>;
+  await supabase
+    .from("businesses")
+    .update({ bot_settings: { ...current, product_display_config: config } as import("@/types/database").Json })
+    .eq("id", business_id);
+
+  revalidatePath("/admin/display-config");
+}
+
+export async function clearBusinessDisplayConfig(formData: FormData) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  const business_id = formData.get("business_id") as string;
+
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("bot_settings")
+    .eq("id", business_id)
+    .single();
+
+  const current = { ...((biz?.bot_settings ?? {}) as Record<string, unknown>) };
+  delete current.product_display_config;
+
+  await supabase
+    .from("businesses")
+    .update({ bot_settings: current as import("@/types/database").Json })
+    .eq("id", business_id);
 
   revalidatePath("/admin/display-config");
 }

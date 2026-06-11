@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { StoreCategory, ZoneSection } from "@/types/database";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   setSectionDisplayConfig, clearSectionDisplayConfig,
   setCategoryDisplayConfig, clearCategoryDisplayConfig,
+  setBusinessDisplayConfig, clearBusinessDisplayConfig,
 } from "./actions";
 
 type DisplayKey =
@@ -34,13 +36,16 @@ type DisplayConfig = Record<DisplayKey, boolean>;
 
 async function getData() {
   const supabase = await createClient();
-  const [s, c] = await Promise.all([
+  const admin = createAdminClient();
+  const [s, c, b] = await Promise.all([
     supabase.from("zone_sections").select("*").order("sort_order", { ascending: true }),
     supabase.from("store_categories").select("*").order("sort_order", { ascending: true }),
+    admin.from("businesses").select("id, name, bot_settings").order("name", { ascending: true }),
   ]);
   return {
-    sections: (s.data ?? []) as ZoneSection[],
+    sections:   (s.data ?? []) as ZoneSection[],
     categories: (c.data ?? []) as StoreCategory[],
+    businesses: (b.data ?? []) as { id: string; name: string; bot_settings: Record<string, unknown> | null }[],
   };
 }
 
@@ -126,7 +131,7 @@ function ConfigBadge({ config }: { config: DisplayConfig | null }) {
 }
 
 export default async function DisplayConfigPage() {
-  const { sections, categories } = await getData();
+  const { sections, categories, businesses } = await getData();
 
   return (
     <div className="space-y-8" dir="rtl">
@@ -247,6 +252,53 @@ export default async function DisplayConfigPage() {
           لا توجد أقسام. أضف أقساماً من صفحة زون أولاً.
         </div>
       )}
+
+      {/* ── إعدادات منشأة محددة ── */}
+      <div>
+        <h2 className="text-lg font-bold text-surface-900 dark:text-white mb-1">إعداد خاص بمنشأة</h2>
+        <p className="text-sm text-surface-500 dark:text-surface-400 mb-4">
+          يُلغي إعداد القسم والنشاط — أعلى أولوية.
+        </p>
+        <div className="space-y-3">
+          {businesses.map((biz) => {
+            const bizCfg = ((biz.bot_settings ?? {}) as Record<string, unknown>).product_display_config as DisplayConfig | null ?? null;
+            return (
+              <details key={biz.id} className="group rounded-2xl border bg-white shadow-sm dark:bg-surface-900 dark:border-surface-800">
+                <summary className="flex cursor-pointer items-center justify-between px-5 py-4 select-none list-none">
+                  <div className="flex items-center gap-3">
+                    <span className="text-surface-400 transition-transform group-open:rotate-90">▶</span>
+                    <span className="font-semibold text-surface-900 dark:text-white">{biz.name}</span>
+                  </div>
+                  <ConfigBadge config={bizCfg} />
+                </summary>
+                <div className="border-t dark:border-surface-800 px-5 py-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-surface-700 dark:text-surface-300">إعداد المنشأة</p>
+                    {bizCfg && (
+                      <form action={clearBusinessDisplayConfig}>
+                        <input type="hidden" name="business_id" value={biz.id} />
+                        <SubmitButton pendingText="..." className="text-xs text-rose-500 hover:text-rose-700 hover:underline">
+                          حذف الإعداد
+                        </SubmitButton>
+                      </form>
+                    )}
+                  </div>
+                  <form action={setBusinessDisplayConfig} className="space-y-3">
+                    <input type="hidden" name="business_id" value={biz.id} />
+                    <ConfigCheckboxes config={bizCfg} />
+                    <SubmitButton
+                      pendingText="جاري الحفظ..."
+                      className="rounded-xl bg-violet-600 px-5 py-2 text-sm font-medium text-white hover:bg-violet-700 transition-colors"
+                    >
+                      حفظ إعداد المنشأة
+                    </SubmitButton>
+                  </form>
+                </div>
+              </details>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
