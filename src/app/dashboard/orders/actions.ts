@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentBusiness } from "@/lib/dashboard-data";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { calculateInvoiceTotals, generateInvoiceNumber, generateZatcaQrPayload, parseInvoiceSettings, splitLineTax } from "@/lib/zatca";
 
 async function context() {
@@ -63,6 +63,17 @@ export async function issueOrderInvoice(formData: FormData) {
   }));
   await supabase.from("customer_interactions").update({ status: "accepted", invoice_id: invoice.id, updated_at: issuedAt }).eq("id", interactionId).eq("business_id", business.id);
   if (dbSettings) await supabase.from("invoice_settings").update({ next_invoice_number: dbSettings.next_invoice_number + 1 }).eq("business_id", business.id);
+
+  const itemLines = lines.map((l: any) => `• ${l.name} × ${l.quantity} = ${(l.unitPrice * l.quantity).toFixed(2)} ر.س`).join("\n");
+  const vatLine = totals.taxTotal > 0 ? `\nضريبة القيمة المضافة: ${totals.taxTotal.toFixed(2)} ر.س` : "";
+  const serviceSupabase = createServiceClient();
+  await serviceSupabase.from("order_messages").insert({
+    interaction_id: interactionId,
+    business_id: business.id,
+    sender_role: "system",
+    message: `✅ تم إصدار الفاتورة\nرقم الفاتورة: ${invoiceNumber}\n─────────────────\n${itemLines}\n─────────────────\nالمجموع: ${totals.subtotal.toFixed(2)} ر.س${vatLine}\nالإجمالي: ${totals.total.toFixed(2)} ر.س`,
+  });
+
   revalidatePath("/dashboard/orders");
   redirect(`/dashboard/sales/${invoice.id}`);
 }

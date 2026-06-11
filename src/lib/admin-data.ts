@@ -100,7 +100,7 @@ export async function getPlans() {
 }
 
 export async function getBusinessSubscriptions() {
-  const supabase = await createClient();
+  const supabase = getServiceClient();
 
   const { data } = await supabase
     .from("business_subscriptions")
