@@ -171,7 +171,12 @@ export async function updateAdminOffer(formData: FormData) {
 
   const id = formData.get("id") as string;
   const title = (formData.get("title") as string).trim();
-  const external_url = (formData.get("external_url") as string)?.trim() || null;
+  const link_type = formData.get("link_type") as string;
+  const external_url = link_type === "external" ? (formData.get("external_url") as string)?.trim() || null : null;
+  const business_id = (link_type === "store" || link_type === "product")
+    ? (formData.get("business_id") as string) || null : null;
+  const product_id = link_type === "product"
+    ? (formData.get("product_id") as string) || null : null;
   const sort_order = Number(formData.get("sort_order") ?? 0);
 
   let image_url: string | null = (formData.get("existing_image_url") as string)?.trim() || null;
@@ -187,6 +192,6 @@ export async function updateAdminOffer(formData: FormData) {
     }
   }
 
-  await supabase.from("admin_offers").update({ title, image_url, external_url, sort_order }).eq("id", id);
+  await supabase.from("admin_offers").update({ title, image_url, external_url, business_id, product_id, sort_order }).eq("id", id);
   revalidatePath("/admin/banners");
 }

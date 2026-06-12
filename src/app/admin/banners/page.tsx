@@ -4,7 +4,7 @@ import type { AdBanner, ZoneSection, BusinessOffer, AdminOffer } from "@/types/d
 import {
   createBanner, updateBanner, toggleBanner, deleteBanner,
   toggleBusinessOffer, deleteBusinessOffer, updateBusinessOfferTitle,
-  toggleAdminOffer, deleteAdminOffer, updateAdminOffer,
+  toggleAdminOffer, deleteAdminOffer,
 } from "./actions";
 import { AdminOfferForm } from "./offers-form";
 
@@ -200,7 +200,6 @@ export default async function BannersPage() {
                           <summary className="text-xs text-violet-600 cursor-pointer hover:underline select-none">تعديل</summary>
                           <form action={updateBanner} className="mt-2 space-y-2" encType="multipart/form-data">
                             <input type="hidden" name="id" value={banner.id} />
-                            <input type="hidden" name="section_key" value={banner.section_key} />
                             <input name="title" defaultValue={banner.title}
                               className="w-full rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white" placeholder="العنوان" />
                             <input name="subtitle" defaultValue={banner.subtitle ?? ""}
@@ -211,6 +210,13 @@ export default async function BannersPage() {
                               <input name="sort_order" type="number" defaultValue={banner.sort_order}
                                 className="w-16 rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white" />
                             </div>
+                            <select name="section_key" defaultValue={banner.section_key}
+                              className="w-full rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white">
+                              <option value="all">🌐 كل الأقسام</option>
+                              {sections.map((s) => (
+                                <option key={s.section_key} value={s.section_key}>{s.name}</option>
+                              ))}
+                            </select>
                             <input name="image_file" type="file" accept="image/*"
                               className="w-full rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white file:mr-2 file:rounded file:border-0 file:bg-violet-50 file:px-1.5 file:text-[10px] file:font-medium file:text-violet-700" />
                             <input name="image_url" defaultValue={banner.image_url ?? ""}
@@ -373,22 +379,20 @@ export default async function BannersPage() {
                   </div>
                   <details className="px-3 pb-3">
                     <summary className="text-xs text-violet-600 cursor-pointer hover:underline select-none">تعديل</summary>
-                    <form action={updateAdminOffer} className="mt-2 space-y-2" encType="multipart/form-data">
-                      <input type="hidden" name="id" value={offer.id} />
-                      <input type="hidden" name="existing_image_url" value={offer.image_url ?? ""} />
-                      <input name="title" defaultValue={offer.title}
-                        className="w-full rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white" placeholder="العنوان" />
-                      <input name="external_url" defaultValue={offer.external_url ?? ""}
-                        className="w-full rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white" placeholder="رابط خارجي (اختياري)" />
-                      <input name="sort_order" type="number" defaultValue={offer.sort_order}
-                        className="w-full rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white" />
-                      <input name="image" type="file" accept="image/*"
-                        className="w-full rounded-lg border px-2 py-1.5 text-xs bg-white dark:bg-surface-800 dark:border-surface-700 dark:text-white file:mr-2 file:rounded file:border-0 file:bg-violet-50 file:px-1.5 file:text-[10px] file:font-medium file:text-violet-700" />
-                      <SubmitButton pendingText="..."
-                        className="w-full rounded-lg bg-violet-600 py-1.5 text-xs font-medium text-white hover:bg-violet-700 transition-colors">
-                        حفظ التعديلات
-                      </SubmitButton>
-                    </form>
+                    <div className="mt-3">
+                      <AdminOfferForm
+                        businesses={businesses}
+                        editOffer={{
+                          id: offer.id,
+                          title: offer.title,
+                          image_url: offer.image_url,
+                          external_url: offer.external_url,
+                          business_id: offer.business_id,
+                          product_id: offer.product_id,
+                          sort_order: offer.sort_order,
+                        }}
+                      />
+                    </div>
                   </details>
                 </div>
               );
