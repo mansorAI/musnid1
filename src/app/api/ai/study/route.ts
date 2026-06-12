@@ -4,6 +4,16 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS });
+}
+
 async function getApiKey(key: string): Promise<string | null> {
   const supabase = createServiceClient();
   const { data } = await supabase
@@ -88,10 +98,10 @@ export async function POST(request: NextRequest) {
       result = (message.content[0] as { type: "text"; text: string }).text;
     }
 
-    return NextResponse.json({ result });
+    return NextResponse.json({ result }, { headers: CORS });
   } catch (error) {
     console.error("AI study error:", error);
     const msg = error instanceof Error ? error.message : "حدث خطأ أثناء المعالجة.";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: msg }, { status: 500, headers: CORS });
   }
 }
