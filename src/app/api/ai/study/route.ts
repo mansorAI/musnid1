@@ -41,10 +41,11 @@ export async function POST(request: NextRequest) {
     // Extract text from PDF if provided
     let content = text ?? "";
     if (pdfBase64) {
-      const pdfParse = (await import("pdf-parse")).default;
+      const { PDFParse } = await import("pdf-parse");
       const buffer = Buffer.from(pdfBase64, "base64");
-      const parsed = await pdfParse(buffer);
-      content = parsed.text;
+      const parser = new PDFParse({ data: buffer });
+      const textResult = await parser.getText();
+      content = textResult.text;
       if (!content.trim()) {
         return NextResponse.json(
           { error: "لم يتمكن النظام من استخراج نص من هذا الملف. قد يكون محمياً أو صوراً فقط." },
