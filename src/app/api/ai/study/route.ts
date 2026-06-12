@@ -30,12 +30,11 @@ function buildPrompt(action: string, content: string, question?: string): string
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, pdfBase64, text, question, model = "claude" } = body as {
+    const { action, pdfBase64, text, question } = body as {
       action: string;
       pdfBase64?: string;
       text?: string;
       question?: string;
-      model?: "claude" | "gemini";
     };
 
     // Extract text from PDF if provided
@@ -64,22 +63,23 @@ export async function POST(request: NextRequest) {
 
     let result = "";
 
-    if (model === "gemini") {
-      const apiKey = await getApiKey("gemini_api_key");
-      if (!apiKey) {
-        return NextResponse.json({ error: "مفتاح Gemini غير مضبوط. اضبطه من لوحة الأدمن." }, { status: 503 });
-      }
+    // اختيار تلقائي: يستخدم المفتاح الموجود — Gemini أولاً ثم Claude
+    const geminiKey = await getApiKey("gemini_api_key");
+    const claudeKey = await getApiKey("claude_api_key");
+    const activeModel = geminiKey ? "gemini" : claudeKey ? "claude" : null;
+
+    if (!activeModel) {
+      return NextResponse.json({ error: "لا يوجد مفتاح API مضبوط. أضف مفتاح Claude أو Gemini من لوحة الأدمن." }, { status: 503 });
+    }
+
+    if (activeModel === "gemini") {
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
-      const genAI = new GoogleGenerativeAI(apiKey);
+      const genAI = new GoogleGenerativeAI(geminiKey!);
       const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const response = await geminiModel.generateContent(prompt);
       result = response.response.text();
     } else {
-      const apiKey = await getApiKey("claude_api_key");
-      if (!apiKey) {
-        return NextResponse.json({ error: "مفتاح Claude غير مضبوط. اضبطه من لوحة الأدمن." }, { status: 503 });
-      }
-      const client = new Anthropic({ apiKey });
+      const client = new Anthropic({ apiKey: claudeKey! });
       const message = await client.messages.create({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 1500,
