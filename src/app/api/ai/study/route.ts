@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     if (activeModel === "gemini") {
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(geminiKey!);
-      const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
       const response = await geminiModel.generateContent(prompt);
       result = response.response.text();
     } else {
