@@ -2,6 +2,50 @@
 
 ---
 
+## 2026-06-11 (2) — فاتورة الفرد في المحادثة + إصلاح اشتراكات الأدمن
+
+### فاتورة الفرد في محادثة الطلب
+- ✅ `src/lib/supabase/server.ts`: إضافة `createServiceClient()` يستخدم `SUPABASE_SERVICE_ROLE_KEY` (import من `@supabase/supabase-js` لا من `@supabase/ssr`) لتجاوز RLS عند الكتابة من Server Action.
+- ✅ `src/app/dashboard/orders/actions.ts` — `issueOrderInvoice()`:
+  - بعد إنشاء الفاتورة وتحديث حالة الطلب إلى `accepted`، تُدرَج رسالة نظام في `order_messages` بـ `sender_role: "system"`.
+  - تحتوي الرسالة: رقم الفاتورة، أصناف الطلب مع الكميات والأسعار، الضريبة (إن وُجدت)، الإجمالي — كنص عربي منسَّق.
+  - **السبب التقني**: RLS يمنع `createClient()` من الإدراج بـ `sender_role: "system"` — الحل `createServiceClient()` يتجاوز RLS بالكامل.
+
+### إصلاح اسم المنشأة في اشتراكات الأدمن
+- ✅ `src/lib/admin-data.ts` — `getBusinessSubscriptions()`: تغيير من `createClient()` (جلسة SSR) إلى `getServiceClient()` لأن الـ JOIN مع جدول `businesses` كان يُفشَل بسبب RLS فيظهر الاسم "—".
+
+### الملفات المعدّلة
+- `src/lib/supabase/server.ts`
+- `src/app/dashboard/orders/actions.ts`
+- `src/lib/admin-data.ts`
+
+### ملاحظة
+- ⏳ Migration `20260610000001_add_meta_whatsapp_fields.sql` لا يزال معلقاً (من جلسة سابقة).
+- ⏳ Migration `20260611000001_add_external_url_to_offers.sql` معلق (migration للموبايل يؤثر على قاعدة البيانات المشتركة).
+
+---
+
+## 2026-06-11 — Meta WhatsApp API وطلب مراجعة التطبيق
+
+### ما تم
+- إصلاح `register/route.ts`: فصل `cc` عن `phone_number` وإضافة `verified_name` من اسم المنشأة.
+- إصلاح `WhatsAppConnectWidget`: استبدال `useState` بـ `useEffect` لاستدعاء `/api/whatsapp/status` عند التحميل.
+- إضافة `GET /api/whatsapp/status` لجلب أرقام WABA من Meta لإكمال اختبار `whatsapp_business_management`.
+- إضافة debug logging في `register/route.ts`.
+- إكمال جميع خطوات مراجعة Meta (الاستخدام، البيانات، تعليمات المراجع، اختبار الأذونات).
+- تحديث `META_ACCESS_TOKEN` في Vercel بتوكن صحيح.
+
+### الملفات المعدّلة
+- `src/app/api/whatsapp/register/route.ts`
+- `src/app/api/whatsapp/status/route.ts` ← جديد
+- `src/components/dashboard/WhatsAppConnectWidget.tsx`
+
+### ما ينتظر
+- ⏳ تطبيق migration `20260610000001_add_meta_whatsapp_fields.sql` على Supabase.
+- ⏳ موافقة Meta على التحقق من النشاط التجاري (قيد المراجعة منذ 28 مايو).
+
+---
+
 ## 2026-06-09 — ملخص اليوم الكامل: إدارة الحجز والدفع والطلبات
 
 ### ما تم في الويب

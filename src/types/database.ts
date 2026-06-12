@@ -282,10 +282,19 @@ export type Database = {
         ];
       };
       business_offers: {
-        Row: { id: string; business_id: string; title: string; product_id: string | null; is_visible: boolean; sort_order: number; created_at: string; updated_at: string };
-        Insert: { id?: string; business_id: string; title: string; product_id?: string | null; is_visible?: boolean; sort_order?: number; created_at?: string; updated_at?: string };
+        Row: { id: string; business_id: string; title: string; product_id: string | null; external_url: string | null; image_url: string | null; is_visible: boolean; sort_order: number; created_at: string; updated_at: string };
+        Insert: { id?: string; business_id: string; title: string; product_id?: string | null; external_url?: string | null; image_url?: string | null; is_visible?: boolean; sort_order?: number; created_at?: string; updated_at?: string };
         Update: Partial<Database["public"]["Tables"]["business_offers"]["Insert"]>;
         Relationships: [{ foreignKeyName: "business_offers_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] }];
+      };
+      admin_offers: {
+        Row: { id: string; title: string; image_url: string | null; external_url: string | null; business_id: string | null; product_id: string | null; is_active: boolean; sort_order: number; created_at: string; updated_at: string };
+        Insert: { id?: string; title: string; image_url?: string | null; external_url?: string | null; business_id?: string | null; product_id?: string | null; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["admin_offers"]["Insert"]>;
+        Relationships: [
+          { foreignKeyName: "admin_offers_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] },
+          { foreignKeyName: "admin_offers_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "menu_items"; referencedColumns: ["id"] }
+        ];
       };
       store_categories: {
         Row: { id: string; name: string; icon: string; icon_url: string | null; action_type: "order" | "booking" | "inquiry"; supports_bot: boolean; sort_order: number; is_active: boolean; section_key: string; product_display_config: Json | null; created_at: string; updated_at: string };
@@ -1191,6 +1200,7 @@ export type InvoiceRow = Database["public"]["Tables"]["invoices"]["Row"];
 export type InvoiceItemRow = Database["public"]["Tables"]["invoice_items"]["Row"];
 export type UserRole = "admin" | "business" | "customer";
 export type BusinessOffer  = Database["public"]["Tables"]["business_offers"]["Row"];
+export type AdminOffer     = Database["public"]["Tables"]["admin_offers"]["Row"];
 export type StoreCategory  = Database["public"]["Tables"]["store_categories"]["Row"];
 export type ZoneSection       = Database["public"]["Tables"]["zone_sections"]["Row"];
 export type AdBanner          = Database["public"]["Tables"]["ad_banners"]["Row"];
