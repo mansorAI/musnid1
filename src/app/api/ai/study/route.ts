@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
     // Extract text from PDF if provided
     let content = text ?? "";
     if (pdfBase64) {
-      const { PDFParse } = await import("pdf-parse");
+      const { getDocumentProxy, extractText } = await import("unpdf");
       const buffer = Buffer.from(pdfBase64, "base64");
-      const parser = new PDFParse({ data: buffer });
-      const textResult = await parser.getText();
-      content = textResult.text;
+      const pdf = await getDocumentProxy(new Uint8Array(buffer));
+      const { text: extracted } = await extractText(pdf, { mergePages: true });
+      content = extracted;
       if (!content.trim()) {
         return NextResponse.json(
           { error: "لم يتمكن النظام من استخراج نص من هذا الملف. قد يكون محمياً أو صوراً فقط." },
