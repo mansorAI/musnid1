@@ -287,6 +287,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["business_offers"]["Insert"]>;
         Relationships: [{ foreignKeyName: "business_offers_business_id_fkey"; columns: ["business_id"]; isOneToOne: false; referencedRelation: "businesses"; referencedColumns: ["id"] }];
       };
+      app_settings: {
+        Row: { key: string; value: string | null; updated_at: string };
+        Insert: { key: string; value?: string | null; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["app_settings"]["Insert"]>;
+        Relationships: [];
+      };
       admin_offers: {
         Row: { id: string; title: string; image_url: string | null; external_url: string | null; business_id: string | null; product_id: string | null; is_active: boolean; sort_order: number; created_at: string; updated_at: string };
         Insert: { id?: string; title: string; image_url?: string | null; external_url?: string | null; business_id?: string | null; product_id?: string | null; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string };
@@ -1201,6 +1207,7 @@ export type InvoiceItemRow = Database["public"]["Tables"]["invoice_items"]["Row"
 export type UserRole = "admin" | "business" | "customer";
 export type BusinessOffer  = Database["public"]["Tables"]["business_offers"]["Row"];
 export type AdminOffer     = Database["public"]["Tables"]["admin_offers"]["Row"];
+export type AppSetting     = Database["public"]["Tables"]["app_settings"]["Row"];
 export type StoreCategory  = Database["public"]["Tables"]["store_categories"]["Row"];
 export type ZoneSection       = Database["public"]["Tables"]["zone_sections"]["Row"];
 export type AdBanner          = Database["public"]["Tables"]["ad_banners"]["Row"];
